@@ -1,6 +1,16 @@
 import tdt
+import json
 import numpy as np
 from typing import Dict
+
+
+def get_data_array(array, channel_number):
+    s_number = int(len(array) / channel_number)
+    a = np.zeros(shape=(channel_number, s_number))
+    for i in range(channel_number):
+        for j, z in zip(range(0, len(array), channel_number), range(s_number)):
+            a[i][z] = array[i + j]
+    return a
 
 
 class NeuralData:
@@ -16,9 +26,9 @@ class NeuralData:
 
         self.run_id = self.config["run_id"]
 
-        self.data: Dict[int, np.ndarray]
+        self.raw: Dict[int, np.ndarray]
         self.fs: float
-        self.data, self.fs = self.load_neural_data()
+        self.raw, self.fs = self.load_neural_data()
 
     def load_neural_data(self):
         # TODO load differently for tdt and open_ephys
@@ -57,7 +67,24 @@ class NeuralData:
 
     def load_open_ephys(self):
         # TODO load neural data in dict
-        return {}
+        # note the path should have the record note
+        recording_path = self.path
+        structure_path = recording_path + "/structure.oebin"
+        with open(structure_path) as f:
+            structure = json.load(f)
+
+            #TODO refactor to have path in consts
+        source_processor_id = structure["source_processor_name"][0]["source_processor_name"].replace(" ", "-") + \
+                              structure["source_processor_name"][0]["recorded_processor_id"] + ".0"
+
+        binary_data_path = recording_path + "experiment1/recording1/continuous" + source_processor_id + '/continuous.dat'
+        fs = structure["continuous"][0]["sample_rate"]
+
+        n_ch = structure["continuous"][0]["num_channels"]
+        neural_data_bin = np.fromfile(binary_data_path + '/continuous.dat', dtype='<i2')
+        neural_data_au = get_data_array(array=neural_data_bin, channel_number=n_ch)
+
+        return neural_data_au, fs
 
     def compute_psd(self):
         psd = None
