@@ -2,6 +2,7 @@ import tdt
 import json
 import numpy as np
 from typing import Dict
+from utils import importing
 
 
 def get_data_array(array, channel_number):
@@ -26,44 +27,17 @@ class NeuralData:
 
         self.run_id = self.config["run_id"]
 
-        self.raw: Dict[int, np.ndarray]
+        self.raw: np.ndarray
         self.fs: float
         self.raw, self.fs = self.load_neural_data()
-
-    def load_neural_data(self):
-        # TODO load differently for tdt and open_ephys
-        recording_system = self.config["recording_system"]
-        if recording_system == "tdt":
-            data = self.load_tdt()
-        elif recording_system == "open_ephys":
-            data = self.load_open_ephys()
-        else:
-            raise
-        # TODO find good way to raise "recording system not recognised error"
-        return data
 
     def load_config_file(self):
         # config = load config_file
         # TODO load config_file in dict
         return {}
 
-    def load_tdt(self):
-        # TODO load neural data in dict
-        data = tdt.read_block(self.path)  # import data
-        try:
-            raw = data.streams.LFP1.data  # get the raw data out of the inner pipeline structure
-            fs = data.streams.LFP1.fs  # sampling frequency
-        except AttributeError:
-            try:
-                raw = data.streams.EOG1.data  # get the raw data out of the inner pipeline structure
-                fs = data.streams.EOG1.fs  # sampling frequency
-            except AttributeError:
-                try:
-                    raw = data.streams.NPr1.data  # get the raw data out of the inner pipeline structure
-                    fs = data.streams.NPr1.fs  # sampling frequency
-                except AttributeError:
-                    raise
-        return raw, fs
+    def load_tdt_data(self):
+        self.fs, self.raw = importing.import_tdt_channel_data(folderpath=self.path)
 
     def load_open_ephys(self):
         # TODO load neural data in dict
@@ -73,7 +47,7 @@ class NeuralData:
         with open(structure_path) as f:
             structure = json.load(f)
 
-            #TODO refactor to have path in consts
+            # TODO refactor to have path in consts
         source_processor_id = structure["source_processor_name"][0]["source_processor_name"].replace(" ", "-") + \
                               structure["source_processor_name"][0]["recorded_processor_id"] + ".0"
 
@@ -85,9 +59,3 @@ class NeuralData:
         neural_data_au = get_data_array(array=neural_data_bin, channel_number=n_ch)
 
         return neural_data_au, fs
-
-    def compute_psd(self):
-        psd = None
-        freqs = None
-        t = None
-        return
