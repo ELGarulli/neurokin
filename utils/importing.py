@@ -26,6 +26,8 @@ def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1) -> (float, np.ndarray
                 fs = data.streams.NPr1.fs
             except AttributeError:
                 raise
+    s1 = 0
+    s2 = -1
     if t1 != 0:
         s1 = time_to_sample(timestamp=t1, fs=fs, is_t1=True)
     if t2 != -1:
