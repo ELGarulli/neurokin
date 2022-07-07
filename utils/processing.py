@@ -3,7 +3,8 @@ from numpy.typing import ArrayLike
 from fooof import FOOOF
 from fooof.sim.gen import gen_aperiodic
 from scipy import signal
-from typing import List
+from typing import List, Tuple
+from matplotlib import pyplot as plt
 
 
 def get_stim_timestamps(sync_ch: np.ndarray, expected_pulses: int) -> np.ndarray:
@@ -110,7 +111,7 @@ def average_subset(array: ArrayLike, start: int, stop: int) -> np.ndarray:
     return averaged
 
 
-def get_fooofed_psd(freqs: ArrayLike, psd: ArrayLike, frange: List[int, int] = None) -> (ArrayLike, ArrayLike):
+def get_fooofed_psd(freqs: ArrayLike, psd: ArrayLike, frange: List[int] = None) -> (ArrayLike, ArrayLike):
     """
     Computes the difference from the power spectrum and the aperiodic ie the periodic component
     :param freqs: frequencies corresponding to the y axis
@@ -125,7 +126,7 @@ def get_fooofed_psd(freqs: ArrayLike, psd: ArrayLike, frange: List[int, int] = N
     return fm.freqs, periodic_component
 
 
-def get_aperiodic(freqs: ArrayLike, psd: ArrayLike, frange: List[int, int] = None) -> (ArrayLike, ArrayLike):
+def get_aperiodic(freqs: ArrayLike, psd: ArrayLike, frange: List[int] = None) -> (ArrayLike, ArrayLike):
     """
     Computes aperiodic component of the psd
     :param freqs:
@@ -175,7 +176,7 @@ def find_closest_smaller_index(data: ArrayLike, datapoint: float) -> int:
 
 
 def get_fast_foofed_specgram(raw: ArrayLike, fs: float, nperseg: int,
-                             noverlap: int, frange: List[int, int] = None) -> (ArrayLike, ArrayLike, ArrayLike):
+                             noverlap: int, frange: List[int] = None) -> (ArrayLike, ArrayLike, ArrayLike):
     """
     Returns a matrix corresponding to a periodgram where from each column the aperiodic component has been subtracted.
     Because of computational intensity only the overall aperiodic component is computed.
@@ -200,3 +201,18 @@ def get_fast_foofed_specgram(raw: ArrayLike, fs: float, nperseg: int,
     nt = len(foofed[-1]) * (nperseg - noverlap)
     t = np.linspace(0, nt, num=len(foofed[-1]))
     return t, f, foofed
+
+
+def get_spectrogram_data(fs: float, raw: ArrayLike, nfft: int = None,
+                         noverlap: int = None, **kwargs) -> Tuple[ArrayLike]:
+    """
+    Gets the data used to plot a spectrogram
+    :param fs: sampling frequency
+    :param raw: raw data
+    :param nfft: nfft to compute the fft
+    :param noverlap: number of overlap points
+    :return:
+    """
+    pxx, freq, t, _ = plt.specgram(raw, NFFT=nfft, Fs=fs, noverlap=noverlap, **kwargs)
+
+    return pxx, freq, t
