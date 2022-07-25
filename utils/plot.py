@@ -25,7 +25,7 @@ def plot_spectrogram(ax: ax, fs: float, raw: ArrayLike, title: str, ylim: List[i
     return ax
 
 
-def plot_welch(ax: ax, freqs: ArrayLike, pxx_den: ArrayLike, title: str, xlim: List[int], ylim: List[int],
+def plot_welch(ax: ax, freqs: ArrayLike, pxx_den: ArrayLike, title: str, xlim: List[int] = None, ylim: List[int] = None,
                tick_spacing: int = 10) -> ax:
     """
     Returns a plot of psd with some style elements
