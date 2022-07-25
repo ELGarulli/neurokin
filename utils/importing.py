@@ -1,5 +1,8 @@
 import tdt
+import json
 import numpy as np
+from numpy.typing import ArrayLike
+from typing import List, Tuple
 
 
 def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1) -> (float, np.ndarray):
@@ -83,3 +86,41 @@ def time_to_sample(timestamp: float, fs: float, is_t1: bool = False, is_t2: bool
             sample = np.round(sample)
     sample = np.uint64(sample)
     return sample
+
+
+def unroll_array(array: ArrayLike, channel_number: int) -> ArrayLike:
+    # TODO look for smarter way to do this, most probably scipy or numpy have a better function
+    """
+    Unrolls the array from a s1ch1, s1ch2, s1ch3 format to a 2D array with samples as columns and channels as rows.
+    :param array: 1D array
+    :param channel_number: number of channels
+    :return: 2D array
+    """
+    s_number = int(len(array) / channel_number)
+    a = np.zeros(shape=(channel_number, s_number))
+    for i in range(channel_number):
+        for j, z in zip(range(0, len(array), channel_number), range(s_number)):
+            a[i][z] = array[i + j]
+    return a
+
+
+def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: str) -> (float, np.ndarray):
+    """
+    Imports open ephys data from binary files. Sampling frequency is returned as a float and raw data are returned
+    in arbitrary units
+    :param folderpath:
+    :return:
+    """
+    structure_path = folderpath + "/" + experiment + "/" + recording + "/structure.oebin"
+    with open(structure_path) as f:
+        structure = json.load(f)
+    # TODO refactor to have path in consts
+    source_processor_id = str(structure["continuous"][0]["source_processor_name"].replace(" ", "_")) + "-"+\
+                          str(structure["continuous"][0]["source_processor_id"]) + ".0"
+
+    binary_data_path = folderpath + "/" + experiment + "/" + recording + "/continuous/" + source_processor_id + '/continuous.dat'
+    fs = structure["continuous"][0]["sample_rate"]
+    n_ch = structure["continuous"][0]["num_channels"]
+    neural_data_flat = np.fromfile(binary_data_path, dtype='<i2')
+    neural_data_au = unroll_array(array=neural_data_flat, channel_number=n_ch)
+    return fs, neural_data_au
