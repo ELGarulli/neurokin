@@ -25,8 +25,8 @@ def plot_spectrogram(ax: ax, fs: float, raw: ArrayLike, title: str, ylim: List[i
     return ax
 
 
-def plot_welch(ax: ax, freqs: ArrayLike, pxx_den: ArrayLike, title: str, xlim: List[int] = [None, None],
-               ylim: List[int] = [None, None],
+def plot_welch(ax: ax, freqs: ArrayLike, pxx_den: ArrayLike, title: str = "PSD", xlim=None,
+               ylim=None,
                tick_spacing: int = 10) -> ax:
     """
     Returns a plot of psd with some style elements
@@ -40,9 +40,20 @@ def plot_welch(ax: ax, freqs: ArrayLike, pxx_den: ArrayLike, title: str, xlim: L
     :return:
     """
     ax.set_title(title)
-    ax.set_xlim(xlim[0], xlim[1])
-    ax.set_xticks(np.arange(xlim[0], xlim[1], tick_spacing))
-    ax.set_ylim(ylim[0], ylim[1])
+
+    if not xlim is None:
+        ax.set_xlim(xlim)
+        ticks_min = xlim[0]
+        ticks_max = xlim[1]
+    else:
+        ticks_min = min(freqs)
+        ticks_max = max(freqs)
+
+    if not ylim is None:
+        ax.set_ylim(ylim)
+
+    ax.set_xticks(np.arange(ticks_min, ticks_max, tick_spacing))
+
     ax.set_xlabel('frequency [Hz]')
     ax.set_ylabel('PSD [V**2/Hz]')
 
