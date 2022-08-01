@@ -89,7 +89,7 @@ def time_to_sample(timestamp: float, fs: float, is_t1: bool = False, is_t2: bool
 
 
 def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: str, channels=None) -> (
-float, np.ndarray):
+        float, np.ndarray):
     """
     Imports open ephys data from binary files. Sampling frequency is returned as a float and raw data are returned
     in arbitrary units
@@ -110,11 +110,13 @@ float, np.ndarray):
     neural_data_flat = np.fromfile(binary_data_path, dtype='<i2')
     n_samples = int(len(neural_data_flat) / n_ch)
 
-    neural_data_au = np.reshape(a=neural_data_flat, newshape=(n_ch, n_samples))
+    neural_data_au = np.reshape(a=neural_data_flat, newshape=(n_ch, n_samples), order='F')
 
     if channels:
         mask = np.zeros(n_ch, dtype=bool)
         mask[channels] = True
         neural_data_au = neural_data_au[mask, ...]
+        if neural_data_au.shape[0] == 1:
+            neural_data_au = neural_data_au[0]
 
     return fs, neural_data_au
