@@ -25,10 +25,11 @@ class NeuralData:
     def load_tdt_data(self):
         self.fs, self.raw = importing.import_tdt_channel_data(folderpath=self.path)
 
-    def load_open_ephys(self, experiment, recording):
+    def load_open_ephys(self, experiment, recording, channels=None):
         self.fs, self.raw = importing.import_open_ephys_channel_data(folderpath=self.path,
                                                                      experiment=experiment,
-                                                                     recording=recording)
+                                                                     recording=recording,
+                                                                     channels=channels)
 
     def export_neural_data_to_binary(self, filename):
         exporting.export_neural_data_to_bin(self.raw, filename)
