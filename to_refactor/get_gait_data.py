@@ -1,9 +1,12 @@
-from utils.import_export._import import (load_neural, load_kinematics, load_fs, load_steps, load_first_frame,
-                                         load_neural_epochs)
-from utils.import_export._export import (export_kinematic, export_frame, export_steps, export_fs, export_neural,
-                                         export_neural_epochs)
+#from utils.import_export._import import (load_neural, load_kinematics, load_fs, load_steps, load_first_frame,
+#                                      load_neural_epochs)
+#from utils.import_export._export import (export_kinematic, export_frame, export_steps, export_fs, export_neural,
+#                                         export_neural_epochs)
+#from ggait import get_gait_cycle_bounds
+#from kinematics import import_toe_z_data
 
-def get_gait_data(eng, gait_files, load=False):
+
+def get_gait_data(eng, gait_files, pathname, load=False):
     """
     bypasses matlab gui and accesses gait information from c3d file --> saves information in a dictionary
     :param eng: matlab engine API (requires matlab.engine.shareEngine command in MATLAB)
@@ -23,42 +26,30 @@ def get_gait_data(eng, gait_files, load=False):
             sample_rate = load_fs(file_name)
             print("Loaded kinematics from " + file_name)
         else:
-            h = eng.minEx_0(gait_files[file_name], PATHNAME, nargout=1)
+            h = eng.minEx_0(gait_files[file_name], pathname, nargout=1)
             h = eng.minEx_1(h, nargout=1)
             s = True
-            steps_dict = events_detected(h, "Data_R", "Data_L", s)
-            #steps_dict = event_int(h,  "Data_R", "Data_L", s, trend=True)
+            left_steps_dict = get_gait_cycle_bounds(h, "Data_L", s)
+            right_steps_dict = get_gait_cycle_bounds(h, "Data_R", s)
 
-            h = check_step_detection(eng=eng, h=h, steps_dict=steps_dict, s=s)
+            h = check_step_detection(eng=eng, h=h, left_steps_dict=left_steps_dict, right_steps_dict=right_steps_dict,
+                                     s=s)
 
-            kin_data = import_kin_data(h)
-            first_frame = h['first_frame']
             DATAFILE = h['FILENAME']
-            full = PATHNAME + DATAFILE
+            full = pathname + DATAFILE
             print("Used file: " + full)
 
-            kin_dict = parse_kin(kin_data, steps_dict['left_toe_off'],
-                                 steps_dict['left_heel_strike'],
-                                 steps_dict['right_toe_off'],
-                                 steps_dict['right_heel_strike'],
-                                 steps_dict['maximas'])
-
-            gait_dict[file_name] = kin_dict
-            parse_dict[file_name] = steps_dict
-            first_frames[file_name] = first_frame
-            sample_rate = h['freq']
-            export_kinematic(file_name, kin_dict)
-            export_frame(file_name, first_frame)
-            export_steps(file_name, steps_dict)
-            export_fs(file_name, sample_rate)
-
-    gait_data = {'gait_dict': gait_dict, 'first_frame': first_frames, 'parse_dict': parse_dict,
+    gait_data = {'gait_dict': gait_dict,
+                 'first_frame': first_frames,
+                 'parse_dict': parse_dict,
+                 "left_steps": left_steps_dict, #TODO fix loading of the steps if file exists already
+                 "right_steps": right_steps_dict,
                  'sample_rate': sample_rate}
 
     return gait_data
 
 
-def check_step_detection(eng, h, steps_dict, s):
+def check_step_detection(eng, h, left_steps_dict, right_steps_dict, s):
     """
 
     :param eng: matlab engine API
@@ -67,49 +58,52 @@ def check_step_detection(eng, h, steps_dict, s):
     :param s:
     :return:
     """
-
+    uneven_r = 0
+    uneven_l = 0
     # TODO s = tkinter.messagebox.askyesno(title="Rerun event detection?", message="Are you happy with the results?")
-    for i in range(len(steps_dict['left_toe_off'][0])-1):
-        if steps_dict['left_toe_off'][0][i] == steps_dict['left_heel_strike'][0][i]:
+    for i in range(len(left_steps_dict['toe_off'][0]) - 1):
+        if left_steps_dict['toe_off'][0][i] == left_steps_dict['heel_strike'][0][i]:
             if i != 0:
-                steps_dict['left_heel_strike'][0][i] = (steps_dict['maximas']['Data_L'][i]+(steps_dict['left_heel_strike']
-                                                                                          [0][i-1]-steps_dict['maximas']
-                                                                                          ['Data_L'][i-1]))
+                left_steps_dict['heel_strike'][0][i] = (
+                        left_steps_dict['maximas'][i] + (left_steps_dict['heel_strike']
+                                                         [0][i - 1] - left_steps_dict['maximas'][i - 1]))
             else:
-                if steps_dict['left_toe_off'][0][0] < steps_dict['right_toe_off'][0][0]:
-                    steps_dict['left_heel_strike'][0][i] = steps_dict['right_toe_off'][0][i]
+                if left_steps_dict['toe_off'][0][0] < right_steps_dict['toe_off'][0][0]:
+                    left_steps_dict['heel_strike'][0][i] = right_steps_dict['toe_off'][0][i]
                 else:
-                    steps_dict['left_heel_strike'][0][i] = steps_dict['right_toe_off'][0][i+1]
+                    left_steps_dict['heel_strike'][0][i] = right_steps_dict['toe_off'][0][i + 1]
 
-    for j in range(len(steps_dict['right_toe_off'][0])-1):
-        if steps_dict['right_toe_off'][0][j] == steps_dict['right_heel_strike'][0][j]:
+    for j in range(len(right_steps_dict['toe_off'][0]) - 1):
+        if right_steps_dict['toe_off'][0][j] == right_steps_dict['heel_strike'][0][j]:
             if j != 0:
-                steps_dict['right_heel_strike'][0][j] = (steps_dict['maximas']['Data_R'][j]+(steps_dict['right_heel_strike']
-                                                                                          [0][j-1]-steps_dict['maximas']
-                                                                                          ['Data_R'][j-1]))
+                right_steps_dict['heel_strike'][0][j] = (
+                        right_steps_dict['maximas'][j] + (right_steps_dict['heel_strike']
+                                                          [0][j - 1] - right_steps_dict['maximas'][j - 1]))
             else:
-                if steps_dict['right_toe_off'][0][0] < steps_dict['left_toe_off'][0][0]:
-                    steps_dict['right_heel_strike'][0][j] = steps_dict['left_toe_off'][0][j]
+                if right_steps_dict['toe_off'][0][0] < left_steps_dict['toe_off'][0][0]:
+                    right_steps_dict['heel_strike'][0][j] = left_steps_dict['toe_off'][0][j]
                 else:
-                    steps_dict['right_heel_strike'][0][j] = steps_dict['left_toe_off'][0][j+1]
+                    right_steps_dict['heel_strike'][0][j] = left_steps_dict['toe_off'][0][j + 1]
 
     h = eng.minEx_2(h, h['Data_L'], h['Data_R'],
                     h['TIME'],
-                    steps_dict['left_toe_off'],
-                    steps_dict['right_toe_off'],
-                    steps_dict['left_heel_strike'],
-                    steps_dict['right_heel_strike'],
-                    steps_dict['uneven_l'],
-                    steps_dict['uneven_r'], nargout=1)
+                    left_steps_dict['toe_off'],
+                    right_steps_dict['toe_off'],
+                    left_steps_dict['heel_strike'],
+                    right_steps_dict['heel_strike'],
+                    uneven_l,
+                    uneven_r,
+                    nargout=1)
 
     if not s:
-        steps_dict = events_detected(h, "Data_R", "Data_L", s)
+        steps_dict = get_gait_cycle_bounds(h, "Data_R", "Data_L", s)
         h = eng.minEx_2(h, h['Data_L'], h['Data_R'],
                         h['TIME'],
-                        steps_dict['left_toe_off'],
-                        steps_dict['right_toe_off'],
-                        steps_dict['left_heel_strike'],
-                        steps_dict['right_heel_strike'],
-                        steps_dict['uneven_l'],
-                        steps_dict['uneven_r'], nargout=1)
+                        left_steps_dict['toe_off'],
+                        steps_dict['toe_off'],
+                        left_steps_dict['heel_strike'],
+                        steps_dict['heel_strike'],
+                        uneven_l,
+                        uneven_r,
+                        nargout=1)
     return h
