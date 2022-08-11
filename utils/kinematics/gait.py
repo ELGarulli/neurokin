@@ -8,7 +8,7 @@ def load_raw_kinematics(eng, gait_file, pathname):
     h = eng.minEx_1(h, nargout=1)
     return h
 
-def get_gait_cycle_bounds(h, data_name: str, s):
+def get_gait_cycle_bounds(h, data_name: str, s=True):
     """
     event detection function using detection based on line from peaks, intersection at 2 points
     (see get_left_right_bound for explanation).

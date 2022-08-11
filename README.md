@@ -24,3 +24,5 @@ from the MATLAB command prompt:
 cd (fullfile(matlabroot,'extern','engines','python'))
 
 system('python setup.py install')
+
+matlab.engine.shareEngine
