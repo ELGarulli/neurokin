@@ -2,7 +2,7 @@ from typing import Tuple, List
 from numpy import ndarray
 from scipy import interpolate
 from scipy.stats import linregress
-#from consts_.threshold_detection import (LOCAL_POINTS, SLOPE_INITIAL_TILT, TILTING_STEPS, INTERSECTION_NUMBER)
+from constants.gait_cycle_detection import (LOCAL_POINTS, SLOPE_INITIAL_TILT, TILTING_STEPS, INTERSECTION_NUMBER)
 import tkinter as tk
 from tkinter import *
 from PIL import ImageTk, Image
