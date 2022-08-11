@@ -3,9 +3,11 @@ import json
 import numpy as np
 from numpy.typing import ArrayLike
 from typing import List, Tuple
+from constants.open_ephys_structure import STRUCTURE, CONTINUOUS, SOURCE_PROCESSOR_NAME, SOURCE_PROCESSOR_ID, \
+    TRAILING_NUMBER, SAMPLE_RATE, CHANNEL_NUMBER
 
 
-def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1) -> (float, np.ndarray):
+def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1) -> (float, ArrayLike):
     """
     Wrapper for the import function of tdt, to be more user friendly.
     Warning: tdt function allows to specify for channels, however it's 1-based and if ch==0
@@ -39,7 +41,7 @@ def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1) -> (float, np.ndarray
     return fs, raw
 
 
-def import_tdt_stimulation_data(folderpath, t1=0, t2=-1) -> np.ndarray:
+def import_tdt_stimulation_data(folderpath, t1=0, t2=-1) -> ArrayLike:
     """
     Returns the stimulation channel, assuming it's stored in Wav1
     :param folderpath: folderpath of the subject experiment
@@ -91,21 +93,27 @@ def time_to_sample(timestamp: float, fs: float, is_t1: bool = False, is_t2: bool
 def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: str, channels=None) -> (
         float, np.ndarray):
     """
-    Imports open ephys data from binary files. Sampling frequency is returned as a float and raw data are returned
-    in arbitrary units
-    :param folderpath:
-    :return:
+    Imports open ephys data from binary files.
+
+    :param folderpath: Folderpath where the experiment is, including the Node
+    :param experiment: experiment folder
+    :param recording: recording folder
+    :param channels: indicate which channels to return
+    :return: Sampling frequency is returned as a float and raw data are returned in arbitrary units
     """
-    structure_path = folderpath + "/" + experiment + "/" + recording + "/structure.oebin"
+    structure_path = folderpath + "/" + experiment + "/" + recording + "/" + STRUCTURE + ".oebin"
+
     with open(structure_path) as f:
         structure = json.load(f)
-    # TODO refactor to have path in consts
-    source_processor_id = str(structure["continuous"][0]["source_processor_name"].replace(" ", "_")) + "-" + \
-                          str(structure["continuous"][0]["source_processor_id"]) + ".0"
 
-    binary_data_path = folderpath + "/" + experiment + "/" + recording + "/continuous/" + source_processor_id + '/continuous.dat'
-    fs = structure["continuous"][0]["sample_rate"]
-    n_ch = structure["continuous"][0]["num_channels"]
+    source_processor = str(structure[CONTINUOUS][0][SOURCE_PROCESSOR_NAME].replace(" ", "_")) + "-" + \
+                       str(structure[CONTINUOUS][0][SOURCE_PROCESSOR_ID]) + TRAILING_NUMBER
+
+    binary_data_path = folderpath + "/" + experiment + "/" + recording + "/" +\
+                       CONTINUOUS + "/" + source_processor + "/" + CONTINUOUS + ".dat"
+
+    fs = structure[CONTINUOUS][0][SAMPLE_RATE]
+    n_ch = structure[source_processor][0][CHANNEL_NUMBER]
 
     neural_data_flat = np.fromfile(binary_data_path, dtype='<i2')
     n_samples = int(len(neural_data_flat) / n_ch)

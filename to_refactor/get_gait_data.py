@@ -2,8 +2,13 @@
 #                                      load_neural_epochs)
 #from utils.import_export._export import (export_kinematic, export_frame, export_steps, export_fs, export_neural,
 #                                         export_neural_epochs)
-#from ggait import get_gait_cycle_bounds
+from ggait import get_gait_cycle_bounds
 #from kinematics import import_toe_z_data
+
+def load_raw_kinematics(eng, gait_file, pathname):
+    h = eng.minEx_0(gait_file, pathname, nargout=1)
+    h = eng.minEx_1(h, nargout=1)
+    return h
 
 
 def get_gait_data(eng, gait_files, pathname, load=False):
