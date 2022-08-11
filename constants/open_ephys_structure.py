@@ -1,0 +1,7 @@
+STRUCTURE="structure"
+CONTINUOUS = "continuous"
+SOURCE_PROCESSOR_NAME = "source_processor_name"
+SOURCE_PROCESSOR_ID = "source_processor_id"
+TRAILING_NUMBER =".0"
+SAMPLE_RATE="sample_rate"
+CHANNEL_NUMBER = "num_channels"
