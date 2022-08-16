@@ -7,7 +7,7 @@ from constants.open_ephys_structure import STRUCTURE, CONTINUOUS, SOURCE_PROCESS
     TRAILING_NUMBER, SAMPLE_RATE, CHANNEL_NUMBER
 
 
-def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1) -> (float, ArrayLike):
+def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1") -> (float, ArrayLike):
     """
     Wrapper for the import function of tdt, to be more user friendly.
     Warning: tdt function allows to specify for channels, however it's 1-based and if ch==0
@@ -19,18 +19,13 @@ def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1) -> (float, ArrayLike)
     """
     data = tdt.read_block(folderpath, evtype=['streams'], channel=ch)
     try:
-        raw = data.streams.LFP1.data
-        fs = data.streams.LFP1.fs
+        streams = data.streams
+        stored = getattr(streams, stream_name)
+        raw = stored.data
+        fs = stored.fs
+
     except AttributeError:
-        try:
-            raw = data.streams.EOG1.data
-            fs = data.streams.EOG1.fs
-        except AttributeError:
-            try:
-                raw = data.streams.NPr1.data
-                fs = data.streams.NPr1.fs
-            except AttributeError:
-                raise
+        print("No stream named " + stream_name + ", please specify the correct stream_name")
     s1 = 0
     s2 = -1
     if t1 != 0:
@@ -41,7 +36,8 @@ def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1) -> (float, ArrayLike)
     return fs, raw
 
 
-def import_tdt_stimulation_data(folderpath, t1=0, t2=-1) -> ArrayLike:
+def import_tdt_stimulation_data(folderpath, t1=0, t2=-1, stream_name="Wav1") -> ArrayLike:
+    # TODO refactor to use only import_tdt_channel_data
     """
     Returns the stimulation channel, assuming it's stored in Wav1
     :param folderpath: folderpath of the subject experiment
@@ -51,14 +47,21 @@ def import_tdt_stimulation_data(folderpath, t1=0, t2=-1) -> ArrayLike:
     """
     data = tdt.read_block(folderpath, evtype=['streams'])
     try:
-        stim_data = data.streams.Wav1.data
-        fs = data.streams.LFP1.fs
+        streams = data.streams
+        stored = getattr(streams, stream_name)
+        stim_data = stored.data
+        fs = stored.fs
+
     except AttributeError:
-        raise Exception("No stimulation data found")
+        print("No stimulation stream named " + stream_name + ", please specify the correct stream_name")
     if t1 != 0:
         s1 = time_to_sample(timestamp=t1, fs=fs, is_t1=True)
+    else:
+        s1 = t1
     if t2 != -1:
         s2 = time_to_sample(timestamp=t2, fs=fs, is_t2=True)
+    else:
+        s2 = t2
     stim_data = stim_data[s1:s2]
 
     return stim_data
@@ -109,7 +112,7 @@ def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: 
     source_processor = str(structure[CONTINUOUS][0][SOURCE_PROCESSOR_NAME].replace(" ", "_")) + "-" + \
                        str(structure[CONTINUOUS][0][SOURCE_PROCESSOR_ID]) + TRAILING_NUMBER
 
-    binary_data_path = folderpath + "/" + experiment + "/" + recording + "/" +\
+    binary_data_path = folderpath + "/" + experiment + "/" + recording + "/" + \
                        CONTINUOUS + "/" + source_processor + "/" + CONTINUOUS + ".dat"
 
     fs = structure[CONTINUOUS][0][SAMPLE_RATE]
