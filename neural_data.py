@@ -16,17 +16,18 @@ class NeuralData:
         self.raw: ArrayLike
         self.fs: float
         self.sync_data: ArrayLike
-
+        self.pulses_count: int
 
     def load_config_file(self):
         # config = load config_file
         # TODO load config_file in dict
         return {}
 
-    def load_tdt_data(self, sync_ch: False):
-        self.fs, self.raw = importing.import_tdt_channel_data(folderpath=self.path)
+    def load_tdt_data(self, sync_ch: False, stream_name="Wav1", stim_stream_name="Wav1"):
+        self.fs, self.raw = importing.import_tdt_channel_data(folderpath=self.path, stream_name=stream_name)
         if sync_ch:
-            self.sync_data = importing.import_tdt_stimulation_data(folderpath=self.path, t1=0, t2=-1)
+            self.sync_data = importing.import_tdt_stimulation_data(folderpath=self.path, stream_name=stim_stream_name,
+                                                                   t1=0, t2=-1)
 
     def load_open_ephys(self, experiment, recording, channels=None):
         self.fs, self.raw = importing.import_open_ephys_channel_data(folderpath=self.path,
@@ -34,3 +35,5 @@ class NeuralData:
                                                                      recording=recording,
                                                                      channels=channels)
 
+    def set_pulses_count(self):
+        return
