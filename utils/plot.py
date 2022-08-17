@@ -4,7 +4,7 @@ from typing import List
 from matplotlib import axes as ax
 
 
-def plot_spectrogram(ax: ax, fs: float, raw: ArrayLike, title: str, ylim: List[int], tick_spacing: int = 10,
+def plot_spectrogram(ax: ax, fs: float, raw: ArrayLike, ylim: List[int], title: str = "", tick_spacing: int = 10,
                      nfft: int = None, noverlap: int = None) -> ax:
     """
     Wrapper for matplotlib spectrogram to add some style elements.

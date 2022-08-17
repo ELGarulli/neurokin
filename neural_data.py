@@ -23,7 +23,7 @@ class NeuralData:
         # TODO load config_file in dict
         return {}
 
-    def load_tdt_data(self, sync_ch: False, stream_name="Wav1", stim_stream_name="Wav1"):
+    def load_tdt_data(self, sync_ch: bool = False, stream_name="Wav1", stim_stream_name="Wav1"):
         self.fs, self.raw = importing.import_tdt_channel_data(folderpath=self.path, stream_name=stream_name)
         if sync_ch:
             self.sync_data = importing.import_tdt_stimulation_data(folderpath=self.path, stream_name=stim_stream_name,
