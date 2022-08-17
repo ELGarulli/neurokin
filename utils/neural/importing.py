@@ -26,13 +26,16 @@ def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1") -
 
     except AttributeError:
         print("No stream named " + stream_name + ", please specify the correct stream_name")
+        print("Please chose from: ")
+        print(data.streams.__dict__.keys())
+        return
     s1 = 0
     s2 = -1
     if t1 != 0:
         s1 = time_to_sample(timestamp=t1, fs=fs, is_t1=True)
     if t2 != -1:
         s2 = time_to_sample(timestamp=t2, fs=fs, is_t2=True)
-    raw = raw[:, s1:s2]
+    raw = raw[..., s1:s2]
     return fs, raw
 
 
