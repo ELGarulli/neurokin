@@ -2,7 +2,11 @@ from array import array
 import numpy as np
 
 def export_neural_data_to_bin(data, filename):
-    #TODO this doesnt work
+    """
+    Export the raw data to a binary file in C major order.
+    :param data: data to be stored, should have shape n_ch*n_sample
+    :param filename: name of the file
+    :return:
+    """
     data_flat = data.flatten(order='C')
-    data_flat.astype('int16').tofile(filename)
-    print("No no no no no, this function is not good. I still have to re-write it. Don't trust it.")
+    data_flat.tofile(filename)
