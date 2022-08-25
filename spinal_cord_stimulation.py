@@ -18,3 +18,5 @@ class SpinalCordStimulation:
         parsed_sep = processing.parse_raw(channel_raw, self.stim_timestamps, start_window, end_window)
         avg_amplitudes = processing.get_average_amplitudes(parsed_sep, amplitude_succession_protocol, pulse_number)
         return avg_amplitudes
+
+

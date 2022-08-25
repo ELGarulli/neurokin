@@ -32,7 +32,7 @@ def get_gait_cycle_bounds(h, data_name: str, s=True):
     gait_cycle_dict = {
         "toe_off": np.asarray(bounds_array_toe_off),
         "heel_strike": np.asarray(bounds_array_heel_strike),
-        "maxima_points": np.asarray(maxima_points),
+        "maxima_points": np.asarray(maxima_points)
        }
 
     return gait_cycle_dict

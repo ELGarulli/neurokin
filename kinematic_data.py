@@ -22,6 +22,7 @@ class KinematicData:
         self.eng = None
 
     def load_kinematics(self):
+        #TODO set better except check which code is raised
         try:
             names = matlab.engine.find_matlab()
             self.eng = matlab.engine.start_matlab(names[0])
@@ -39,16 +40,6 @@ class KinematicData:
         self.gait_cycle_dict_right = gait.get_gait_cycle_bounds(h=self.h, data_name="Data_R")
 
     def get_gait_param(self):
-        # h = eng.minEx_2(h, h['Data_L'], h['Data_R'],
-        #                h['TIME'],
-        #                steps_dict['left_toe_off'],
-        #                steps_dict['right_toe_off'],
-        #                steps_dict['left_heel_strike'],
-        #                steps_dict['right_heel_strike'],
-        #                steps_dict['uneven_l'],
-        #                steps_dict['uneven_r'], nargout=1)
-
-
 
         self.h = self.eng.minEx_2(self.h,
                                   self.h['Data_L'],
@@ -62,4 +53,8 @@ class KinematicData:
                                   0.0,
                                   nargout=1)
 
+        return
+
+    def test_minEx3(self):
+        self.h = self.eng.minEx_3(self.h)
         return
