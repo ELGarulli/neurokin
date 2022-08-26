@@ -58,17 +58,17 @@ def trim_equal_len(raw: List[ArrayLike]) -> List[float]:
     return equaled
 
 
-def parse_raw(raw: np.ndarray, stimulation_idxs: np.ndarray, time_before_stim: int,
+def parse_raw(raw: np.ndarray, stimulation_idxs: np.ndarray, samples_before_stim: int,
               skip_one: bool = False) -> np.ndarray:
     """
     Parses the signal given the timestamp of the stimulation.
-    :param raw: rawdata of one channel
+    :param raw: raw data of one channel
     :param stimulation_idxs: indexes of the stimulation onset
-    :param time_before_stim: how much before the stimulation onset to parse
+    :param samples_before_stim: how much before the stimulation onset to parse
     :param skip_one: if True parses every second stimulation
     :return: parsed raw signal into an array of equally sized chunks
     """
-    stimulation_idxs = stimulation_idxs + time_before_stim
+    stimulation_idxs = stimulation_idxs + samples_before_stim
     if skip_one:
         stimulation_idxs = stimulation_idxs[::2]
     # skip first chunk that precedes the first stimulation to avoid cropping errors
@@ -90,6 +90,9 @@ def get_average_amplitudes(parsed_raw, tested_amplitudes, pulses_number):
     """
     number_tested_amplitudes = len(tested_amplitudes)
     averaged_amplitudes = []
+    if number_tested_amplitudes == 1:
+        averaged_amp = average_subset(parsed_raw, 0, len(parsed_raw))
+        return [averaged_amp]
     for i in range(number_tested_amplitudes):
         start = i * pulses_number
         stop = (i + 1) * pulses_number

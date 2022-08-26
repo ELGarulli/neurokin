@@ -7,7 +7,9 @@ from constants.open_ephys_structure import STRUCTURE, CONTINUOUS, SOURCE_PROCESS
     TRAILING_NUMBER, SAMPLE_RATE, CHANNEL_NUMBER
 
 
-def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1") -> (float, ArrayLike):
+def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1", stim_name="Wav1",
+                            sync_present=False) -> (
+        float, ArrayLike):
     """
     Wrapper for the import function of tdt, to be more user friendly.
     Warning: tdt function allows to specify for channels, however it's 1-based and if ch==0
@@ -18,6 +20,7 @@ def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1") -
     :return: frequency sample and raw sample
     """
     data = tdt.read_block(folderpath, evtype=['streams'], channel=ch)
+    stim_data = None
     try:
         streams = data.streams
         stored = getattr(streams, stream_name)
@@ -29,6 +32,7 @@ def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1") -
         print("Please chose from: ")
         print(data.streams.__dict__.keys())
         return
+
     s1 = 0
     s2 = -1
     if t1 != 0:
@@ -36,7 +40,21 @@ def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1") -
     if t2 != -1:
         s2 = time_to_sample(timestamp=t2, fs=fs, is_t2=True)
     raw = raw[..., s1:s2]
-    return fs, raw
+
+    if sync_present:
+        try:
+            streams = data.streams
+            stored = getattr(streams, stim_name)
+            stim_data = stored.data
+            fs = stored.fs
+
+        except AttributeError:
+            print("No stimulation data named " + stim_name + ", please specify the correct stream_name")
+            print("Please chose from: ")
+            print(data.streams.__dict__.keys())
+            return
+        stim_data = stim_data[s1:s2]
+    return fs, raw, stim_data
 
 
 def import_tdt_stimulation_data(folderpath, t1=0, t2=-1, stream_name="Wav1") -> ArrayLike:
@@ -65,7 +83,6 @@ def import_tdt_stimulation_data(folderpath, t1=0, t2=-1, stream_name="Wav1") -> 
         s2 = time_to_sample(timestamp=t2, fs=fs, is_t2=True)
     else:
         s2 = t2
-    stim_data = stim_data[s1:s2]
 
     return stim_data
 
@@ -96,7 +113,9 @@ def time_to_sample(timestamp: float, fs: float, is_t1: bool = False, is_t2: bool
     return sample
 
 
-def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: str, channels=None) -> (
+def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: str, channels=None,
+                                   sync_present: bool = False,
+                                   sync_ch: int = None) -> (
         float, np.ndarray):
     """
     Imports open ephys data from binary files.
@@ -108,7 +127,7 @@ def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: 
     :return: Sampling frequency is returned as a float and raw data are returned in arbitrary units
     """
     structure_path = folderpath + "/" + experiment + "/" + recording + "/" + STRUCTURE + ".oebin"
-
+    sync_data = None
     with open(structure_path) as f:
         structure = json.load(f)
 
@@ -119,12 +138,15 @@ def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: 
                        CONTINUOUS + "/" + source_processor + "/" + CONTINUOUS + ".dat"
 
     fs = structure[CONTINUOUS][0][SAMPLE_RATE]
-    n_ch = structure[source_processor][0][CHANNEL_NUMBER]
+    n_ch = structure[CONTINUOUS][0][CHANNEL_NUMBER]
 
     neural_data_flat = np.fromfile(binary_data_path, dtype='<i2')
     n_samples = int(len(neural_data_flat) / n_ch)
 
     neural_data_au = np.reshape(a=neural_data_flat, newshape=(n_ch, n_samples), order='F')
+
+    if sync_present:
+        sync_data = neural_data_au[sync_ch]
 
     if channels:
         mask = np.zeros(n_ch, dtype=bool)
@@ -133,7 +155,7 @@ def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: 
         if neural_data_au.shape[0] == 1:
             neural_data_au = neural_data_au[0]
 
-    return fs, neural_data_au
+    return fs, neural_data_au, sync_data
 
 
 def import_binary_to_float32(filename, channel_number, sample_number):
