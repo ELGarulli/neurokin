@@ -1,4 +1,4 @@
-from utils.neural import importing
+from utils.neural import importing, processing
 from numpy.typing import ArrayLike
 
 
@@ -8,20 +8,16 @@ class NeuralData:
     It allows to load neural data from multiple recording systems and to perform basic analysis on the raw data.
     """
 
-    def __init__(self, path, config_file=None):
+    def __init__(self, path):
         self.path = path
-        self.config_file = config_file
-        self.config = self.load_config_file()
-
         self.raw: ArrayLike
         self.fs: float
         self.sync_data: ArrayLike
         self.pulses_count: int
-
-    def load_config_file(self):
-        # config = load config_file
-        # TODO load config_file in dict
-        return {}
+        self.recording: int
+        self.freq: ArrayLike[ArrayLike]
+        self.pxx: ArrayLike[ArrayLike]
+        self.recording_duration : float
 
     def load_tdt_data(self, sync_ch: bool = False, stream_name="Wav1", stim_stream_name="Wav1"):
         self.fs, self.raw = importing.import_tdt_channel_data(folderpath=self.path, stream_name=stream_name)
@@ -34,6 +30,19 @@ class NeuralData:
                                                                      experiment=experiment,
                                                                      recording=recording,
                                                                      channels=channels)
+        self.recording = recording
+
+    def compute_psd(self):
+        self.freq = []
+        self.pxx = []
+        for i in self.raw.shape[0]:
+            f, p = processing.calculate_power_spectral_density(self.raw[i], self.fs)
+            self.freq.append(f)
+            self.freq.append(p)
+
+    def compute_recording_duration(self):
+       self.recording_duration = self.raw.shape[1]/self.fs
+
 
     def set_pulses_count(self):
         return

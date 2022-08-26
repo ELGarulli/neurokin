@@ -216,3 +216,15 @@ def get_spectrogram_data(fs: float, raw: ArrayLike, nfft: int = None,
     pxx, freq, t, _ = plt.specgram(raw, NFFT=nfft, Fs=fs, noverlap=noverlap, **kwargs)
 
     return pxx, freq, t
+
+
+def calculate_power_spectral_density(data: ArrayLike, fs: int, **kwargs) -> tuple:
+    """
+    Calculate the frequencies and power spectral densities from the raw recording time series data.
+
+    :param data: raw recording data
+    :param fs: sampling frequency
+    :return: frequencies, power spectral density
+    """
+    freq, pxx = signal.welch(data, fs, **kwargs)
+    return freq, pxx
