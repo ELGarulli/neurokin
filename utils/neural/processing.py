@@ -5,6 +5,7 @@ from fooof.sim.gen import gen_aperiodic
 from scipy import signal
 from typing import List, Tuple
 from matplotlib import pyplot as plt
+from neural_data import NeuralData
 
 
 def get_stim_timestamps(sync_ch: np.ndarray, expected_pulses: int) -> np.ndarray:
@@ -22,6 +23,53 @@ def get_stim_timestamps(sync_ch: np.ndarray, expected_pulses: int) -> np.ndarray
     stim_starts_trimmed = stim_starts[:expected_pulses]
 
     return stim_starts_trimmed
+
+
+def time_to_sample(timestamp: float, fs: float, is_t1: bool = False, is_t2: bool = False) -> int:
+    """
+    Function adapted from time2sample in TDTbin2py.py
+    Returns the sample index given a time in seconds and the sampling frequency.
+    It has to be specified if the timestamp refers to t1 or t2.
+    :param timestamp: time in seconds
+    :param fs: sampling frequency
+    :param is_t1: specify if the timestamp is t1
+    :param is_t2: specify if the timestamp is t2
+    :return:
+    """
+    sample = timestamp * fs
+    if is_t2:
+        exact = np.round(sample * 1e9) / 1e9
+        sample = np.floor(sample)
+        if exact == sample:
+            sample -= 1
+    else:
+        if is_t1:
+            sample = np.ceil(sample)
+        else:
+            sample = np.round(sample)
+    sample = int(sample)
+    return sample
+
+
+def get_timestamps_stim_blocks(neudata: NeuralData, n_amp_tested, pulses, time_stim):
+    """
+    Given a DBS recording with multiple stimulation amplitudes tested it gives the time stamps of the onset and end
+    of each block of stimulation.
+    :param neudata: NeuralData object, containing sync_data
+    :param n_amp_tested:
+    :param pulses:
+    :param time_stim:
+    :return:
+    """
+    if len(neudata.sync_data.shape)>1:
+        raise ValueError("Warning: depending on the experiment setting the sync data might be a multichannel array \n"
+                         "please use the .pick_sync_data(idx) method to pick the correct sync channel.")
+    total_pulses = n_amp_tested * pulses
+    sync = get_stim_timestamps(neudata.sync_data, total_pulses)
+    onset = sync[0:len(sync):pulses]
+    stim_len = time_to_sample(time_stim, neudata.fs, is_t2=True)
+    timestamps_blocks = [(onset[i], onset[i] + stim_len) for i in range(len(onset))]
+    return timestamps_blocks
 
 
 def get_median_distance(a: ArrayLike) -> float:
