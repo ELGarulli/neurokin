@@ -47,3 +47,6 @@ class NeuralData:
 
     def set_pulses_count(self):
         return
+
+    def pick_sync_data(self, idx):
+        self.sync_data = self.sync_data[idx]
