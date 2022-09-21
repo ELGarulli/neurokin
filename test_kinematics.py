@@ -1,7 +1,7 @@
 from kinematic_data import KinematicData
 import os
 
-PATH = "../temp_data/c3d/NWE00054 /220817/"
+PATH = "../temp_data/c3d/NWE00054/220915/"
 
 c3d_files = []
 for file in os.listdir(PATH):
@@ -24,7 +24,7 @@ for file in c3d_files:
         failed_gait_anal.append(file)
         pass
 
-print("********************** REPORT ************************* \n" +
+print("*************************** REPORT ******************************* \n" +
       "Gait file successfully created for: " + ", ".join(success_gait_anal) + "\n" +
       "Gait file failed to be created for: " + ", ".join(failed_gait_anal) + "\n" +
       "******************************************************************")
