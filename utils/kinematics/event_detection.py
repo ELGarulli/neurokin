@@ -82,6 +82,43 @@ def get_peak_boundaries(y: ndarray, px: float, left_crop: int) -> Tuple[int, int
     return intersections_left_right
 
 
+def get_peak_boundaries_lake_drain(y: ndarray, px: float, left_crop: int) -> Tuple[int, int]:
+    """
+    Computes the left and right bounds of a peak, analysing the first derivative.
+    First it interpolates the signal to be able to use it as a function.
+    Starting at the top it "lowers" an horizontal line, as a lake would drain,
+    as long as it has three intersection points with
+    the interpolated functions.
+    :param y: first derivative of the signal
+    :param px: x of the maxima point
+    :param left_crop: left cropping of the signal (for shifting)
+    :return: left and right intersection
+    """
+    x = np.arange(0, len(y), 1, dtype=float)
+    y_inter = interpolate.interp1d(x, y)
+
+    px_i = px - left_crop
+    py = y[px_i]
+    m = 0
+
+    c = np.linspace(py, 0, TILTING_STEPS, endpoint=False)
+
+    current_height = py
+
+    for ci in c:
+        line = lambda x_: m * x_ + ci
+        intersections = get_inversion_idx(line(x) - y_inter(x))
+        if len(intersections) == INTERSECTION_NUMBER:
+            current_height = c
+        else:
+            break
+
+    final_line = lambda x_: m * x_ + current_height
+    intersections = get_inversion_idx(final_line(x) - y_inter(x))
+    intersections_left_right = (intersections[0] + left_crop, intersections[-1] + left_crop)
+    return intersections_left_right
+
+
 def get_inversion_idx(array: ndarray) -> List[int]:
     """
     Finds the points where the function changes sign

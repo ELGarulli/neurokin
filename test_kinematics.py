@@ -1,7 +1,7 @@
 from kinematic_data import KinematicData
 import os
 
-PATH = "../temp_data/c3d/NWE00054/220915/"
+PATH = "../temp_data/c3d/NWE00052/220915/"
 
 c3d_files = []
 for file in os.listdir(PATH):
