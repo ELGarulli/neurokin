@@ -1,4 +1,5 @@
 import numpy as np
+from scipy import signal
 
 
 def get_angle(a, b, c):
@@ -18,13 +19,25 @@ def get_angle(a, b, c):
 
 def get_points(df, markers, side, frame):
     coords = ["_x", "_y", "_z"]
-    a = np.asarray((df[side + markers[0] + coords[0]][frame],
-                    df[side + markers[0] + coords[1]][frame],
-                    df[side + markers[0] + coords[2]][frame]))
-    b = np.asarray((df[side + markers[1] + coords[0]][frame],
-                    df[side + markers[1] + coords[1]][frame],
-                    df[side + markers[1] + coords[2]][frame]))
-    c = np.asarray((df[side + markers[2] + coords[0]][frame],
-                    df[side + markers[2] + coords[1]][frame],
-                    df[side + markers[2] + coords[2]][frame]))
-    return a, b, c
+    abc = []
+    for i in range(len(markers)):
+        point = np.asarray((df[side + markers[i] + coords[0]][frame],
+                            df[side + markers[i] + coords[1]][frame],
+                            df[side + markers[i] + coords[2]][frame]))
+        abc.append(point)
+
+    return tuple(abc)
+
+
+def shift_correct(df, reference_marker, columns_to_correct):
+    """
+    If the runway is not perfectly aligned there can be a linear trend in one of the axis.
+    This function computes the linear trend from a reference marker and applies it to all the columns passed.
+    E.g. use left mtp z axis to compute the trend, then subtract the trend from all columns representing the z axis
+    of a marker.
+
+    """
+
+    trend = signal.detrend(df[reference_marker]) - df[reference_marker]
+    df_step_corrected = df.apply(lambda x: x.add(trend, axis=0) if x.name in columns_to_correct else x)
+    return df_step_corrected
