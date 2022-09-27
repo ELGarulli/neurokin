@@ -2,6 +2,7 @@ from typing import Tuple
 from numpy import ndarray
 from scipy import signal
 from constants.gait_cycle_detection import RELATIVE_HEIGHT
+from matplotlib import pyplot as plt
 
 import numpy as np
 
@@ -13,15 +14,14 @@ def get_toe_lift_landing(y):
     :return: left and right bounds
     """
     max_x, _ = signal.find_peaks(y, prominence=1)
-    y_g = np.gradient(y, 1)
     avg_distance = abs(int(median_distance(max_x) / 2))
     lb = []
     rb = []
 
     for p in max_x:
         left = p - avg_distance if p - avg_distance > 0 else 0
-        right = p + avg_distance if p + avg_distance < len(y_g) else len(y_g)
-        bounds = get_peak_boundaries_scipy(y=y_g[left:right], px=p, left_crop=left)
+        right = p + avg_distance if p + avg_distance < len(y) else len(y)
+        bounds = get_peak_boundaries_scipy(y=y[left:right], px=p, left_crop=left)
         lb.append(bounds[0])
         rb.append(bounds[1])
 
