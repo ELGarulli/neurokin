@@ -29,7 +29,7 @@ def get_points(df, markers, side, frame):
     return tuple(abc)
 
 
-def shift_correct(df, reference_marker, columns_to_correct):
+def tilt_correct(df, reference_marker, columns_to_correct):
     """
     If the runway is not perfectly aligned there can be a linear trend in one of the axis.
     This function computes the linear trend from a reference marker and applies it to all the columns passed.
@@ -39,5 +39,18 @@ def shift_correct(df, reference_marker, columns_to_correct):
     """
 
     trend = signal.detrend(df[reference_marker]) - df[reference_marker]
-    df_step_corrected = df.apply(lambda x: x.add(trend, axis=0) if x.name in columns_to_correct else x)
-    return df_step_corrected
+    df_tilt_corrected = df.apply(lambda x: x.add(trend, axis=0) if x.name in columns_to_correct else x)
+    return df_tilt_corrected
+
+
+def shift_correct(df, reference_marker, columns_to_correct):
+    """
+    If the origin is not set to the beginning of the runway (e.g. set to the center) one of the axis will have negative
+    values. This functions shifts all the columns to be corrected by the minimum value of the reference marker.
+    The reference marker should be the one farther in the back.
+
+    """
+
+    shift = abs(min(df[reference_marker])) if min(df[reference_marker]) < 0 else 0
+    df_shift_corrected = df.apply(lambda x: x.add(shift, axis=0) if x.name in columns_to_correct else x)
+    return df_shift_corrected
