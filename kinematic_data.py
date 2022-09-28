@@ -31,17 +31,51 @@ class KinematicDataRun:
                         tilt_reference_marker: str = ""):
         self.markers_df = c3d_import_export.import_c3d(self.path)
         if correct_shift:
-            # TODO add try except clause if ref marker doesnt exist or col name in to shift
+
+            if shift_reference_marker not in self.markers_df.columns.tolist():
+                raise ValueError("The shift reference marker " + shift_reference_marker + " is not among the markers."
+                                 + "\n Please select one among the following: \n" +
+                                 self.markers_df.columns.tolist())
+
+            if not set(to_shift).issubset(self.markers_df.columns.tolist()):
+                raise ValueError("Some or all columns to shift are not among the markers. You selected: \n"
+                                 + " ,".join(str(x) for x in to_shift)
+                                 + "\n Please select them among the following: \n" +
+                                 ", ".join(str(x) for x in self.markers_df.columns.tolist()))
+
             self.markers_df = kinematics_processing.shift_correct(self.markers_df, shift_reference_marker, to_shift)
+
         if correct_tilt:
-            # TODO add try except clause if ref marker doesnt exist or col name in to tilt
+
+            if tilt_reference_marker not in self.markers_df.columns.tolist():
+                raise ValueError("The tilt reference marker " + tilt_reference_marker + " is not among the markers."
+                                 + "\n Please select one among the following: \n" +
+                                 ", ".join(str(x) for x in self.markers_df.columns.tolist()))
+
+            if not set(to_tilt).issubset(self.markers_df.columns.tolist()):
+                raise ValueError("Some or all columns to tilt are not among the markers. You selected: \n"
+                                 + " ,".join(str(x) for x in to_tilt)
+                                 + "\n Please select them among the following: \n" +
+                                 ", ".join(str(x) for x in self.markers_df.columns.tolist()))
+
             self.markers_df = kinematics_processing.tilt_correct(self.markers_df, tilt_reference_marker, to_tilt)
         return
 
-    def compute_gait_cycles_timestamp(self, left_marker, right_marker):
+    def compute_gait_cycles_timestamp(self, left_marker, right_marker, recording_fs):
+
+        if left_marker not in self.markers_df.columns.tolist():
+            raise ValueError("The left reference marker " + left_marker + " is not among the markers."
+                             + "\n Please select one among the following: \n" +
+                             ", ".join(str(x) for x in self.markers_df.columns.tolist()))
+
+        if right_marker not in self.markers_df.columns.tolist():
+            raise ValueError("The right reference marker " + right_marker + " is not among the markers."
+                             + "\n Please select one among the following: \n" +
+                             ", ".join(str(x) for x in self.markers_df.columns.tolist()))
+
         self.left_mtp_lift, self.left_mtp_land, self.left_mtp_max = event_detection.get_toe_lift_landing(
-            self.markers_df[left_marker])
+            self.markers_df[left_marker], recording_fs)
         self.right_mtp_lift, self.right_mtp_land, self.right_mtp_max = event_detection.get_toe_lift_landing(
-            self.markers_df[right_marker])
+            self.markers_df[right_marker], recording_fs)
 
         return

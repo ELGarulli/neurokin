@@ -1,20 +1,24 @@
 from typing import Tuple
 from numpy import ndarray
 from scipy import signal
-from constants.gait_cycle_detection import RELATIVE_HEIGHT
+from constants.gait_cycle_detection import RELATIVE_HEIGHT, STEP_FILTER_FREQ
 from matplotlib import pyplot as plt
 
 import numpy as np
 
 
-def get_toe_lift_landing(y):
+def get_toe_lift_landing(y, recording_fs):
     """
     Returns the left and right bounds of the gait cycle, corresponding to the toe lift off and the heel strike.
     :param y: trace of the toe in the z coordinate
     :return: left and right bounds
     """
+    y_ = y
+    y = lowpass_array(y, STEP_FILTER_FREQ, recording_fs)
+
     max_x, _ = signal.find_peaks(y, prominence=1)
     avg_distance = abs(int(median_distance(max_x) / 2))
+
     lb = []
     rb = []
 
@@ -24,7 +28,6 @@ def get_toe_lift_landing(y):
         bounds = get_peak_boundaries_scipy(y=y[left:right], px=p, left_crop=left)
         lb.append(bounds[0])
         rb.append(bounds[1])
-
     return lb, rb, max_x
 
 
@@ -44,6 +47,12 @@ def get_peak_boundaries_scipy(y: ndarray, px: float, left_crop: int) -> Tuple[in
         right = len(y) + left_crop
 
     return [left, right]
+
+
+def lowpass_array(array, critical_freq, fs):
+    b, a = signal.butter(2, critical_freq, "low", output="ba", fs=fs)
+    filtered = signal.filtfilt(b, a, array)
+    return filtered
 
 
 def median_distance(a: ndarray) -> ndarray:
