@@ -28,7 +28,7 @@ for file in c3d_files:
                              to_shift=to_shift,
                              shift_reference_marker=shift_reference_marker,
                              tilt_reference_marker=tilt_reference_marker)
-    kin_data.compute_gait_cycles_timestamp(left_marker="lmtp_z", right_marker="rmtp_z")
+    kin_data.compute_gait_cycles_timestamp(left_marker="lmtp_z", right_marker="rmtp_z", recording_fs=200)
     success_gait_anal.append(file.split("/")[-1])
     #except:
     #    print("failed to create gait file for " + file + "\n please create gait file manually")
