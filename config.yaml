@@ -1,0 +1,11 @@
+angles:
+  joints:
+    left_hip_joint: [lcrest, lhip, lknee]
+    left_knee_joint: [lhip, lknee, lankle]
+    left_ankle_joint: [lknee, lankle, lmtp]
+    right_hip_joint: [rcrest, rhip, rknee]
+    right_knee_joint: [rhip, rknee, rankle]
+    right_ankle_joint: [rknee, rankle, rmtp]
+  elevations:
+    left_hip: lhip
+    right_hip: rhip

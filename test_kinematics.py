@@ -1,7 +1,9 @@
 from kinematic_data import KinematicDataRun
 import os
+from utils.kinematics import kinematics_processing
 
 PATH = "../temp_data/c3d/NWE00052/220915/"
+CONFIGPATH = "./config.yaml"
 
 c3d_files = []
 for file in os.listdir(PATH):
@@ -21,14 +23,16 @@ tilt_reference_marker = "lmtp_z"
 
 for file in c3d_files:
 
-    kin_data = KinematicDataRun(file)
+    kin_data = KinematicDataRun(file, CONFIGPATH)
     kin_data.load_kinematics(correct_tilt=True,
                              correct_shift=True,
                              to_tilt=to_tilt,
                              to_shift=to_shift,
                              shift_reference_marker=shift_reference_marker,
                              tilt_reference_marker=tilt_reference_marker)
-    kin_data.compute_gait_cycles_timestamp(left_marker="lmtp_z", right_marker="rmtp_z", recording_fs=200)
+    kin_data.compute_gait_cycles_bounds(left_marker="lmtp_z", right_marker="rmtp_z", recording_fs=200)
+    kin_data.compute_angles_joints()
+    kin_data.gait_param_to_csv()
     success_gait_anal.append(file.split("/")[-1])
     #except:
     #    print("failed to create gait file for " + file + "\n please create gait file manually")

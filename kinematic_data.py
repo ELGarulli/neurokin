@@ -1,6 +1,9 @@
+import numpy as np
 from numpy.typing import ArrayLike
 from utils.kinematics import c3d_import_export, event_detection, kinematics_processing
+from utils.helper import load_config
 import pandas as pd
+from matplotlib import pyplot as plt
 
 
 class KinematicDataRun:
@@ -8,13 +11,19 @@ class KinematicDataRun:
     This class represents the kinematics data recorded in a single run.
     """
 
-    def __init__(self, path):
+    def __init__(self, path, configpath):
         self.path = path
+
+        self.config = load_config.read_config(configpath)
+
         self.gait_cycles_start: ArrayLike
         self.gait_cycles_end: ArrayLike
         self.fs: float
         self.condition: str
+
         self.markers_df: pd.DataFrame
+        self.gait_param = pd.DataFrame()
+
         self.left_mtp_lift: ArrayLike = None
         self.left_mtp_land: ArrayLike = None
         self.left_mtp_max: ArrayLike = None
@@ -29,7 +38,19 @@ class KinematicDataRun:
                         to_tilt: ArrayLike = None,
                         shift_reference_marker: str = "",
                         tilt_reference_marker: str = ""):
+        """
+        Loads the kinematics from a c3d file into a dataframe with timeframes as rows and markers as columns
+        :param correct_shift: bool should there be a correction in the shift of one of the axis?
+        :param correct_tilt: bool should there be a correction in the tilt (linear trend) of one of the axis?
+        :param to_shift: which columns to perform the shift on if correct_shift is true
+        :param to_tilt: which columns to perform the tilt on if correct_shift is true
+        :param shift_reference_marker: which marker to use as a reference trajectory to compute the shift
+        :param tilt_reference_marker: which marker to use as a reference trajectory to compute the tilt
+        :return:
+        """
+
         self.markers_df = c3d_import_export.import_c3d(self.path)
+
         if correct_shift:
 
             if shift_reference_marker not in self.markers_df.columns.tolist():
@@ -61,7 +82,15 @@ class KinematicDataRun:
             self.markers_df = kinematics_processing.tilt_correct(self.markers_df, tilt_reference_marker, to_tilt)
         return
 
-    def compute_gait_cycles_timestamp(self, left_marker, right_marker, recording_fs):
+    def compute_gait_cycles_bounds(self, left_marker, right_marker, recording_fs):
+        """
+        Computes the lifting and landing frames of both feet using a left and a right marker, respectively.
+        To increase robustness of the cycle estimation it first low-passes the signal.
+        :param left_marker: reference marker for the left foot, typically the left mtp
+        :param right_marker: reference marker for the left foot, typically the right mtp
+        :param recording_fs: sample frequency of the recording, used for low-passing.
+        :return:
+        """
 
         if left_marker not in self.markers_df.columns.tolist():
             raise ValueError("The left reference marker " + left_marker + " is not among the markers."
@@ -78,4 +107,32 @@ class KinematicDataRun:
         self.right_mtp_lift, self.right_mtp_land, self.right_mtp_max = event_detection.get_toe_lift_landing(
             self.markers_df[right_marker], recording_fs)
 
+        return
+
+    def compute_angles_joints(self):
+        """
+        It refers to the joints listed in the config under angles > joints to set a corresponding column in the
+        gait_param dataset. It should be able to support both 3d and 2d spaces.
+        :return:
+        """
+        for key, value in self.config["angles"]["joints"].items():
+            names = kinematics_processing.get_marker_coordinates_names(self.markers_df.columns.tolist(), value)
+            angle = []
+            for frame in range(len(self.markers_df)):
+                coordinates_3d = []
+                for name in names:
+                    values = kinematics_processing.get_marker_coordinate_values(self.markers_df, name, frame)
+                    coordinates_3d.append(values)
+                coordinates_3d = np.asarray(coordinates_3d)
+                angle.append(kinematics_processing.compute_angle(coordinates_3d))
+            parameter = pd.Series(angle)
+            self.gait_param[key] = parameter
+        return
+
+    def gait_param_to_csv(self):
+        """
+        Writes the gait_param dataframe to a csv file with the name [INPUT_FILENAME]+_gait_param.csv
+        :return:
+        """
+        self.gait_param.to_csv(self.path.split("/")[-1] + "_gait_param.csv")
         return
