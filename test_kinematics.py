@@ -17,8 +17,8 @@ to_shift = ["rshoulder_y", "rcrest_y", "rhip_y",
             "lshoulder_y", "lcrest_y", "lhip_y",
             "lknee_y", "lankle_y", "lmtp_y"]
 
-step_left_marker = "lmtp_y"
-step_right_marker = "rmtp_y"
+step_left_marker = "lmtp_z"
+step_right_marker = "rmtp_z"
 
 ################ GETTING ALL C3D FILES IN THE FOLDER #############
 
@@ -33,26 +33,26 @@ failed_gait_anal = []
 ####################### RUNNING ANALYSIS ########################
 
 for file in c3d_files:
-    try:
-        kin_data = KinematicDataRun(file, CONFIGPATH)       # creating a single run obj
-        kin_data.load_kinematics(correct_tilt=True,         # loading data and tilt-shift correcting
-                                 correct_shift=True,
-                                 to_tilt=to_tilt,
-                                 to_shift=to_shift,
-                                 shift_reference_marker=shift_reference_marker,
-                                 tilt_reference_marker=tilt_reference_marker)
 
-        kin_data.compute_gait_cycles_bounds(left_marker=step_left_marker,   # computing left right bounds of steps
-                                            right_marker=step_right_marker,
-                                            recording_fs=RECORDING_FS,
-                                            print_fig=True)
-        kin_data.print_step_partition()                                     # print step partition for inspection only
-        kin_data.compute_angles_joints()                                    # computing angle joints
-        kin_data.gait_param_to_csv()                                        # saving data to csv
-        success_gait_anal.append(file.split("/")[-1])                       # note success or fail of analysis
-    except:
-        #TODO specify ErrorType
-        failed_gait_anal.append(file.split("/")[-1])                        # note success or fail of analysis
+
+    kin_data = KinematicDataRun(file, CONFIGPATH)       # creating a single run obj
+    kin_data.load_kinematics(correct_tilt=True,         # loading data and tilt-shift correcting
+                             correct_shift=True,
+                             to_tilt=to_tilt,
+                             to_shift=to_shift,
+                             shift_reference_marker=shift_reference_marker,
+                             tilt_reference_marker=tilt_reference_marker)
+
+    kin_data.compute_gait_cycles_bounds(left_marker=step_left_marker,   # computing left right bounds of steps
+                                        right_marker=step_right_marker,
+                                        recording_fs=RECORDING_FS)
+    kin_data.print_step_partition(step_left_marker, step_right_marker)  # print step partition for inspection only
+    kin_data.compute_angles_joints()                                    # computing angle joints
+    kin_data.gait_param_to_csv()                                        # saving data to csv
+    success_gait_anal.append(file.split("/")[-1])                       # note success or fail of analysis
+    #except:
+    #    #TODO specify ErrorType
+    #    failed_gait_anal.append(file.split("/")[-1])                        # note success or fail of analysis
 
 ################################## REPORT ####################################
 
