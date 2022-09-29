@@ -18,11 +18,12 @@ class KinematicDataRun:
 
         self.gait_cycles_start: ArrayLike
         self.gait_cycles_end: ArrayLike
-        self.fs: float  #TODO set fs
+        self.fs: float  # TODO set fs
         self.condition: str
 
-        self.markers_df: pd.DataFrame
+        self.markers_df = pd.DataFrame()
         self.gait_param = pd.DataFrame()
+        self.stepwise_gait_features = pd.DataFrame()
 
         self.left_mtp_lift: ArrayLike = None
         self.left_mtp_land: ArrayLike = None
@@ -152,5 +153,40 @@ class KinematicDataRun:
         Writes the gait_param dataframe to a csv file with the name [INPUT_FILENAME]+_gait_param.csv
         :return:
         """
-        self.gait_param.to_csv(output_folder+self.path.split("/")[-1].replace(".c3d", "_gait_param.csv"))
+        self.gait_param.to_csv(output_folder + self.path.split("/")[-1].replace(".c3d", "_gait_param.csv"))
+        return
+
+    def stepwise_gait_features_to_csv(self, output_folder="./"):
+        """
+        Writes the gait_param dataframe to a csv file with the name [INPUT_FILENAME]+_gait_param.csv
+        :return:
+        """
+        self.stepwise_gait_features.to_csv(output_folder + self.path.split("/")[-1].replace(".c3d", "stepwise_feature.csv"))
+        return
+
+    def get_stepwise_features(self, left_side="", right_side="",
+                              name_starts_with=False, name_ends_with=False,
+                              expected_columns_number=None,
+                              left_columns=None, right_columns=None):
+        self.stepwise_gait_features = 0
+        left_features = pd.DataFrame()
+        right_features = pd.DataFrame()
+        if left_side:
+            left_df = kinematics_processing.get_unilateral_df(df=self.gait_param, side=left_side,
+                                                              name_starts_with=name_starts_with,
+                                                              name_ends_with=name_ends_with,
+                                                              column_names=left_columns,
+                                                              expected_columns_number=expected_columns_number)
+            left_features = kinematics_processing.get_feature(left_df, self.left_mtp_land)
+
+        if right_side:
+            right_df = kinematics_processing.get_unilateral_df(df=self.gait_param, side=right_side,
+                                                               name_starts_with=name_starts_with,
+                                                               name_ends_with=name_ends_with,
+                                                               column_names=right_columns,
+                                                               expected_columns_number=expected_columns_number)
+            right_features = kinematics_processing.get_feature(right_df, self.right_mtp_land)
+
+        self.stepwise_gait_features = left_features.join(right_features)
+
         return

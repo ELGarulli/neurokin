@@ -33,24 +33,25 @@ failed_gait_anal = []
 ####################### RUNNING ANALYSIS ########################
 
 for file in c3d_files:
-
-
-    kin_data = KinematicDataRun(file, CONFIGPATH)       # creating a single run obj
-    kin_data.load_kinematics(correct_tilt=True,         # loading data and tilt-shift correcting
+    kin_data = KinematicDataRun(file, CONFIGPATH)  # creating a single run obj
+    kin_data.load_kinematics(correct_tilt=True,  # loading data and tilt-shift correcting
                              correct_shift=True,
                              to_tilt=to_tilt,
                              to_shift=to_shift,
                              shift_reference_marker=shift_reference_marker,
                              tilt_reference_marker=tilt_reference_marker)
 
-    kin_data.compute_gait_cycles_bounds(left_marker=step_left_marker,   # computing left right bounds of steps
+    kin_data.compute_gait_cycles_bounds(left_marker=step_left_marker,  # computing left right bounds of steps
                                         right_marker=step_right_marker,
                                         recording_fs=RECORDING_FS)
     kin_data.print_step_partition(step_left_marker, step_right_marker)  # print step partition for inspection only
-    kin_data.compute_angles_joints()                                    # computing angle joints
-    kin_data.gait_param_to_csv()                                        # saving data to csv
-    success_gait_anal.append(file.split("/")[-1])                       # note success or fail of analysis
-    #except:
+    kin_data.compute_angles_joints()  # computing angle joints
+    kin_data.get_stepwise_features(left_side="left", right_side="right", name_starts_with=True,
+                                   expected_columns_number=3)
+    kin_data.gait_param_to_csv() # saving data to csv
+    kin_data.stepwise_gait_features_to_csv()
+    success_gait_anal.append(file.split("/")[-1])  # note success or fail of analysis
+    # except:
     #    #TODO specify ErrorType
     #    failed_gait_anal.append(file.split("/")[-1])                        # note success or fail of analysis
 
