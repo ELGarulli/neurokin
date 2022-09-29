@@ -52,6 +52,7 @@ def get_marker_coordinates_names(df_columns_names, markers):
     for i in range(len(markers)):
         point = [x for x in df_columns_names if markers[i] in x]
         abc.append(point)
+    abc.sort()          # courtesy of me dreaming code. makes xyz order assumption more likely, still an assumption.
     return tuple(abc)
 
 
