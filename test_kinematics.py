@@ -1,6 +1,7 @@
 from kinematic_data import KinematicDataRun
 import os
-
+from utils.kinematics import gait_params_basics
+from matplotlib import pyplot as plt
 ############## EXPERIMENT SETTING PANEL #################
 
 PATH = "../temp_data/c3d/NWE00052/220915/"
@@ -49,6 +50,9 @@ for file in c3d_files:
     kin_data.get_stepwise_features(left_side="left", right_side="right", name_starts_with=True,
                                    expected_columns_number=3)
     kin_data.gait_param_to_csv() # saving data to csv
+
+    test = kin_data.markers_df["lmtp_z"][kin_data.left_mtp_lift[0]:kin_data.left_mtp_lift[1]]
+    gait_params_basics.get_phase_at_max_amplitude(test, 200)
     kin_data.stepwise_gait_features_to_csv()
     success_gait_anal.append(file.split("/")[-1])  # note success or fail of analysis
     # except:
