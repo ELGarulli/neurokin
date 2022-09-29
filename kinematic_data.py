@@ -109,21 +109,22 @@ class KinematicDataRun:
 
         return
 
-    def print_step_partition(self):
-        filename_l = self.path.split("/")[-1] + "_left_step.png"
-        step_trace_l = self.markers_df["lmtp_y"]
-        plt.plot(step_trace_l)
-        plt.vlines(self.left_mtp_lift, min(step_trace_l), max(step_trace_l), colors="green")
-        plt.vlines(self.left_mtp_land, min(step_trace_l), max(step_trace_l), colors="red")
-        plt.savefig(filename_l)
-        plt.close()
+    def print_step_partition(self, step_left, step_right, output_folder="./"):
+        fig, axs = plt.subplots(2, 1)
+        fig.tight_layout(pad=2.0)
+        filename = output_folder + self.path.split("/")[-1] + "_steps_partition.png"
+        step_trace_l = self.markers_df[step_left]
+        axs[0].plot(step_trace_l)
+        axs[0].vlines(self.left_mtp_lift, min(step_trace_l), max(step_trace_l), colors="green")
+        axs[0].vlines(self.left_mtp_land, min(step_trace_l), max(step_trace_l), colors="red")
+        axs[0].set_title("Left side")
 
-        filename_r = self.path.split("/")[-1] + "_right_step.png"
-        step_trace_r = self.markers_df["rmtp_y"]
-        plt.plot(step_trace_r)
-        plt.vlines(self.right_mtp_lift, min(step_trace_r), max(step_trace_r), colors="green")
-        plt.vlines(self.right_mtp_land, min(step_trace_r), max(step_trace_r), colors="red")
-        plt.savefig(filename_r)
+        step_trace_r = self.markers_df[step_right]
+        axs[1].plot(step_trace_r)
+        axs[1].vlines(self.right_mtp_lift, min(step_trace_r), max(step_trace_r), colors="green")
+        axs[1].vlines(self.right_mtp_land, min(step_trace_r), max(step_trace_r), colors="red")
+        axs[1].set_title("Right side")
+        plt.savefig(filename, facecolor="white")
         plt.close()
 
     def compute_angles_joints(self):
@@ -146,10 +147,10 @@ class KinematicDataRun:
             self.gait_param[key] = parameter
         return
 
-    def gait_param_to_csv(self):
+    def gait_param_to_csv(self, output_folder="./"):
         """
         Writes the gait_param dataframe to a csv file with the name [INPUT_FILENAME]+_gait_param.csv
         :return:
         """
-        self.gait_param.to_csv(self.path.split("/")[-1] + "_gait_param.csv")
+        self.gait_param.to_csv(output_folder+self.path.split("/")[-1].replace(".c3d", "_gait_param.csv"))
         return
