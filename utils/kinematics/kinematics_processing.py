@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from scipy import signal
 
 
@@ -52,7 +53,7 @@ def get_marker_coordinates_names(df_columns_names, markers):
     for i in range(len(markers)):
         point = [x for x in df_columns_names if markers[i] in x]
         abc.append(point)
-    abc.sort()          # courtesy of me dreaming code. makes xyz order assumption more likely, still an assumption.
+    abc.sort()  # courtesy of me dreaming code. makes xyz order assumption more likely, still an assumption.
     return tuple(abc)
 
 
@@ -113,3 +114,44 @@ def shift_correct(df, reference_marker, columns_to_correct):
     shift = abs(min(df[reference_marker])) if min(df[reference_marker]) < 0 else 0
     df_shift_corrected = df.apply(lambda x: x.add(shift, axis=0) if x.name in columns_to_correct else x)
     return df_shift_corrected
+
+
+def check_correct_columns_extraction(actual, expected, side):
+    if actual == expected:
+        return
+    else:
+        raise ValueError("Warning: the number of selected columns for the " + side + " side [" + str(actual) +
+                         "] does not match the \n"
+                         "expected " + str(expected) +
+                         ". Please check if there are ambiguity in the column names.")
+
+
+def get_unilateral_df(df, side="", name_starts_with=False, name_ends_with=False,
+                      column_names=None, expected_columns_number=None):
+    if column_names is None:
+        column_names = []
+    if name_starts_with:
+        df_side = df.loc[:, df.columns.str.startswith(side)]
+    elif name_ends_with:
+        df_side = df.loc[:, df.columns.str.endswith(side)]
+    elif column_names:
+        df_side = df.loc[:, column_names]
+    else:
+        print("WARNING: no columns selected for side " + side + ". Please check if this is expected behaviour. \n"
+                                                                "If not, you should set the side and either starts "
+                                                                "or ends with, alternatively pass column_names.")
+        return
+    if expected_columns_number:
+        check_correct_columns_extraction(len(df_side.columns.tolist()), expected_columns_number, side)
+
+    return df_side
+
+
+def get_feature(df, breakpoints):
+    df_feature = pd.DataFrame(columns=df.columns)
+    for column in df.columns:
+        gait_param = np.asarray(df[column])
+        steps_gait_param = np.split(gait_param, breakpoints)[:-1]
+        steps_feat = [max(i) for i in steps_gait_param]
+        df_feature[column] = steps_feat
+    return df_feature
