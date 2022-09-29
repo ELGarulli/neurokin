@@ -1,3 +1,4 @@
+import utils.commons
 from utils.neural import importing, processing
 from numpy.typing import ArrayLike
 
@@ -38,7 +39,7 @@ class NeuralData:
         self.freq = []
         self.pxx = []
         for i in range(self.raw.shape[0]):
-            f, p = processing.calculate_power_spectral_density(self.raw[i], self.fs, **kwargs)
+            f, p = utils.commons.calculate_power_spectral_density(self.raw[i], self.fs, **kwargs)
             self.freq.append(f)
             self.freq.append(p)
 

@@ -1,44 +1,7 @@
 import numpy as np
 import pandas as pd
 from scipy import signal
-
-
-def get_angle_3d(coordinates):
-    # TODO check if 3d vs 2d is necessary
-    """
-    Get angle between 3 points in a 3d space
-    :param a: array with 3d coordinates of a
-    :param b: array with 3d coordinates of b
-    :param c: array with 3d coordinates of c
-    :return: angle in degree
-    """
-    a = coordinates[0]
-    b = coordinates[1]
-    c = coordinates[2]
-    ba = a - b
-    bc = c - b
-    cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
-    angle = np.arccos(cosine_angle)
-    return np.degrees(angle)
-
-
-def get_angle_2d(coordinates):
-    """
-    REF https://manivannan-ai.medium.com/find-the-angle-between-three-points-from-2d-using-python-348c513e2cd
-    :param p1:
-    :param p2:
-    :return:
-    """
-    a = coordinates[0]
-    b = coordinates[1]
-    c = coordinates[2]
-
-    ba = a - b
-    bc = c - b
-    cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
-    angle = np.arccos(cosine_angle)
-
-    return np.degrees(angle)
+from utils.kinematics.gait_params_basics import get_angle
 
 
 def get_marker_coordinates_names(df_columns_names, markers):
@@ -78,15 +41,12 @@ def compute_angle(coordinates):
     :param coordinates:
     :return:
     """
-    if coordinates.shape == (3, 3):
-        return get_angle_3d(coordinates)
-    if coordinates.shape == (3, 2):
-        return get_angle_2d(coordinates)
+    if coordinates.shape == (3, 3) or coordinates.shape == (3, 2):
+        return get_angle(coordinates)
     else:
         raise ("The coordinates set have different length, it can only compute an angle in 3d space or 2d not mixed. "
                "\nThis could happen if a marker has xy coordinate and another one xyz."
                "\n Or if your markers are named ambiguously and multiple ones have the same name.")
-        return
 
 
 def tilt_correct(df, reference_marker, columns_to_correct):

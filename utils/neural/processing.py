@@ -172,6 +172,7 @@ def find_closest_index(data: ArrayLike, datapoint: float) -> int:
     :param datapoint: datapoint to find a close value to
     :return: index of the closest element
     """
+    # TODO change to use np isclose and np where
     min_difference = np.inf
     idx = 0
     for i in range(len(data)):
@@ -240,7 +241,6 @@ def get_spectrogram_data(fs: float, raw: ArrayLike, nfft: int = None,
     pxx, freq, t, _ = plt.specgram(raw, NFFT=nfft, Fs=fs, noverlap=noverlap, **kwargs)
 
     return pxx, freq, t
-
 
 def calculate_power_spectral_density(data: ArrayLike, fs: int, **kwargs) -> tuple:
     """
