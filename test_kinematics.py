@@ -1,9 +1,26 @@
 from kinematic_data import KinematicDataRun
 import os
-from utils.kinematics import kinematics_processing
+
+############## EXPERIMENT SETTING PANEL #################
 
 PATH = "../temp_data/c3d/NWE00052/220915/"
 CONFIGPATH = "./config.yaml"
+RECORDING_FS = 200
+shift_reference_marker = "lmtp_y"
+tilt_reference_marker = "lmtp_z"
+to_tilt = ["rshoulder_z", "rcrest_z", "rhip_z",
+           "rknee_z", "rankle_z", "rmtp_z",
+           "lshoulder_z", "lcrest_z", "lhip_z",
+           "lknee_z", "lankle_z", "lmtp_z"]
+to_shift = ["rshoulder_y", "rcrest_y", "rhip_y",
+            "rknee_y", "rankle_y", "rmtp_y",
+            "lshoulder_y", "lcrest_y", "lhip_y",
+            "lknee_y", "lankle_y", "lmtp_y"]
+
+step_left_marker = "lmtp_y"
+step_right_marker = "rmtp_y"
+
+################ GETTING ALL C3D FILES IN THE FOLDER #############
 
 c3d_files = []
 for file in os.listdir(PATH):
@@ -13,31 +30,31 @@ for file in os.listdir(PATH):
 success_gait_anal = []
 failed_gait_anal = []
 
-to_tilt = ["rshoulder_z", "rcrest_z", "rhip_z", "rknee_z", "rankle_z", "rmtp_z", "lshoulder_z", "lcrest_z", "lhip_z",
-           "lknee_z", "lankle_z", "lmtp_z"]
-to_shift = ["rshoulder_y", "rcrest_y", "rhip_y", "rknee_y", "rankle_y", "rmtp_y", "lshoulder_y", "lcrest_y", "lhip_y",
-            "lknee_y", "lankle_y", "lmtp_y"]
-
-shift_reference_marker = "lmtp_y"
-tilt_reference_marker = "lmtp_z"
+####################### RUNNING ANALYSIS ########################
 
 for file in c3d_files:
+    try:
+        kin_data = KinematicDataRun(file, CONFIGPATH)       # creating a single run obj
+        kin_data.load_kinematics(correct_tilt=True,         # loading data and tilt-shift correcting
+                                 correct_shift=True,
+                                 to_tilt=to_tilt,
+                                 to_shift=to_shift,
+                                 shift_reference_marker=shift_reference_marker,
+                                 tilt_reference_marker=tilt_reference_marker)
 
-    kin_data = KinematicDataRun(file, CONFIGPATH)
-    kin_data.load_kinematics(correct_tilt=True,
-                             correct_shift=True,
-                             to_tilt=to_tilt,
-                             to_shift=to_shift,
-                             shift_reference_marker=shift_reference_marker,
-                             tilt_reference_marker=tilt_reference_marker)
-    kin_data.compute_gait_cycles_bounds(left_marker="lmtp_z", right_marker="rmtp_z", recording_fs=200)
-    kin_data.compute_angles_joints()
-    kin_data.gait_param_to_csv()
-    success_gait_anal.append(file.split("/")[-1])
-    #except:
-    #    print("failed to create gait file for " + file + "\n please create gait file manually")
-    #    failed_gait_anal.append(file)
-    #    pass
+        kin_data.compute_gait_cycles_bounds(left_marker=step_left_marker,   # computing left right bounds of steps
+                                            right_marker=step_right_marker,
+                                            recording_fs=RECORDING_FS,
+                                            print_fig=True)
+        kin_data.print_step_partition()                                     # print step partition for inspection only
+        kin_data.compute_angles_joints()                                    # computing angle joints
+        kin_data.gait_param_to_csv()                                        # saving data to csv
+        success_gait_anal.append(file.split("/")[-1])                       # note success or fail of analysis
+    except:
+        #TODO specify ErrorType
+        failed_gait_anal.append(file.split("/")[-1])                        # note success or fail of analysis
+
+################################## REPORT ####################################
 
 print("*************************** REPORT ******************************* \n" +
       "Gait file successfully created for: " + ", ".join(success_gait_anal) + "\n" +

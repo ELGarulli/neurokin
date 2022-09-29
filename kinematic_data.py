@@ -18,7 +18,7 @@ class KinematicDataRun:
 
         self.gait_cycles_start: ArrayLike
         self.gait_cycles_end: ArrayLike
-        self.fs: float
+        self.fs: float  #TODO set fs
         self.condition: str
 
         self.markers_df: pd.DataFrame
@@ -108,6 +108,23 @@ class KinematicDataRun:
             self.markers_df[right_marker], recording_fs)
 
         return
+
+    def print_step_partition(self):
+        filename_l = self.path.split("/")[-1] + "_left_step.png"
+        step_trace_l = self.markers_df["lmtp_y"]
+        plt.plot(step_trace_l)
+        plt.vlines(self.left_mtp_lift, min(step_trace_l), max(step_trace_l), colors="green")
+        plt.vlines(self.left_mtp_land, min(step_trace_l), max(step_trace_l), colors="red")
+        plt.savefig(filename_l)
+        plt.close()
+
+        filename_r = self.path.split("/")[-1] + "_right_step.png"
+        step_trace_r = self.markers_df["rmtp_y"]
+        plt.plot(step_trace_r)
+        plt.vlines(self.right_mtp_lift, min(step_trace_r), max(step_trace_r), colors="green")
+        plt.vlines(self.right_mtp_land, min(step_trace_r), max(step_trace_r), colors="red")
+        plt.savefig(filename_r)
+        plt.close()
 
     def compute_angles_joints(self):
         """
