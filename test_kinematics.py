@@ -2,6 +2,7 @@ from kinematic_data import KinematicDataRun
 import os
 from utils.kinematics import gait_params_basics
 from matplotlib import pyplot as plt
+import numpy as np
 ############## EXPERIMENT SETTING PANEL #################
 
 PATH = "../temp_data/c3d/NWE00052/220915/"
@@ -51,8 +52,15 @@ for file in c3d_files:
                                    expected_columns_number=3)
     kin_data.gait_param_to_csv() # saving data to csv
 
-    test = kin_data.markers_df["lmtp_z"][kin_data.left_mtp_lift[0]:kin_data.left_mtp_lift[1]]
-    gait_params_basics.get_phase_at_max_amplitude(test, 200)
+    phase_shift = []
+    a_phase = []
+    b_phase = []
+    for i in range(len(kin_data.left_mtp_lift)-1):
+        a = kin_data.markers_df["lhip_z"][kin_data.left_mtp_lift[i]:kin_data.left_mtp_lift[i+1]]
+        b = kin_data.markers_df["lknee_z"][kin_data.left_mtp_lift[i]:kin_data.left_mtp_lift[i+1]]
+        phase_shift.append(gait_params_basics.compare_phase(a, b))
+        a_phase.append(gait_params_basics.get_phase_at_max_amplitude(a))
+        b_phase.append(gait_params_basics.get_phase_at_max_amplitude(b))
     kin_data.stepwise_gait_features_to_csv()
     success_gait_anal.append(file.split("/")[-1])  # note success or fail of analysis
     # except:

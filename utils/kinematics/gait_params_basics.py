@@ -1,6 +1,8 @@
 import numpy as np
 from scipy import signal
 from matplotlib import pyplot as plt
+
+
 def get_angle(coordinates):
     """
     Get angle between 3 points in a 3d or 2d space
@@ -17,17 +19,30 @@ def get_angle(coordinates):
     return np.degrees(angle)
 
 
-def get_phase_at_max_amplitude(input_signal, fs):
-    #freq, pxx = signal.welch(input_signal, fs)
-    # freq = np.fft.fftfreq(signal.shape[-1], 1/fs)
-    #TODO not working find way to get the frequency at max amplitude and the the complex value
-    pxx = np.fft.fft(input_signal)
-    freq_of_interest = np.argmax(pxx.real)
-    phase = np.angle(pxx[freq_of_interest])
+def get_phase_at_max_amplitude(input_signal):
+    """
+    Computes the phase of a signal at frequency that has the maximum amplitude.
+    First computes the fft, then gets the index of maximum value from the real component, then the phase from the
+    complex element at that index.
+    :param input_signal:
+    :return: phase
+    """
+    c_transform = np.fft.fft(input_signal)
+    r_transform = abs(c_transform) ** 2
+    freq_of_interest = np.argmax(r_transform)
+    phase = np.angle(c_transform[freq_of_interest], deg=True)
+    phase = phase if phase > 0 else 360 + phase
     return phase
 
 
-def compare_phase(a, b, fs):
-    phase_a = get_phase_at_max_amplitude(a, fs)
-    phase_b = get_phase_at_max_amplitude(b, fs)
+def compare_phase(signal_a, signal_b):
+    """
+    Gets the difference of phase of two signals
+
+    :param signal_a: input signal
+    :param signal_b: input signal to compare
+    :return: phase of signal_a - phase of signal_b
+    """
+    phase_a = get_phase_at_max_amplitude(signal_a)
+    phase_b = get_phase_at_max_amplitude(signal_b)
     return phase_a - phase_b
