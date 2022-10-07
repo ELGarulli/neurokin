@@ -5,13 +5,14 @@ from fooof.sim.gen import gen_aperiodic
 from scipy import signal
 from typing import List, Tuple
 from matplotlib import pyplot as plt
-from importing import time_to_sample
+from utils.neural.importing import time_to_sample
 
-def get_stim_timestamps(sync_ch: np.ndarray, expected_pulses: int) -> np.ndarray:
+
+def get_stim_timestamps(sync_ch: np.ndarray, expected_pulses: int = None) -> np.ndarray:
     """
-    Get indexes of only threshold crossing up from 0 to 1.
-    Sometimes there are spurious signals on the stimulation channel, when the stimulator turns off.
-    This function trims to the expected number of pulses.
+    Get indexes of only threshold crossing up from 0, i.e. edge detection.
+    Sometimes there are spurious signals on the stimulation channel, when the stimulator turns off;
+    if expected_pulses is given this function trims to the expected number of pulses.
     :param sync_ch: the stimulation sync channel data
     :param expected_pulses: number of expected pulses
     :return: trimmed indexes
@@ -19,7 +20,10 @@ def get_stim_timestamps(sync_ch: np.ndarray, expected_pulses: int) -> np.ndarray
     threshold_crossing = np.diff(sync_ch > 0, prepend=False)
     idxs_edges = np.where(threshold_crossing)[0]
     stim_starts = idxs_edges[::2]
-    stim_starts_trimmed = stim_starts[:expected_pulses]
+    if expected_pulses:
+        stim_starts_trimmed = stim_starts[:expected_pulses]
+    else:
+        stim_starts_trimmed = stim_starts
 
     return stim_starts_trimmed
 
@@ -34,7 +38,7 @@ def get_timestamps_stim_blocks(neudata, n_amp_tested, pulses, time_stim):
     :param time_stim:
     :return:
     """
-    if len(neudata.sync_data.shape)>1:
+    if len(neudata.sync_data.shape) > 1:
         raise ValueError("Warning: depending on the experiment setting the sync data might be a multichannel array \n"
                          "please use the .pick_sync_data(idx) method to pick the correct sync channel.")
     total_pulses = n_amp_tested * pulses
@@ -82,7 +86,7 @@ def trim_equal_len(raw: List[ArrayLike]) -> List[float]:
 def parse_raw(raw: np.ndarray, stimulation_idxs: np.ndarray, samples_before_stim: int,
               skip_one: bool = False) -> np.ndarray:
     """
-    Parses the signal given the timestamp of the stimulation.
+    Parses the signal given the timestamps of the stimulation.
     :param raw: raw data of one channel
     :param stimulation_idxs: indexes of the stimulation onset
     :param samples_before_stim: how much before the stimulation onset to parse
@@ -99,7 +103,7 @@ def parse_raw(raw: np.ndarray, stimulation_idxs: np.ndarray, samples_before_stim
     return trimmed_array
 
 
-def get_average_amplitudes(parsed_raw, tested_amplitudes, pulses_number):
+def get_average_amplitudes(parsed_raw, tested_amplitudes, pulses_number=None):
     """
     Assumes an experiment where a sequence of stimulation amplitudes are applied,
     every stimulation with a fixed number of pulses
@@ -114,6 +118,8 @@ def get_average_amplitudes(parsed_raw, tested_amplitudes, pulses_number):
     if number_tested_amplitudes == 1:
         averaged_amp = average_subset(parsed_raw, 0, len(parsed_raw))
         return [averaged_amp]
+    if not pulses_number:
+        pulses_number = int(len(parsed_raw)/len(tested_amplitudes))
     for i in range(number_tested_amplitudes):
         start = i * pulses_number
         stop = (i + 1) * pulses_number
@@ -241,6 +247,7 @@ def get_spectrogram_data(fs: float, raw: ArrayLike, nfft: int = None,
     pxx, freq, t, _ = plt.specgram(raw, NFFT=nfft, Fs=fs, noverlap=noverlap, **kwargs)
 
     return pxx, freq, t
+
 
 def calculate_power_spectral_density(data: ArrayLike, fs: int, **kwargs) -> tuple:
     """
