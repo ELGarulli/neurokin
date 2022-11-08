@@ -8,6 +8,18 @@ from matplotlib import pyplot as plt
 from utils.neural.importing import time_to_sample
 
 
+def simply_sync_data_binarize(sync_ch: np.ndarray):
+    """
+    Return a simply binarized array by setting anything below the mean to 0 and everything above to 1.
+    Use only in very clear cut cases
+    :param sync_ch: input sync channel
+    :return: binarized array
+    """
+    mean = np.mean(sync_ch)
+    x_bin = [0 if i < mean else 1 for i in sync_ch]
+    return np.asarray(x_bin)
+
+
 def get_stim_timestamps(sync_ch: np.ndarray, expected_pulses: int = None) -> np.ndarray:
     """
     Get indexes of only threshold crossing up from 0, i.e. edge detection.
@@ -119,7 +131,7 @@ def get_average_amplitudes(parsed_raw, tested_amplitudes, pulses_number=None):
         averaged_amp = average_subset(parsed_raw, 0, len(parsed_raw))
         return [averaged_amp]
     if not pulses_number:
-        pulses_number = int(len(parsed_raw)/len(tested_amplitudes))
+        pulses_number = int(len(parsed_raw) / len(tested_amplitudes))
     for i in range(number_tested_amplitudes):
         start = i * pulses_number
         stop = (i + 1) * pulses_number
