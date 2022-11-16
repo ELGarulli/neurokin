@@ -16,9 +16,9 @@ class KinematicDataRun:
 
         self.config = load_config.read_config(configpath)
 
-        self.gait_cycles_start: ArrayLike
-        self.gait_cycles_end: ArrayLike
-        self.fs: float  # TODO set fs
+        self.gait_cycles_start: int
+        self.gait_cycles_end: int
+        self.fs: float
         self.condition: str
 
         self.markers_df = pd.DataFrame()
@@ -50,7 +50,7 @@ class KinematicDataRun:
         :return:
         """
 
-        self.markers_df = c3d_import_export.import_c3d(self.path)
+        self.gait_cycles_start, self.gait_cycles_end, self.fs, self.markers_df = c3d_import_export.import_c3d(self.path)
 
         if correct_shift:
 
