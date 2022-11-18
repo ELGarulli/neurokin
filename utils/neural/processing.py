@@ -247,14 +247,14 @@ def get_fast_foofed_specgram(raw: ArrayLike, fs: float, nperseg: int,
 
 
 def get_spectrogram_data(fs: float, raw: ArrayLike, nfft: int = None,
-                         noverlap: int = None, **kwargs) -> Tuple[ArrayLike]:
+                         noverlap: int = None, **kwargs) -> Tuple[ArrayLike, ArrayLike, ArrayLike]:
     """
     Gets the data used to plot a spectrogram
     :param fs: sampling frequency
     :param raw: raw data
     :param nfft: nfft to compute the fft
     :param noverlap: number of overlap points
-    :return:
+    :return: pxx, freq, t
     """
     pxx, freq, t, _ = plt.specgram(raw, NFFT=nfft, Fs=fs, noverlap=noverlap, **kwargs)
 

@@ -12,3 +12,4 @@ recordings=[]
 for i in dirlist:
     recording = NeuralData(path=root+i+node)
     recording.load_open_ephys(experiment="experiment1", recording="recording1", sync_present=True, sync_ch=39)
+

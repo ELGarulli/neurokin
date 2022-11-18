@@ -83,7 +83,7 @@ class KinematicDataRun:
             self.markers_df = kinematics_processing.tilt_correct(self.markers_df, tilt_reference_marker, to_tilt)
         return
 
-    def compute_gait_cycles_bounds(self, left_marker, right_marker, recording_fs):
+    def compute_gait_cycles_bounds(self, left_marker, right_marker):
         """
         Computes the lifting and landing frames of both feet using a left and a right marker, respectively.
         To increase robustness of the cycle estimation it first low-passes the signal.
@@ -104,9 +104,9 @@ class KinematicDataRun:
                              ", ".join(str(x) for x in self.markers_df.columns.tolist()))
 
         self.left_mtp_lift, self.left_mtp_land, self.left_mtp_max = event_detection.get_toe_lift_landing(
-            self.markers_df[left_marker], recording_fs)
+            self.markers_df[left_marker], self.fs)
         self.right_mtp_lift, self.right_mtp_land, self.right_mtp_max = event_detection.get_toe_lift_landing(
-            self.markers_df[right_marker], recording_fs)
+            self.markers_df[right_marker], self.fs)
 
         return
 
