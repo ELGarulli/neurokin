@@ -83,6 +83,7 @@ class KinematicDataRun:
             self.markers_df = kinematics_processing.tilt_correct(self.markers_df, tilt_reference_marker, to_tilt)
         return
 
+
     def compute_gait_cycles_bounds(self, left_marker, right_marker):
         """
         Computes the lifting and landing frames of both feet using a left and a right marker, respectively.
