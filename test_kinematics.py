@@ -48,8 +48,8 @@ for file in c3d_files:
                                         recording_fs=RECORDING_FS)
     kin_data.print_step_partition(step_left_marker, step_right_marker)  # print step partition for inspection only
     kin_data.compute_angles_joints()  # computing angle joints
-    kin_data.get_stepwise_features(left_side="left", right_side="right", name_starts_with=True,
-                                   expected_columns_number=3)
+    kin_data.split_in_unilateral_df(left_side="left", right_side="right", name_starts_with=True,
+                                    expected_columns_number=3)
     kin_data.gait_param_to_csv() # saving data to csv
 
     phase_shift = []
