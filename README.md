@@ -32,6 +32,11 @@ cool_neural.pick_sync_data(0)
 # to set it to a specific one
 #or simply pick it on the fly with
 
-cool_neural.sync_data[1]
+cool_neural.sync_data(1)
 
 ```
+
+Other things you can do on the neural side (and I promise to update the readme soon):
+- get the timestamps of the stimulation, given the stimulation channel
+- parse the raw signal accordingly
+- average the signal between pulses
