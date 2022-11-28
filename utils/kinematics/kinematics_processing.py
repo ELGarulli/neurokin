@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from scipy import signal
-from utils.kinematics.gait_params_basics import get_angle
+from utils.kinematics.gait_params_basics import get_angle, get_phase_at_max_amplitude
 
 
 def get_marker_coordinates_names(df_columns_names, markers):
@@ -107,11 +107,33 @@ def get_unilateral_df(df, side="", name_starts_with=False, name_ends_with=False,
     return df_side
 
 
-def get_feature(df, breakpoints):
-    df_feature = pd.DataFrame(columns=df.columns)
-    for column in df.columns:
+def get_angle_features(df, breakpoints, features_df):
+    # df_feature = pd.DataFrame(columns=df.columns)
+    for column in df.features_df:
         gait_param = np.asarray(df[column])
         steps_gait_param = np.split(gait_param, breakpoints)[:-1]
         steps_feat = [max(i) for i in steps_gait_param]
-        df_feature[column] = steps_feat
-    return df_feature
+        features_df[column] = steps_feat
+
+    bodyparts = []
+    features = []
+    for bodypart in bodyparts:
+        steps_gait_param = np.split(gait_param, breakpoints)[:-1]
+        for feature in features:
+
+            if feature == "max_angle":
+                for step in range(len(steps_gait_param)):
+                    max_ = np.max(steps_gait_param[step])
+                    features_df[feature][bodypart].iloc[step] = max_
+
+            if feature == "min_angle":
+                for step in range(len(steps_gait_param)):
+                    min_ = np.min(steps_gait_param[step])
+                    features_df[feature][bodypart].iloc[step] = min_
+
+            if feature == "phase_max_amplitude":
+                for step in range(len(steps_gait_param)):
+                    ph_at_max_amplitude = get_phase_at_max_amplitude(steps_gait_param[step])
+                    features_df[feature][bodypart].iloc[step] = ph_at_max_amplitude
+
+    return
