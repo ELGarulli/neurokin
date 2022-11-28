@@ -182,7 +182,7 @@ class KinematicDataRun:
         left_features = pd.DataFrame()
         right_features = pd.DataFrame()
 
-        left_features = kinematics_processing.get_feature(left_df, self.left_mtp_land, features_df) #TODO update features df with all angle features
+        left_features = kinematics_processing.get_angle_features(left_df, self.left_mtp_land, features_df) #TODO update features df with all angle features
 
         self.stepwise_gait_features = left_features.join(right_features)
 
@@ -190,7 +190,7 @@ class KinematicDataRun:
                                name_starts_with=False, name_ends_with=False,
                                expected_columns_number=None,
                                left_columns=None, right_columns=None):
-        self.stepwise_gait_features = 0
+        #self.stepwise_gait_features = 0
         left_df = pd.DataFrame()
         right_df = pd.DataFrame()
         if left_side:

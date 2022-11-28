@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 ############## EXPERIMENT SETTING PANEL #################
 
-PATH = "../temp_data/c3d/NWE00052/220915/"
+PATH = "../../temp_data/c3d/NWE00052/220915/"
 CONFIGPATH = "./config.yaml"
 RECORDING_FS = 200
 shift_reference_marker = "lmtp_y"
