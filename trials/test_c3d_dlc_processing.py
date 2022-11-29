@@ -1,7 +1,7 @@
 import dlc2kinematics
 import os
 from kinematic_data import KinematicDataRun
-from dlc2kinematics.preprocess import smooth_trajectory
+
 from scipy.signal import savgol_filter
 
 GAIT_PATH = "C:\\Users\\Elisa\\Documents\\GitHub\\temp_data\\c3d\\NWE00052\\220915\\"
@@ -14,37 +14,19 @@ for file in os.listdir(GAIT_PATH):
         c3d_files.append(GAIT_PATH + file)
 file = c3d_files[3]
 
-step_left_marker = "lmtp_z"
-step_right_marker = "rmtp_z"
+step_left_marker = "lmtp"
+step_right_marker = "rmtp"
 
 kin_data = KinematicDataRun(file, CONFIGPATH)  # creating a single run obj
 kin_data.load_kinematics(correct_tilt=False,  # loading data and tilt-shift correcting
                          correct_shift=False)
 
+kin_data.get_c3d_compliance(smooth=True)
+
 kin_data.compute_gait_cycles_bounds(left_marker=step_left_marker,  # computing left right bounds of steps
                                     right_marker=step_right_marker)
 
-
-def load_data(df_, smooth=False, filter_window=3, order=1):
-    bodyparts = df_.columns.get_level_values("bodyparts").unique().to_list()
-    scorer = df_.columns.get_level_values(0)[0]
-    if smooth:
-        df_ = smooth_trajectory(
-            df_,
-            bodyparts,
-            filter_window,
-            order,
-            deriv=0,
-            save=False,
-            output_filename=None,
-            destfolder=None,
-        )
-
-    return df_, bodyparts, scorer
-
-
 df = kin_data.markers_df
-df, bodyparts, scorer = load_data(df, smooth=True, filter_window=3, order=1)
 
 df_vel = dlc2kinematics.compute_velocity(df, bodyparts=['all'])
 df_acc = dlc2kinematics.compute_acceleration(df, bodyparts=['all'])
@@ -52,3 +34,6 @@ df_speed = dlc2kinematics.compute_speed(df, bodyparts=['all'])
 joint_angles = dlc2kinematics.compute_joint_angles(df, kin_data.config["angles"]["joints"])
 joint_vel = dlc2kinematics.compute_joint_velocity(joint_angles)
 joint_acc = dlc2kinematics.compute_joint_acceleration(joint_angles)
+
+empty = kin_data.create_empty_features_df(kin_data.bodyparts, ["max_angle", "min_angle", "phase_max_amplitude"])
+test = kin_data.get_angles_features(empty, left_side="L", name_starts_with=True)

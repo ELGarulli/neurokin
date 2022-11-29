@@ -4,6 +4,7 @@ from utils.kinematics import c3d_import_export, event_detection, kinematics_proc
 from utils.helper import load_config
 import pandas as pd
 from matplotlib import pyplot as plt
+from dlc2kinematics.preprocess import smooth_trajectory
 
 
 class KinematicDataRun:
@@ -31,6 +32,8 @@ class KinematicDataRun:
         self.right_mtp_lift: ArrayLike = None
         self.right_mtp_land: ArrayLike = None
         self.right_mtp_max: ArrayLike = None
+        self.bodyparts: ArrayLike = None
+        self.scorer: str = "scorer"
 
     def load_kinematics(self,
                         correct_shift: bool = False,
@@ -81,6 +84,28 @@ class KinematicDataRun:
                                  ", ".join(str(x) for x in self.markers_df.columns.tolist()))
 
             self.markers_df = kinematics_processing.tilt_correct(self.markers_df, tilt_reference_marker, to_tilt)
+
+        return
+
+    def get_c3d_compliance(self, smooth=False, filter_window=3, order=1):
+        df_ = self.markers_df
+        bodyparts = df_.columns.get_level_values("bodyparts").unique().to_list()
+        scorer = df_.columns.get_level_values(0)[0]
+        if smooth:
+            df_ = smooth_trajectory(
+                df_,
+                bodyparts,
+                filter_window,
+                order,
+                deriv=0,
+                save=False,
+                output_filename=None,
+                destfolder=None,
+            )
+
+        self.markers_df = df_
+        self.bodyparts = bodyparts
+        self.scorer = scorer
         return
 
 
@@ -89,25 +114,25 @@ class KinematicDataRun:
         Computes the lifting and landing frames of both feet using a left and a right marker, respectively.
         To increase robustness of the cycle estimation it first low-passes the signal.
         :param left_marker: reference marker for the left foot, typically the left mtp
-        :param right_marker: reference marker for the left foot, typically the right mtp
+        :param right_marker: reference marker for the right foot, typically the right mtp
         :param recording_fs: sample frequency of the recording, used for low-passing.
         :return:
         """
 
-        if left_marker not in self.markers_df.columns.tolist():
+        if left_marker not in self.markers_df.columns.get_level_values("bodyparts").unique():
             raise ValueError("The left reference marker " + left_marker + " is not among the markers."
                              + "\n Please select one among the following: \n" +
-                             ", ".join(str(x) for x in self.markers_df.columns.tolist()))
+                             ", ".join(str(x) for x in self.markers_df.columns.get_level_values("bodyparts").unique()))
 
-        if right_marker not in self.markers_df.columns.tolist():
+        if right_marker not in self.markers_df.columns.get_level_values("bodyparts").unique():
             raise ValueError("The right reference marker " + right_marker + " is not among the markers."
                              + "\n Please select one among the following: \n" +
-                             ", ".join(str(x) for x in self.markers_df.columns.tolist()))
+                             ", ".join(str(x) for x in self.markers_df.columns.get_level_values("bodyparts").unique()))
 
         self.left_mtp_lift, self.left_mtp_land, self.left_mtp_max = event_detection.get_toe_lift_landing(
-            self.markers_df[left_marker], self.fs)
+            self.markers_df[self.scorer][left_marker]["z"], self.fs)
         self.right_mtp_lift, self.right_mtp_land, self.right_mtp_max = event_detection.get_toe_lift_landing(
-            self.markers_df[right_marker], self.fs)
+            self.markers_df[self.scorer][right_marker]["z"], self.fs)
 
         return
 
@@ -166,6 +191,8 @@ class KinematicDataRun:
         return
 
     def create_empty_features_df(self, bodyparts, features):
+        # TODO can be static
+        # TODO check shape passed: not matching
         dataFrame = None
         steps_number = max([len(self.right_mtp_land), len(self.left_mtp_land)])
         a = np.full((steps_number), np.nan)
