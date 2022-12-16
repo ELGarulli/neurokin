@@ -57,6 +57,7 @@ def get_timestamps_stim_blocks(neudata, n_amp_tested, pulses, time_stim):
     sync = get_stim_timestamps(neudata.sync_data, total_pulses)
     onset = sync[0:len(sync):pulses]
     stim_len = time_to_sample(time_stim, neudata.fs, is_t2=True)
+    #TODO check that neudata.fs is correct if stim and raw have different fs
     timestamps_blocks = [(onset[i], onset[i] + stim_len) for i in range(len(onset))]
     return timestamps_blocks
 
