@@ -9,6 +9,7 @@ from utils.neural.importing import time_to_sample
 
 
 def simply_sync_data_binarize(sync_ch: np.ndarray):
+    #TODO change to include threshold and only default to mean if not passed
     """
     Return a simply binarized array by setting anything below the mean to 0 and everything above to 1.
     Use only in very clear cut cases
@@ -105,7 +106,8 @@ def parse_raw(raw: np.ndarray, stimulation_idxs: np.ndarray, samples_before_stim
     :param skip_one: if True parses every second stimulation
     :return: parsed raw signal into an array of equally sized chunks
     """
-    stimulation_idxs = stimulation_idxs + samples_before_stim
+
+    stimulation_idxs = stimulation_idxs - samples_before_stim
     if skip_one:
         stimulation_idxs = stimulation_idxs[::2]
     # skip first chunk that precedes the first stimulation to avoid cropping errors
