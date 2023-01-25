@@ -3,7 +3,7 @@
 A Python package to support analysis of neural and kinematic data. 
 neurokin supports open_ephys and TDT formats natively for neural and .c3d files for kinematics data but can be expanded easily. Please get in touch if you have another type of data.
 
-Here is how to import neural data (scroll down for the kinematics data):
+Here is how to import neural data ([as soon as I finish updating the readme you'll be able to]scroll down for the kinematics data):
 
 ```python
 from neurokin import NeuralData
