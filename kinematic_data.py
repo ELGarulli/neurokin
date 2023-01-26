@@ -136,17 +136,35 @@ class KinematicDataRun:
 
         return
 
+    def plot_step_partition(self, step_left, step_right, ax_l, ax_r):
+        step_trace_l = self.markers_df[self.scorer][step_left]["z"]
+        ax_l.plot(step_trace_l)
+        ax_l.vlines(self.left_mtp_lift, min(step_trace_l), max(step_trace_l), colors="green")
+        ax_l.vlines(self.left_mtp_land, min(step_trace_l), max(step_trace_l), colors="red")
+        ax_l.set_title("Left side")
+
+        step_trace_r = self.markers_df[self.scorer][step_right]["z"]
+        ax_r.plot(step_trace_r)
+        ax_r.vlines(self.right_mtp_lift, min(step_trace_r), max(step_trace_r), colors="green")
+        ax_r.vlines(self.right_mtp_land, min(step_trace_r), max(step_trace_r), colors="red")
+        ax_r.set_title("Right side")
+
+        ax_l.set_xlim(0, len(step_trace_l))
+        ax_r.set_xlim(0, len(step_trace_r))
+
+        return ax_l, ax_r
+
     def print_step_partition(self, step_left, step_right, output_folder="./"):
         fig, axs = plt.subplots(2, 1)
         fig.tight_layout(pad=2.0)
         filename = output_folder + self.path.split("/")[-1] + "_steps_partition.png"
-        step_trace_l = self.markers_df[step_left]
+        step_trace_l = self.markers_df[self.scorer][step_left]
         axs[0].plot(step_trace_l)
         axs[0].vlines(self.left_mtp_lift, min(step_trace_l), max(step_trace_l), colors="green")
         axs[0].vlines(self.left_mtp_land, min(step_trace_l), max(step_trace_l), colors="red")
         axs[0].set_title("Left side")
 
-        step_trace_r = self.markers_df[step_right]
+        step_trace_r = self.markers_df[self.scorer][step_right]
         axs[1].plot(step_trace_r)
         axs[1].vlines(self.right_mtp_lift, min(step_trace_r), max(step_trace_r), colors="green")
         axs[1].vlines(self.right_mtp_land, min(step_trace_r), max(step_trace_r), colors="red")
