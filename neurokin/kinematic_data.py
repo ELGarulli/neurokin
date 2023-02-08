@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.typing import ArrayLike
-from utils.kinematics import c3d_import_export, event_detection, kinematics_processing
-from utils.helper import load_config
+from neurokin.utils.kinematics import kinematics_processing, c3d_import_export, event_detection
+from neurokin.utils.helper import load_config
 import pandas as pd
 from matplotlib import pyplot as plt
 from dlc2kinematics.preprocess import smooth_trajectory

@@ -2,7 +2,7 @@ import tdt
 import json
 import numpy as np
 from numpy.typing import ArrayLike
-from constants.open_ephys_structure import STRUCTURE, CONTINUOUS, SOURCE_PROCESSOR_NAME, SOURCE_PROCESSOR_ID, \
+from neurokin.constants.open_ephys_structure import STRUCTURE, CONTINUOUS, SOURCE_PROCESSOR_NAME, SOURCE_PROCESSOR_ID, \
     TRAILING_NUMBER, SAMPLE_RATE, CHANNEL_NUMBER
 
 

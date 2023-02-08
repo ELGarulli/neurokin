@@ -1,8 +1,6 @@
 import dlc2kinematics
 import os
-from kinematic_data import KinematicDataRun
-
-from scipy.signal import savgol_filter
+from neurokin.kinematic_data import KinematicDataRun
 
 GAIT_PATH = "C:\\Users\\Elisa\\Documents\\GitHub\\temp_data\\c3d\\NWE00052\\220915\\"
 NEURAL_PATH = "C:\\Users\\Elisa\\Documents\\GitHub\\temp_data\\neural\\220915\\ENWE_00052-220915-153059\\"

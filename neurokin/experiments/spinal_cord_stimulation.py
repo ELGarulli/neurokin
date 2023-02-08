@@ -1,4 +1,4 @@
-from utils.neural import processing
+from neurokin.utils.neural import processing
 from numpy.typing import ArrayLike
 
 

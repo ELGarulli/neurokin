@@ -1,4 +1,4 @@
-from kinematic_data import KinematicDataRun
+from neurokin.kinematic_data import KinematicDataRun
 import os
 
 GAIT_PATH = "C:\\Users\\Elisa\\Documents\\GitHub\\temp_data\\c3d\\NWE00052\\220915\\"

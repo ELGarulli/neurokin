@@ -1,8 +1,6 @@
-import numpy as np
 import os
-from neural_data import NeuralData
-from matplotlib import pyplot as plt
-from utils.exporting import export_neural_data_to_bin
+from neurokin.neural_data import NeuralData
+
 #
 root = "../temp_data/optogen_1000_left_2022-07-20_15-58-09/"
 node = "/Record Node 104/"

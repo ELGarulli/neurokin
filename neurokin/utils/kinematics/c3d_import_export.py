@@ -87,3 +87,20 @@ def get_c3d_labels(handle):
     C, R = a.dimensions
     labels = [a.bytes[r * C: (r + 1) * C].strip().decode().lower() for r in range(R)]
     return labels
+
+
+def import_c3d_events(path):
+    """
+    Gets labels and timing of events, together with first, last frame and sample rate
+    :param path: path to .c3d
+    :return: first_frame, last_frame, sample_rate, df
+    """
+    with open(path, "rb") as f:
+        c3d_reader = c3d.Reader(f)
+        first_frame = c3d_reader._header.first_frame
+        last_frame = c3d_reader._header.last_frame
+        sample_rate = c3d_reader._header.frame_rate
+        labels = c3d_reader._header.event_labels
+        event_timings = c3d_reader._header.event_timings
+
+    return first_frame, last_frame, sample_rate, labels, event_timings

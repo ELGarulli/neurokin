@@ -5,7 +5,7 @@ from fooof.sim.gen import gen_aperiodic
 from scipy import signal
 from typing import List, Tuple
 from matplotlib import pyplot as plt
-from utils.neural.importing import time_to_sample
+from neurokin.utils.neural.importing import time_to_sample
 
 
 def simply_sync_data_binarize(sync_ch: np.ndarray):
