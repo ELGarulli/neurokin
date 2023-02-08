@@ -1,12 +1,9 @@
-import numpy as np
-
-from utils.kinematics import kinematics_processing, angles
+from neurokin.utils.kinematics import kinematics_processing
 import pandas as pd
 from matplotlib import pyplot as plt
-from scipy import signal
 
-filename = '../../temp_data/c3d/NWE00052/220915/runway01.c3d'
-filename_csv = '../../temp_data/c3d/NWE00052/220915/runway01.csv'
+filename = '../../../temp_data/c3d/NWE00052/220915/runway01.c3d'
+filename_csv = '../../../temp_data/c3d/NWE00052/220915/runway01.csv'
 
 temp_df = pd.read_csv(filename_csv, sep="\t")
 

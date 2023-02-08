@@ -1,5 +1,4 @@
-from neural_data import NeuralData
-from utils.neural.processing import get_stim_timestamps
+from neurokin.utils.neural.processing import get_stim_timestamps
 class Discorat:
     def __init__(self, neural_data):
         self.synch = neural_data.synch_data

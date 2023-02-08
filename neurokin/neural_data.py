@@ -1,5 +1,5 @@
-import utils.commons
-from utils.neural import importing, processing
+import neurokin.utils.commons
+from neurokin.utils.neural import importing
 from numpy.typing import ArrayLike
 
 
@@ -30,18 +30,18 @@ class NeuralData:
 
     def load_open_ephys(self, experiment, recording, channels=None, sync_present: bool = False, sync_ch: int = None):
         self.fs, self.raw, self.sync_data = importing.import_open_ephys_channel_data(folderpath=self.path,
-                                                                     experiment=experiment,
-                                                                     recording=recording,
-                                                                     channels=channels,
-                                                                     sync_present=sync_present,
-                                                                     sync_ch=sync_ch)
+                                                                                     experiment=experiment,
+                                                                                     recording=recording,
+                                                                                     channels=channels,
+                                                                                     sync_present=sync_present,
+                                                                                     sync_ch=sync_ch)
         self.recording = recording
 
     def compute_psd(self, **kwargs):
         self.freq = []
         self.pxx = []
         for i in range(self.raw.shape[0]):
-            f, p = utils.commons.calculate_power_spectral_density(self.raw[i], self.fs, **kwargs)
+            f, p = neurokin.utils.commons.calculate_power_spectral_density(self.raw[i], self.fs, **kwargs)
             self.freq.append(f)
             self.freq.append(p)
 

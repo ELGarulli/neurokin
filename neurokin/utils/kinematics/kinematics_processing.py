@@ -1,7 +1,6 @@
 import numpy as np
-import pandas as pd
 from scipy import signal
-from utils.kinematics.gait_params_basics import get_angle, get_phase_at_max_amplitude
+from neurokin.utils.kinematics.gait_params_basics import get_angle, get_phase_at_max_amplitude
 
 
 def get_marker_coordinates_names(df_columns_names, markers):

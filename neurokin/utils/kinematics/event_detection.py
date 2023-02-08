@@ -1,7 +1,7 @@
 from typing import Tuple
 from numpy import ndarray
 from scipy import signal
-from constants.gait_cycle_detection import RELATIVE_HEIGHT, STEP_FILTER_FREQ
+from neurokin.constants.gait_cycle_detection import RELATIVE_HEIGHT, STEP_FILTER_FREQ
 import numpy as np
 
 

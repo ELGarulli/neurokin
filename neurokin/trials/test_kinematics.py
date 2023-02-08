@@ -1,11 +1,10 @@
-from kinematic_data import KinematicDataRun
+from neurokin.kinematic_data import KinematicDataRun
 import os
-from utils.kinematics import gait_params_basics
-from matplotlib import pyplot as plt
-import numpy as np
+from neurokin.utils.kinematics import gait_params_basics
+
 ############## EXPERIMENT SETTING PANEL #################
 
-PATH = "../../temp_data/c3d/NWE00052/220915/"
+PATH = "../../../temp_data/c3d/NWE00052/220915/"
 CONFIGPATH = "./config.yaml"
 RECORDING_FS = 200
 shift_reference_marker = "lmtp_y"
