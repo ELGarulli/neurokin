@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from scipy import signal
 from neurokin.utils.kinematics.gait_params_basics import get_angle, get_phase_at_max_amplitude
 
@@ -136,3 +137,17 @@ def get_angle_features(df, breakpoints, features_df):
                     features_df[feature][bodypart].iloc[step] = ph_at_max_amplitude
 
     return
+
+
+def create_empty_features_df(self, bodyparts, features):
+    # TODO check shape passed: not matching
+    dataFrame = None
+    steps_number = max([len(self.right_mtp_land), len(self.left_mtp_land)])
+    a = np.full((steps_number), np.nan)
+    for bodypart in bodyparts:
+        pdindex = pd.MultiIndex.from_product(
+            [features, [bodypart]],
+            names=["feature", "bodypart"])
+        frame = pd.DataFrame(a, columns=pdindex, index=range(0, steps_number))
+        dataFrame = pd.concat([frame, dataFrame], axis=1)
+    return dataFrame

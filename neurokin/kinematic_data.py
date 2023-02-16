@@ -109,13 +109,14 @@ class KinematicDataRun:
         return
 
 
-    def compute_gait_cycles_bounds(self, left_marker, right_marker):
+    def compute_gait_cycles_bounds(self, left_marker, right_marker, axis="z"):
         """
         Computes the lifting and landing frames of both feet using a left and a right marker, respectively.
         To increase robustness of the cycle estimation it first low-passes the signal.
         :param left_marker: reference marker for the left foot, typically the left mtp
         :param right_marker: reference marker for the right foot, typically the right mtp
         :param recording_fs: sample frequency of the recording, used for low-passing.
+        :param axis: axis to use to trace the movement and set the cycle bounds
         :return:
         """
 
@@ -130,9 +131,9 @@ class KinematicDataRun:
                              ", ".join(str(x) for x in self.markers_df.columns.get_level_values("bodyparts").unique()))
 
         self.left_mtp_lift, self.left_mtp_land, self.left_mtp_max = event_detection.get_toe_lift_landing(
-            self.markers_df[self.scorer][left_marker]["z"], self.fs)
+            self.markers_df[self.scorer][left_marker][axis], self.fs)
         self.right_mtp_lift, self.right_mtp_land, self.right_mtp_max = event_detection.get_toe_lift_landing(
-            self.markers_df[self.scorer][right_marker]["z"], self.fs)
+            self.markers_df[self.scorer][right_marker][axis], self.fs)
 
         return
 
@@ -208,19 +209,6 @@ class KinematicDataRun:
         self.stepwise_gait_features.to_csv(output_folder + self.path.split("/")[-1].replace(".c3d", "stepwise_feature.csv"))
         return
 
-    def create_empty_features_df(self, bodyparts, features):
-        # TODO can be static
-        # TODO check shape passed: not matching
-        dataFrame = None
-        steps_number = max([len(self.right_mtp_land), len(self.left_mtp_land)])
-        a = np.full((steps_number), np.nan)
-        for bodypart in bodyparts:
-            pdindex = pd.MultiIndex.from_product(
-                [features, [bodypart]],
-                names=["feature", "bodypart"])
-            frame = pd.DataFrame(a, columns=pdindex, index=range(0, steps_number))
-            dataFrame = pd.concat([frame, dataFrame], axis=1)
-        return dataFrame
 
     def get_angles_features(self, features_df, **kwargs):
         left_df, right_df = self.split_in_unilateral_df(**kwargs)

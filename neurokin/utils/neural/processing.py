@@ -191,13 +191,10 @@ def find_closest_index(data: ArrayLike, datapoint: float) -> int:
     :param datapoint: datapoint to find a close value to
     :return: index of the closest element
     """
-    # TODO change to use np isclose and np where
-    min_difference = np.inf
-    idx = 0
-    for i in range(len(data)):
-        if abs(data[i] - datapoint) < min_difference:
-            min_difference = abs(data[i] - datapoint)
-            idx = i
+    data = np.asarray(data)
+    if np.any(np.isnan(data)):
+        raise ValueError('The input array contains nan which will always return as the nearest to datapoint')
+    idx = (np.abs(data - datapoint)).argmin()
     return idx
 
 

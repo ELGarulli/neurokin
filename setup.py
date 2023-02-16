@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='neurokin',
@@ -8,7 +8,8 @@ setup(
     author='Elisa L. Garulli',
     author_email='e.garulli@charite.de',
     license='BSD 2-clause',
-    packages=['neurokin'],
+    packages=find_packages('neurokin'),
+    package_dir={'': 'neurokin'},
     install_requires=['c3d==0.5.1',
                       'dlc2kinematics',
                       'fooof==1.0.0',
