@@ -28,13 +28,13 @@ class GGait:
 
     def load_kinematics(self):
         # TODO set better except check which code is raised
-        try:
-            names = matlab.engine.find_matlab()
-            self.eng = matlab.engine.start_matlab(names[0])
+        #try:
+        names = matlab.engine.find_matlab()
+        self.eng = matlab.engine.start_matlab(names[0])
 
-        except:
-            print("Make sure MATLAB engine is connected")
-            return None
+        #except:
+        #    print("Make sure MATLAB engine is connected")
+        #    return None
         paths_to_all_ggait_folders = self.eng.genpath(GENPATH)
         self.eng.addpath(paths_to_all_ggait_folders, nargout=0)
         self.h = gait.load_raw_kinematics(self.eng, self.filename, self.path)
