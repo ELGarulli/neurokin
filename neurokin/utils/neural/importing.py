@@ -71,7 +71,7 @@ def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1", s
             streams = data.streams
             stored = getattr(streams, stim_name)
             stim_data = stored.data
-            fs = stored.fs
+            sync_fs = stored.fs
 
         except AttributeError:
             print("No stimulation data named " + stim_name + ", please specify the correct stream_name")
@@ -79,7 +79,8 @@ def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1", s
             print(data.streams.__dict__.keys())
             return
         stim_data = stim_data[s1:s2]
-    return fs, raw, stim_data
+        sync_fs = None
+    return fs, raw, stim_data, sync_fs
 
 
 def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: str, channels=None,
