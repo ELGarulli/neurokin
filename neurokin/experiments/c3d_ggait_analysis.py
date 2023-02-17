@@ -1,7 +1,11 @@
 from neurokin.ggait_legacy import GGait
 import os
+import logging
+import matlab.engine
 
-PATH = "C://Users//Elisa//Documents//GitHub//temp_data//c3d//deficit_comparison//6ohda//NWE00088//"
+logger = logging.getLogger(__name__)
+
+PATH = "C://Users//Elisa//Documents//GitHub//temp_data//c3d//deficit_comparison//6ohda//test//"
 print_step_partition = False
 
 c3d_files = []
@@ -24,10 +28,11 @@ for file in c3d_files:
         kin_data.test_minEx3()
         success_gait_anal.append(file)
 
-    except:
+    except matlab.engine.MatlabExecutionError as error:
+        logger.error(error)
         print("failed to create gait file for " + file + "\n please create gait file manually")
         failed_gait_anal.append(file)
-        pass
+
 
 
 
