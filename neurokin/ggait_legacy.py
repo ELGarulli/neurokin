@@ -3,8 +3,11 @@ from numpy.typing import ArrayLike
 from matplotlib import pyplot as plt
 import numpy as np
 import matlab.engine
-from neurokin.utils.kinematics import gait
+from neurokin.utils.kinematics import ggait_compliance
 from neurokin.constants.matlab_engine import GENPATH
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class GGait:
@@ -27,22 +30,23 @@ class GGait:
         self.gait_cycle_dict_left: None
 
     def load_kinematics(self):
-        # TODO set better except check which code is raised
-        #try:
-        names = matlab.engine.find_matlab()
-        self.eng = matlab.engine.start_matlab(names[0])
+        try:
+            names = matlab.engine.find_matlab()
+            self.eng = matlab.engine.start_matlab(names[0])
 
-        #except:
-        #    print("Make sure MATLAB engine is connected")
-        #    return None
+        except IndexError as error:
+            logger.error(error)
+            print("WARNING: Make sure MATLAB engine is connected!")
+            raise
+
         paths_to_all_ggait_folders = self.eng.genpath(GENPATH)
         self.eng.addpath(paths_to_all_ggait_folders, nargout=0)
-        self.h = gait.load_raw_kinematics(self.eng, self.filename, self.path)
+        self.h = ggait_compliance.load_raw_kinematics(self.eng, self.filename, self.path)
         return
 
     def compute_gait_cycles_timestamp(self):
-        self.gait_cycle_dict_left = gait.get_gait_cycle_bounds(h=self.h, data_name="Data_L", fs=self.fs)
-        self.gait_cycle_dict_right = gait.get_gait_cycle_bounds(h=self.h, data_name="Data_R", fs=self.fs)
+        self.gait_cycle_dict_left = ggait_compliance.get_gait_cycle_bounds(h=self.h, data_name="Data_L", fs=self.fs)
+        self.gait_cycle_dict_right = ggait_compliance.get_gait_cycle_bounds(h=self.h, data_name="Data_R", fs=self.fs)
 
     def get_gait_param(self):
 

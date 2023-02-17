@@ -1,7 +1,7 @@
 from typing import Tuple
 from numpy import ndarray
 from scipy import signal
-from neurokin.constants.gait_cycle_detection import RELATIVE_HEIGHT, STEP_FILTER_FREQ
+from neurokin.constants.gait_cycle_detection import RELATIVE_HEIGHT, STEP_FILTER_FREQ, PROMINENCE
 import numpy as np
 
 
@@ -16,7 +16,7 @@ def get_toe_lift_landing(y, recording_fs):
     """
     y = lowpass_array(y, STEP_FILTER_FREQ, recording_fs)
 
-    max_x, _ = signal.find_peaks(y, prominence=1)
+    max_x, _ = signal.find_peaks(y, prominence=PROMINENCE)
     avg_distance = abs(int(median_distance(max_x) / 2))
 
     lb = []
