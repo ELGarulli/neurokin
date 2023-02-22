@@ -1,11 +1,32 @@
-angles:
-  joints:
-    left_hip_joint: [lcrest, lhip, lknee]
-    left_knee_joint: [lhip, lknee, lankle]
-    left_ankle_joint: [lknee, lankle, lmtp]
-    right_hip_joint: [rcrest, rhip, rknee]
-    right_knee_joint: [rhip, rknee, rankle]
-    right_ankle_joint: [rknee, rankle, rmtp]
-  elevations:
-    left_hip: lhip
-    right_hip: rhip
+skeleton:
+    angles:
+        joints:
+            left_hip: [lcrest, lhip, lknee]
+            left_knee: [lhip, lknee, lankle]
+            left_ankle: [lknee, lankle, lmtp]
+            right_hip: [rcrest, rhip, rknee]
+            right_knee: [rhip, rknee, rankle]
+            right_ankle: [rknee, rankle, rmtp]
+        references:
+            full_body_tilt: [lshoulder, lmtp, mcorner]
+            maze_corner_open_right: [mcorner_ol, mcorner_or, mcorner_cr]        
+    distances:
+        lef_shoulder_to_toe: [lshoulder, lmtp]
+    elevations:
+        left_hip: lhip
+        right_hip: rhip
+    
+    
+features:
+    package.module.get_speed: None
+    get_accellaration: [(marker_id, rknee)]
+    get_position: [(reference_marker_id, mcorner_cl)]
+    get_max_angle: [(marker_subset, (skeleton, angles, joints)]
+    
+
+
+events:
+    freezing_of_gait:
+        get_frames_where_feature_of_marker_id_is_below_threshold: [(marker_id, rknee), (feature, speed), (threshold, 5)]
+        get_freezing_events: [(marker_id, center_of_gravity), (min_duration, 0.5)]
+        get_predictions: [(model_path, path), (hyperparameters, dictionary_of_hyperparams)]
