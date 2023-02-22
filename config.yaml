@@ -20,13 +20,16 @@ skeleton:
 features:
     package.module.get_speed: None
     get_accellaration: [(marker_id, rknee)]
-    get_position: [(reference_marker_id, mcorner_cl)]
+    get_position: [(sliding_window_size, True)]
     get_max_angle: [(marker_subset, (skeleton, angles, joints)]
     
 
 
 events:
     freezing_of_gait:
-        get_frames_where_feature_of_marker_id_is_below_threshold: [(marker_id, rknee), (feature, speed), (threshold, 5)]
+        get_frames_where_feature_of_marker_id_is_below_threshold: 
+            marker_id: rknee
+            feature: speed
+            threshold: 5
         get_freezing_events: [(marker_id, center_of_gravity), (min_duration, 0.5)]
         get_predictions: [(model_path, path), (hyperparameters, dictionary_of_hyperparams)]
