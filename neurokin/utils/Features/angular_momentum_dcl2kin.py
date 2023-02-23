@@ -12,6 +12,10 @@ class Feature_angular_velocity(FeatureExtraction):
     """
 
     @property
+    def input_type(self):
+        return 'joints'
+
+    @property
     def default_values(self) -> Dict[str, Any]:
         default_values = {"window_size": 3}
         return default_values

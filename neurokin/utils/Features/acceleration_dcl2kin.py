@@ -10,6 +10,9 @@ class Feature_acceleration(FeatureExtraction):
     Input: df with positon data (i.e. DLC output), source_marker_ids: List of markers for which velocity should be computed
     Output: df with acceleration data for input markers
     """
+    @property
+    def input_type(self):
+        return 'markers'
 
     @property
     def default_values(self) -> Dict[str, Any]:
