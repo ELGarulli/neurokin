@@ -12,6 +12,10 @@ class Feature_speed(FeatureExtraction):
     """
 
     @property
+    def input_type(self):
+        return 'markers'
+
+    @property
     def default_values(self) -> Dict[str, Any]:
         default_values = {"window_size": 3}
         return default_values
