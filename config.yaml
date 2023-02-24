@@ -23,10 +23,12 @@ features:
     #    marker_ids: [lshoulder]
     #phase.PhasesAngle:
     #    marker_ids: [left_knee]
-    momentum_dlc2kin.SpeedDLC:
+    #momentum_dlc2kin.SpeedDLC:
+    #    window_size: 3
+    #    marker_ids: [lshoulder]
+    joint_angles_dlc2kin.JointAnglesDLC:
         window_size: 3
-        marker_ids: [lshoulder]
-    #get_position:
+        marker_ids: [left_hip]
     #    sliding_window_size: True
     #get_max_angle:
     #    marker_ids: [skeleton, angles, joints]
