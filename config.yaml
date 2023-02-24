@@ -29,7 +29,9 @@ features:
     joint_angles_dlc2kin.JointAnglesDLC:
         window_size: 3
         marker_ids: [left_hip]
-    #    sliding_window_size: True
+    joint_angles_dlc2kin.AngularVelocityDLC:
+        window_size: 3
+        marker_ids: [left_hip]
     #get_max_angle:
     #    marker_ids: [skeleton, angles, joints]
     

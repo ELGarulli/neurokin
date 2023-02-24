@@ -51,7 +51,7 @@ class AngularVelocityDLC(FeatureExtraction):
 
     @property
     def input_type(self) -> str:
-        return "joints"
+        return "markers"
 
     @property
     def default_values(self) -> Dict[str, Any]:
@@ -71,8 +71,6 @@ class AngularVelocityDLC(FeatureExtraction):
     ) -> pd.DataFrame:
         df_angular_momentum = dlc2kinematics.compute_joint_velocity(
             joint_angle=marker_df,
-            joints_dict=[source_marker_ids],
-            filter_window=params["window_size"],
-        )
+            filter_window=params["window_size"],)
         self._assert_valid_output(output_df=df_angular_momentum, marker_df=marker_df)
         return df_angular_momentum
