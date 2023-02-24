@@ -1,6 +1,6 @@
 import dlc2kinematics
+import pandas as pd
 from typing import List, Dict, Any
-
 from .core import FeatureExtraction, DefaultParams
 
 
@@ -12,7 +12,7 @@ class Feature_velocity(FeatureExtraction):
     """
 
     @property
-    def input_type(self):
+    def input_type(self) -> str:
         return "markers"
 
     @property
@@ -25,12 +25,17 @@ class Feature_velocity(FeatureExtraction):
         default_types = {"window_size": [int]}
         return default_types
 
-    def _run_feature_extraction(self, source_marker_ids):
+    def _run_feature_extraction(
+        self,
+        source_marker_ids: List[str],
+        marker_df: pd.DataFrame,
+        params: Dict[str, Any],
+    ) -> pd.DataFrame:
 
         df_velocity = dlc2kinematics.compute_velocity(
-            df=self.marker_df,
+            df=marker_df,
             bodyparts=source_marker_ids,
-            filter_window=self.params["window_size"],
+            filter_window=params["window_size"],
         )
         self._assert_valid_output(output_df=df_velocity)
 
@@ -45,7 +50,7 @@ class Feature_speed(FeatureExtraction):
     """
 
     @property
-    def input_type(self):
+    def input_type(self) -> str:
         return "markers"
 
     @property
@@ -58,12 +63,16 @@ class Feature_speed(FeatureExtraction):
         default_types = {"window_size": [int]}
         return default_types
 
-    def _run_feature_extraction(self, source_marker_ids):
-
+    def _run_feature_extraction(
+        self,
+        source_marker_ids: List[str],
+        marker_df: pd.DataFrame,
+        params: Dict[str, Any],
+    ) -> pd.DataFrame:
         df_speed = dlc2kinematics.compute_speed(
-            df=self.marker_df,
+            df=marker_df,
             bodyparts=source_marker_ids,
-            filter_window=self.params["window_size"],
+            filter_window=params["window_size"],
         )
         self._assert_valid_output(output_df=df_speed)
         return df_speed
@@ -77,7 +86,7 @@ class Feature_acceleration(FeatureExtraction):
     """
 
     @property
-    def input_type(self):
+    def input_type(self) -> str:
         return "markers"
 
     @property
@@ -90,12 +99,17 @@ class Feature_acceleration(FeatureExtraction):
         default_types = {"window_size": [int]}
         return default_types
 
-    def _run_feature_extraction(self, source_marker_ids):
+    def _run_feature_extraction(
+        self,
+        source_marker_ids: List[str],
+        marker_df: pd.DataFrame,
+        params: Dict[str, Any],
+    ) -> pd.DataFrame:
 
         df_acceleration = dlc2kinematics.compute_acceleration(
-            df=self.marker_df,
+            df=marker_df,
             bodyparts=source_marker_ids,
-            filter_window=self.params["window_size"],
+            filter_window=params["window_size"],
         )
         self._assert_valid_output(output_df=df_acceleration)
         return df_acceleration

@@ -25,10 +25,10 @@ class Feature_angular_velocity(FeatureExtraction):
         default_types = {}
         return default_types
 
-    def _run_feature_extraction(self, source_marker_ids):
+    def _run_feature_extraction(self, marker_df, source_marker_ids):
 
         filtered_df = self._copy_filtered_columns_of_df(
-            df_to_filter=self.marker_df, marker_id_filter=source_marker_ids
+            df_to_filter=marker_df, marker_id_filter=source_marker_ids
         )
         df_correlation = dlc2kinematics.compute_correlation(filtered_df)
 

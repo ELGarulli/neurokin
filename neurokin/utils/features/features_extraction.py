@@ -19,19 +19,26 @@ def extract_features(features, bodyparts, skeleton, markers_df):
 
         elif input_type == "joints":
             target_joints = params.get("marker_ids", skeleton["angles"][input_type])
-            target_bodyparts = [{joint: skeleton["angles"][input_type][joint]} for joint in target_joints]
+            target_bodyparts = [
+                {joint: skeleton["angles"][input_type][joint]}
+                for joint in target_joints
+            ]
 
         params.pop("marker_ids", None)
 
         extracted_features = []
 
         for bodypart in target_bodyparts:
-            feature = extractor_obj.extract_features(source_marker_ids=bodypart,
-                                                     marker_df=markers_and_features_df,
-                                                     params=params)
+            feature = extractor_obj.extract_features(
+                source_marker_ids=bodypart,
+                marker_df=markers_and_features_df,
+                params=params,
+            )
             extracted_features.append(feature)
 
         new_features = pd.concat(extracted_features, axis=1)
-        markers_and_features_df = pd.concat((markers_and_features_df, new_features), axis=1)
+        markers_and_features_df = pd.concat(
+            (markers_and_features_df, new_features), axis=1
+        )
 
     return new_features
