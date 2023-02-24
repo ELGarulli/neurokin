@@ -1,1 +1,1 @@
-FEATURES_EXTRACTION_MODULE = "neurokin.features."
+FEATURES_EXTRACTION_MODULE = "neurokin.utils.features."

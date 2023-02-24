@@ -44,7 +44,7 @@ class DefaultParams:
             assert type(list_of_types) == list, f'The value of "{type_key}" in types is not a list: {list_of_types}.'
             not_all_elems_are_types_message = f''
             for elem in list_of_types:
-                assert type(elem) == type, f'The element "{elem}" in types[{key}] is not a type!' #TODO what was meant to be here? list_of_types?
+                assert type(elem) == type, f'The element "{elem}" in types[{type_key}] is not a type!'
 
     def _assert_default_values_match_valid_types(self, values: Dict[str, Any], types: Dict[str, List[type]]) -> None:
 
@@ -77,7 +77,6 @@ class FeatureExtraction(ABC):
 
     def __init__(self) -> None:
         self.default_params = self._initialize_default_params()
-
 
     @property
     @abstractmethod
@@ -125,7 +124,7 @@ class FeatureExtraction(ABC):
 
     @abstractmethod
     def _run_feature_extraction(self, source_marker_ids: List[str], marker_df: pd.DataFrame,
-                                params: Optional[Dict[str, Any]] = None) -> pd.DataFrame:
+                                params: [Dict[str, Any]]) -> pd.DataFrame:
         """
         This is now where the magic of your feature extraction is supposed to happen. 
         The features shall be extracted for all marker IDs given in the list 
@@ -142,20 +141,22 @@ class FeatureExtraction(ABC):
         """
         pass
 
-    def extract_features(self, source_marker_ids: List[str], marker_df: pd.DataFrame, params) -> pd.DataFrame:
+    def extract_features(self, source_marker_ids: List[str],
+                         marker_df: pd.DataFrame,
+                         params: Optional[Dict[str, Any]] = None) -> pd.DataFrame:
         params = self.default_params.assert_input_params_and_fill_with_defaults(input_params=params)
 
         extracted_features_df = self._run_feature_extraction(source_marker_ids=source_marker_ids,
                                                              marker_df=marker_df,
                                                              params=params)
 
-        self._assert_valid_output(output_df=extracted_features_df)
+        self._assert_valid_output(output_df=extracted_features_df, marker_df=marker_df)
         return extracted_features_df
 
-    def _assert_valid_output(self, output_df: pd.DataFrame) -> None:
+    def _assert_valid_output(self, output_df: pd.DataFrame, marker_df: pd.DataFrame) -> None:
         invalid_shape_message = (f'Rows of extracted features DataFrame ({output_df.shape[0]}) does not '
-                                 f'match number of rows in the original DataFrame ({self.marker_df.shape[0]}).')
-        assert output_df.shape[0] == self.marker_df.shape[0], invalid_shape_message
+                                 f'match number of rows in the original DataFrame ({marker_df.shape[0]}).')
+        assert output_df.shape[0] == marker_df.shape[0], invalid_shape_message
 
     def _initialize_default_params(self) -> DefaultParams:
         return DefaultParams(values=self.default_values, types=self.default_value_types)
