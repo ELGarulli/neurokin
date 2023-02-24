@@ -5,7 +5,7 @@ from typing import List, Dict, Any
 from .core import FeatureExtraction, DefaultParams
 
 
-class FeatureJointAngles(FeatureExtraction):
+class JointAnglesDLC(FeatureExtraction):
     """
     Computes the angles of joints
     Input: df with positon data (i.e. DLC output), source_marker_ids: List of markers for which speed should be computed
@@ -35,14 +35,14 @@ class FeatureJointAngles(FeatureExtraction):
 
         df_joint_angles = dlc2kinematics.compute_joint_angles(
             df=marker_df,
-            joints_dict=source_marker_ids,
+            joints_dict=[source_marker_ids],
             filter_window=params["window_size"],
         )
-        self._assert_valid_output(output_df=df_joint_angles)
+        self._assert_valid_output(output_df=df_joint_angles, marker_df=marker_df)
         return df_joint_angles
 
 
-class FeatureAngularVelocity(FeatureExtraction):
+class AngularVelocityDLC(FeatureExtraction):
     """
     Computes the velocity of angles
     Input: df with joint angle data, source_marker_ids: List of markers for which speed should be computed
@@ -71,8 +71,8 @@ class FeatureAngularVelocity(FeatureExtraction):
     ) -> pd.DataFrame:
         df_angular_momentum = dlc2kinematics.compute_joint_velocity(
             joint_angle=marker_df,
-            joints_dict=source_marker_ids,
+            joints_dict=[source_marker_ids],
             filter_window=params["window_size"],
         )
-        self._assert_valid_output(output_df=df_angular_momentum)
+        self._assert_valid_output(output_df=df_angular_momentum, marker_df=marker_df)
         return df_angular_momentum

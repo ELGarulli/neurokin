@@ -28,9 +28,9 @@ class CorrelationDLC(FeatureExtraction):
     def _run_feature_extraction(self, marker_df, source_marker_ids):
 
         filtered_df = self._copy_filtered_columns_of_df(
-            df_to_filter=marker_df, marker_id_filter=source_marker_ids
+            df_to_filter=marker_df, marker_id_filter=[source_marker_ids]
         )
         df_correlation = dlc2kinematics.compute_correlation(filtered_df)
 
-        self._assert_valid_output(output_df=df_correlation)
+        self._assert_valid_output(output_df=df_correlation, marker_df=marker_df)
         return df_correlation
