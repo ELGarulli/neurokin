@@ -14,15 +14,17 @@ def extract_features(features, bodyparts, skeleton, markers_df):
         extractor_obj = feature_extract_class()
         input_type = extractor_obj.input_type
 
-        if input_type == "markers":
+        if input_type == "markers": # single marker -> loop over
             target_bodyparts = params.get("marker_ids", bodyparts)
 
-        elif input_type == "joints":
+        elif input_type == "joints": # ref in skeleton
             target_joints = params.get("marker_ids", skeleton["angles"][input_type])
             target_bodyparts = [
                 {joint: skeleton["angles"][input_type][joint]}
                 for joint in target_joints
             ]
+        elif input_type == "multiple_markers":
+            target_bodyparts = [params.get("marker_ids", bodyparts)]
 
         params.pop("marker_ids", None)
 
