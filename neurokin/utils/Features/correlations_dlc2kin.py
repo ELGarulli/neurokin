@@ -4,7 +4,7 @@ from typing import List, Dict, Any
 from .core import FeatureExtraction, DefaultParams
 
 
-class Feature_angular_velocity(FeatureExtraction):
+class CorrelationDLC(FeatureExtraction):
     """
     Computes the correlation of features
     Input: markers_df, source_marker_ids: List of features to be correlated

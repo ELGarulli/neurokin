@@ -4,7 +4,7 @@ from typing import List, Dict, Any
 from .core import FeatureExtraction, DefaultParams
 
 
-class Feature_velocity(FeatureExtraction):
+class VelocityDLC(FeatureExtraction):
     """
     Computes the velocity of bodyparts seperated in the three dimensions -> 3 values (x,y,z)
     Input: df with positon data (i.e. DLC output), source_marker_ids: List of markers for which velocity should be computed
@@ -42,7 +42,7 @@ class Feature_velocity(FeatureExtraction):
         return df_velocity
 
 
-class Feature_speed(FeatureExtraction):
+class SpeedDLC(FeatureExtraction):
     """
     Computes the speed of bodyparts in a 3D space -> 1 value
     Input: df with positon data (i.e. DLC output), source_marker_ids: List of markers for which speed should be computed
@@ -78,7 +78,7 @@ class Feature_speed(FeatureExtraction):
         return df_speed
 
 
-class Feature_acceleration(FeatureExtraction):
+class AccelerationDLC(FeatureExtraction):
     """
     Computes the acceleration of bodyparts
     Input: df with positon data (i.e. DLC output), source_marker_ids: List of markers for which velocity should be computed
