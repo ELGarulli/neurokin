@@ -23,7 +23,7 @@ features:
         marker_ids: [lshoulder]
     #phase.PhasesAngle:
     #    marker_ids: [left_knee]
-    momentum_dlc.SpeedDLC:
+    momentum_dlc2kin.SpeedDLC:
         marker_id: [rknee]
     #get_position:
     #    sliding_window_size: True
