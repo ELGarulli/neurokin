@@ -5,7 +5,7 @@ from typing import List, Dict, Any
 from .core import FeatureExtraction, DefaultParams
 
 
-class Feature_joint_angles(FeatureExtraction):
+class FeatureJointAngles(FeatureExtraction):
     """
     Computes the angles of joints
     Input: df with positon data (i.e. DLC output), source_marker_ids: List of markers for which speed should be computed
@@ -42,7 +42,7 @@ class Feature_joint_angles(FeatureExtraction):
         return df_joint_angles
 
 
-class Feature_angular_velocity(FeatureExtraction):
+class FeatureAngularVelocity(FeatureExtraction):
     """
     Computes the velocity of angles
     Input: df with joint angle data, source_marker_ids: List of markers for which speed should be computed
