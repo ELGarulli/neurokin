@@ -35,7 +35,7 @@ class JointAnglesDLC(FeatureExtraction):
 
         df_joint_angles = dlc2kinematics.compute_joint_angles(
             df=marker_df,
-            joints_dict=[source_marker_ids],
+            joints_dict=source_marker_ids,
             filter_window=params["window_size"],
         )
         self._assert_valid_output(output_df=df_joint_angles, marker_df=marker_df)
