@@ -21,8 +21,8 @@ features:
     extraction_strategies.SampleFeatureExtractionStrategy:
         window_size: 10
         marker_ids: [lshoulder]
-    phase.PhasesAngle:
-        marker_ids: [left_knee]
+    #phase.PhasesAngle:
+    #    marker_ids: [left_knee]
     #get_accellaration:
     #    marker_id: [rknee]
     #get_position:
