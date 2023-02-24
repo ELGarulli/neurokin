@@ -1,7 +1,7 @@
-import numpy as np
 from numpy.typing import ArrayLike
 from neurokin.utils.kinematics import kinematics_processing, c3d_import_export, event_detection
 from neurokin.utils.helper import load_config
+from neurokin.utils.features import features_extraction
 import pandas as pd
 from matplotlib import pyplot as plt
 from dlc2kinematics.preprocess import smooth_trajectory
@@ -25,6 +25,7 @@ class KinematicDataRun:
         self.markers_df = pd.DataFrame()
         self.gait_param = pd.DataFrame()
         self.stepwise_gait_features = pd.DataFrame()
+        self.features_df: pd.MultiIndex = None
 
         self.left_mtp_lift: ArrayLike = None
         self.left_mtp_land: ArrayLike = None
@@ -108,7 +109,6 @@ class KinematicDataRun:
         self.scorer = scorer
         return
 
-
     def compute_gait_cycles_bounds(self, left_marker, right_marker, axis="z"):
         """
         Computes the lifting and landing frames of both feet using a left and a right marker, respectively.
@@ -173,25 +173,19 @@ class KinematicDataRun:
         plt.savefig(filename, facecolor="white")
         plt.close()
 
-    def compute_angles_joints(self):
-        """
-        It refers to the joints listed in the config under angles > joints to set a corresponding column in the
-        gait_param dataset. It should be able to support both 3d and 2d spaces.
-        :return:
-        """
-        for key, value in self.config["angles"]["joints"].items():
-            names = kinematics_processing.get_marker_coordinates_names(self.markers_df.columns.tolist(), value)
-            angle = []
-            for frame in range(len(self.markers_df)):
-                coordinates_3d = []
-                for name in names:
-                    values = kinematics_processing.get_marker_coordinate_values(self.markers_df, name, frame)
-                    coordinates_3d.append(values)
-                coordinates_3d = np.asarray(coordinates_3d)
-                angle.append(kinematics_processing.compute_angle(coordinates_3d))
-            parameter = pd.Series(angle)
-            self.gait_param[key] = parameter
-        return
+    def extract_features(self):
+        features = self.config["features"]
+        skeleton = self.config["skeleton"]
+
+        new_features = features_extraction.extract_features(features=features,
+                                             bodyparts=self.bodyparts,
+                                             skeleton=skeleton,
+                                             markers_df=self.markers_df)
+
+        if self.features_df is not None:
+            self.features_df = pd.concat((self.features_df, new_features), axis=1)
+        else:
+            self.features_df = new_features
 
     def gait_param_to_csv(self, output_folder="./"):
         """
@@ -206,16 +200,17 @@ class KinematicDataRun:
         Writes the gait_param dataframe to a csv file with the name [INPUT_FILENAME]+_gait_param.csv
         :return:
         """
-        self.stepwise_gait_features.to_csv(output_folder + self.path.split("/")[-1].replace(".c3d", "stepwise_feature.csv"))
+        self.stepwise_gait_features.to_csv(
+            output_folder + self.path.split("/")[-1].replace(".c3d", "stepwise_feature.csv"))
         return
-
 
     def get_angles_features(self, features_df, **kwargs):
         left_df, right_df = self.split_in_unilateral_df(**kwargs)
         left_features = pd.DataFrame()
         right_features = pd.DataFrame()
 
-        left_features = kinematics_processing.get_angle_features(left_df, self.left_mtp_land, features_df) #TODO update features df with all angle features
+        left_features = kinematics_processing.get_angle_features(left_df, self.left_mtp_land,
+                                                                 features_df)  # TODO update features df with all angle features
 
         self.stepwise_gait_features = left_features.join(right_features)
 
@@ -223,7 +218,7 @@ class KinematicDataRun:
                                name_starts_with=False, name_ends_with=False,
                                expected_columns_number=None,
                                left_columns=None, right_columns=None):
-        #self.stepwise_gait_features = 0
+        # self.stepwise_gait_features = 0
         left_df = pd.DataFrame()
         right_df = pd.DataFrame()
         if left_side:
@@ -233,13 +228,11 @@ class KinematicDataRun:
                                                               column_names=left_columns,
                                                               expected_columns_number=expected_columns_number)
 
-
         if right_side:
             right_df = kinematics_processing.get_unilateral_df(df=self.gait_param, side=right_side,
                                                                name_starts_with=name_starts_with,
                                                                name_ends_with=name_ends_with,
                                                                column_names=right_columns,
                                                                expected_columns_number=expected_columns_number)
-
 
         return left_df, right_df

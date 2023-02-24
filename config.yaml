@@ -18,11 +18,17 @@ skeleton:
     
     
 features:
-    SampleFeatureExtractionStrategy:
+    extraction_strategies.SampleFeatureExtractionStrategy:
         window_size: 10
-    get_accellaration: [(marker_id, rknee)]
-    get_position: [(sliding_window_size, True)]
-    get_max_angle: [(marker_subset, (skeleton, angles, joints)]
+        marker_ids: [lshoulder]
+    phase.PhasesAngle:
+        marker_ids: [left_knee]
+    #get_accellaration:
+    #    marker_id: [rknee]
+    #get_position:
+    #    sliding_window_size: True
+    #get_max_angle:
+    #    marker_id: [skeleton, angles, joints]
     
 
 

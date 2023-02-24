@@ -1,12 +1,15 @@
 from typing import Tuple, List, Dict, Optional, Union, Any
 import pandas as pd
-
 from .core import FeatureExtraction, DefaultParams
 
 
 
 class SampleFeatureExtractionStrategy(FeatureExtraction):
-    
+
+
+    @property
+    def input_type(self) -> str:
+        return "markers"
     @property
     def default_values(self) -> Dict[str, Any]:
         default_values = {'window_size': 5,
