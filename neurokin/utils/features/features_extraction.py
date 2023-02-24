@@ -34,4 +34,4 @@ def extract_features(features, bodyparts, skeleton, markers_df):
         new_features = pd.concat(extracted_features, axis=1)
         markers_and_features_df = pd.concat((markers_and_features_df, new_features), axis=1)
 
-    return new_features
+    return markers_and_features_df
