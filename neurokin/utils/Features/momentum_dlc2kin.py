@@ -35,7 +35,7 @@ class VelocityDLC(FeatureExtraction):
         df_velocity = dlc2kinematics.compute_velocity(
             df=marker_df,
             bodyparts=[source_marker_ids],
-            filter_window=params["window_size"],
+            filter_window=params["window_size"], save=False
         )
         self._assert_valid_output(output_df=df_velocity, marker_df=marker_df)
 
@@ -72,7 +72,7 @@ class SpeedDLC(FeatureExtraction):
         df_speed = dlc2kinematics.compute_speed(
             df=marker_df,
             bodyparts=[source_marker_ids],
-            filter_window=params["window_size"],
+            filter_window=params["window_size"], save=False
         )
         self._assert_valid_output(output_df=df_speed, marker_df=marker_df)
         return df_speed
@@ -109,7 +109,7 @@ class AccelerationDLC(FeatureExtraction):
         df_acceleration = dlc2kinematics.compute_acceleration(
             df=marker_df,
             bodyparts=[source_marker_ids],
-            filter_window=params["window_size"],
+            filter_window=params["window_size"], save=False
         )
         self._assert_valid_output(output_df=df_acceleration, marker_df=marker_df)
         return df_acceleration

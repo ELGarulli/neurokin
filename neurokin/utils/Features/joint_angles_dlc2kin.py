@@ -2,7 +2,7 @@ import dlc2kinematics
 import pandas as pd
 from typing import List, Dict, Any
 
-from .core import FeatureExtraction, DefaultParams
+from neurokin.utils.features.core import FeatureExtraction, DefaultParams
 
 
 class JointAnglesDLC(FeatureExtraction):
@@ -36,7 +36,7 @@ class JointAnglesDLC(FeatureExtraction):
         df_joint_angles = dlc2kinematics.compute_joint_angles(
             df=marker_df,
             joints_dict=source_marker_ids,
-            filter_window=params["window_size"],
+            filter_window=params["window_size"], save=False
         )
         self._assert_valid_output(output_df=df_joint_angles, marker_df=marker_df)
         return df_joint_angles
@@ -69,8 +69,11 @@ class AngularVelocityDLC(FeatureExtraction):
         marker_df: pd.DataFrame,
         params: Dict[str, Any],
     ) -> pd.DataFrame:
+
+        # filter df for specific columns, raise error if angles not calculated yet
+
         df_angular_momentum = dlc2kinematics.compute_joint_velocity(
             joint_angle=marker_df,
-            filter_window=params["window_size"],)
+            filter_window=params["window_size"], save=False)
         self._assert_valid_output(output_df=df_angular_momentum, marker_df=marker_df)
         return df_angular_momentum

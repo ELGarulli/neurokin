@@ -12,7 +12,7 @@ skeleton:
             maze_corner_open_right: [mcorner_ol, mcorner_or, mcorner_cr]        
     distances:
         lef_shoulder_to_toe: [lshoulder, lmtp]
-    elevations:
+    elevations: # not needed, just call function on these markers
         left_hip: lhip
         right_hip: rhip
     
@@ -29,9 +29,12 @@ features:
     joint_angles_dlc2kin.JointAnglesDLC:
         window_size: 3
         marker_ids: [left_hip]
-    joint_angles_dlc2kin.AngularVelocityDLC:
-        window_size: 3
-        marker_ids: [left_hip]
+    #joint_angles_dlc2kin.AngularVelocityDLC:
+      #  window_size: 3
+     #   marker_ids: [left_hip]
+    #correlations_dlc2kin.CorrelationDLC:
+       # marker_ids: [lshoulder, left_hip]
+        #features_to_correlate: [speed, x]
     #get_max_angle:
     #    marker_ids: [skeleton, angles, joints]
     
