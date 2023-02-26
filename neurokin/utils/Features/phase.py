@@ -32,7 +32,7 @@ class PhasesAngle(FeatureExtraction):
                                                      params=params)
             markers_and_features_df = pd.concat((markers_and_features_df, feature), axis=1)
 
-        angle = markers_and_features_df["scorer"][source_marker_ids.keys()]
+        angle = markers_and_features_df["scorer"][joint]
         phase_df = angle.apply(get_phase)
 
         filtered_df = self._rename_columns_on_selected_idx_level(df=phase_df,

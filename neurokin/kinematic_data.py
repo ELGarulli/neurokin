@@ -1,7 +1,7 @@
 from numpy.typing import ArrayLike
 from neurokin.utils.kinematics import kinematics_processing, c3d_import_export, event_detection
 from neurokin.utils.helper import load_config
-from neurokin.utils.features import features_extraction
+from neurokin.utils.features import features_extraction, binning
 import pandas as pd
 from matplotlib import pyplot as plt
 from dlc2kinematics.preprocess import smooth_trajectory
@@ -186,6 +186,10 @@ class KinematicDataRun:
             self.features_df = pd.concat((self.features_df, new_features), axis=1)
         else:
             self.features_df = new_features
+
+    def get_binned_features(self):
+        test = binning.get_easy_metrics_on_bins(self.markers_df, self.features_df, window=50, overlap=25)
+        return test
 
     def gait_param_to_csv(self, output_folder="./"):
         """
