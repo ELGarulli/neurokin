@@ -42,4 +42,6 @@ kin_data.get_c3d_compliance()
 
 kin_data.extract_features()
 
+test = kin_data.get_binned_features()
+
 print(kin_data.features_df.head(10))
