@@ -1,10 +1,10 @@
 import dlc2kinematics
+import pandas as pd
 from typing import List, Dict, Any
+from neurokin.utils.features.core import FeatureExtraction, DefaultParams
 
-from .core import FeatureExtraction, DefaultParams
 
-
-class Feature_velocity(FeatureExtraction):
+class VelocityDLC(FeatureExtraction):
     """
     Computes the velocity of bodyparts seperated in the three dimensions -> 3 values (x,y,z)
     Input: df with positon data (i.e. DLC output), source_marker_ids: List of markers for which velocity should be computed
@@ -12,7 +12,7 @@ class Feature_velocity(FeatureExtraction):
     """
 
     @property
-    def input_type(self):
+    def input_type(self) -> str:
         return "markers"
 
     @property
@@ -25,19 +25,24 @@ class Feature_velocity(FeatureExtraction):
         default_types = {"window_size": [int]}
         return default_types
 
-    def _run_feature_extraction(self, source_marker_ids):
+    def _run_feature_extraction(
+        self,
+        source_marker_ids: List[str],
+        marker_df: pd.DataFrame,
+        params: Dict[str, Any],
+    ) -> pd.DataFrame:
 
         df_velocity = dlc2kinematics.compute_velocity(
-            df=self.marker_df,
-            bodyparts=source_marker_ids,
-            filter_window=self.params["window_size"],
+            df=marker_df,
+            bodyparts=[source_marker_ids],
+            filter_window=params["window_size"], save=False
         )
-        self._assert_valid_output(output_df=df_velocity)
+        self._assert_valid_output(output_df=df_velocity, marker_df=marker_df)
 
         return df_velocity
 
 
-class Feature_speed(FeatureExtraction):
+class SpeedDLC(FeatureExtraction):
     """
     Computes the speed of bodyparts in a 3D space -> 1 value
     Input: df with positon data (i.e. DLC output), source_marker_ids: List of markers for which speed should be computed
@@ -45,7 +50,7 @@ class Feature_speed(FeatureExtraction):
     """
 
     @property
-    def input_type(self):
+    def input_type(self) -> str:
         return "markers"
 
     @property
@@ -58,18 +63,22 @@ class Feature_speed(FeatureExtraction):
         default_types = {"window_size": [int]}
         return default_types
 
-    def _run_feature_extraction(self, source_marker_ids):
-
+    def _run_feature_extraction(
+        self,
+        source_marker_ids: List[str],
+        marker_df: pd.DataFrame,
+        params: Dict[str, Any],
+    ) -> pd.DataFrame:
         df_speed = dlc2kinematics.compute_speed(
-            df=self.marker_df,
-            bodyparts=source_marker_ids,
-            filter_window=self.params["window_size"],
+            df=marker_df,
+            bodyparts=[source_marker_ids],
+            filter_window=params["window_size"], save=False
         )
-        self._assert_valid_output(output_df=df_speed)
+        self._assert_valid_output(output_df=df_speed, marker_df=marker_df)
         return df_speed
 
 
-class Feature_acceleration(FeatureExtraction):
+class AccelerationDLC(FeatureExtraction):
     """
     Computes the acceleration of bodyparts
     Input: df with positon data (i.e. DLC output), source_marker_ids: List of markers for which velocity should be computed
@@ -77,7 +86,7 @@ class Feature_acceleration(FeatureExtraction):
     """
 
     @property
-    def input_type(self):
+    def input_type(self) -> str:
         return "markers"
 
     @property
@@ -90,12 +99,17 @@ class Feature_acceleration(FeatureExtraction):
         default_types = {"window_size": [int]}
         return default_types
 
-    def _run_feature_extraction(self, source_marker_ids):
+    def _run_feature_extraction(
+        self,
+        source_marker_ids: List[str],
+        marker_df: pd.DataFrame,
+        params: Dict[str, Any],
+    ) -> pd.DataFrame:
 
         df_acceleration = dlc2kinematics.compute_acceleration(
-            df=self.marker_df,
-            bodyparts=source_marker_ids,
-            filter_window=self.params["window_size"],
+            df=marker_df,
+            bodyparts=[source_marker_ids],
+            filter_window=params["window_size"], save=False
         )
-        self._assert_valid_output(output_df=df_acceleration)
+        self._assert_valid_output(output_df=df_acceleration, marker_df=marker_df)
         return df_acceleration
