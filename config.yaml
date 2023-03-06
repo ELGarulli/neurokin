@@ -18,18 +18,26 @@ skeleton:
     
     
 features:
-    extraction_strategies.SampleFeatureExtractionStrategy:
-        window_size: 10
-        marker_ids: [lshoulder]
+    #extraction_strategies.SampleFeatureExtractionStrategy:
+    #    window_size: 1
+        #marker_ids: [lshoulder, lmtp]
     #phase.PhasesAngle:
     #    marker_ids: [left_knee]
-    #get_accellaration:
+    joint_angles_dlc2kin.Feature_joint_angles:
+        window_size: 1
     #    marker_id: [rknee]
-    #get_position:
+    joint_angles_dlc2kin.Feature_angular_velocity:
+        window_size: 1
     #    sliding_window_size: True
-    #get_max_angle:
+    momentum_dlc2kin.Feature_velocity:
+        window_size: 1
     #    marker_id: [skeleton, angles, joints]
-    
+    momentum_dlc2kin.Feature_speed:
+        window_size: 1
+    momentum_dlc2kin.Feature_acceleration:
+         window_size: 1
+
+
 
 
 events:
