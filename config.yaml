@@ -23,19 +23,19 @@ features:
         #marker_ids: [lshoulder, lmtp]
     #phase.PhasesAngle:
     #    marker_ids: [left_knee]
-    joint_angles_dlc2kin.Feature_joint_angles:
-        window_size: 1
+    joint_angles_dlc2kin.JointAnglesDLC:
+    #    window_size: 1
     #    marker_id: [rknee]
-    joint_angles_dlc2kin.Feature_angular_velocity:
-        window_size: 1
+    joint_angles_dlc2kin.AngularVelocityDLC:
+    #    window_size: 1
     #    sliding_window_size: True
-    momentum_dlc2kin.Feature_velocity:
-        window_size: 1
+    momentum_dlc2kin.AccelerationDLC:
+    #    window_size: 1
     #    marker_id: [skeleton, angles, joints]
-    momentum_dlc2kin.Feature_speed:
-        window_size: 1
-    momentum_dlc2kin.Feature_acceleration:
-         window_size: 1
+    #momentum_dlc2kin.VelocityDLC:
+    #    window_size: 1
+    momentum_dlc2kin.SpeedDLC:
+    #     window_size: 1
 
 
 

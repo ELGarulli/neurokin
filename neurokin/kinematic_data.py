@@ -187,8 +187,8 @@ class KinematicDataRun:
         else:
             self.features_df = new_features
 
-    def get_binned_features(self):
-        test = binning.get_easy_metrics_on_bins(self.markers_df, self.features_df, window=50, overlap=25)
+    def get_binned_features(self, window=50, overlap=25):
+        test = binning.get_easy_metrics_on_bins(self.markers_df, self.features_df, window=window, overlap=overlap)
         return test
 
     def gait_param_to_csv(self, output_folder="./"):

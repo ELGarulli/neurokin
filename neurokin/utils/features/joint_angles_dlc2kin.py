@@ -27,19 +27,25 @@ class JointAnglesDLC(FeatureExtraction):
         return default_types
 
     def _run_feature_extraction(
-        self,
-        source_marker_ids: List[str],
-        marker_df: pd.DataFrame,
-        params: Dict[str, Any],
+            self,
+            source_marker_ids: List[str],
+            marker_df: pd.DataFrame,
+            params: Dict[str, Any],
     ) -> pd.DataFrame:
-
         df_joint_angles = dlc2kinematics.compute_joint_angles(
             df=marker_df,
             joints_dict=source_marker_ids,
             filter_window=params["window_size"], save=False
         )
-        self._assert_valid_output(output_df=df_joint_angles, marker_df=marker_df)
-        return df_joint_angles
+        names = marker_df.columns.names
+        scorer = marker_df.columns.get_level_values("scorer")[0]
+        df_joint_reshaped = df_joint_angles.copy()
+        df_joint_reshaped.columns = pd.MultiIndex.from_product(
+                [[scorer], source_marker_ids.keys(), df_joint_angles.columns],
+                names=names,)
+
+        self._assert_valid_output(output_df=df_joint_reshaped, marker_df=marker_df)
+        return df_joint_reshaped
 
 
 class AngularVelocityDLC(FeatureExtraction):
@@ -64,12 +70,11 @@ class AngularVelocityDLC(FeatureExtraction):
         return default_types
 
     def _run_feature_extraction(
-        self,
-        source_marker_ids: List[str],
-        marker_df: pd.DataFrame,
-        params: Dict[str, Any],
+            self,
+            source_marker_ids: List[str],
+            marker_df: pd.DataFrame,
+            params: Dict[str, Any],
     ) -> pd.DataFrame:
-
         # filter df for specific columns, raise error if angles not calculated yet
 
         df_angular_momentum = dlc2kinematics.compute_joint_velocity(
