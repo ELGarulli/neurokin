@@ -23,9 +23,8 @@ class PhasesAngle(FeatureExtraction):
         return default_types
 
     def _run_feature_extraction(
-        self, source_marker_ids: List[str], marker_df, params
+            self, source_marker_ids: List[str], marker_df, params
     ) -> pd.DataFrame:
-
         markers_and_features_df = marker_df.copy()
         joint = [key for key in source_marker_ids.keys()][0]
         if not joint in marker_df.columns.levels[1]:

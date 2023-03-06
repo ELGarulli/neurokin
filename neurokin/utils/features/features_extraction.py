@@ -6,7 +6,7 @@ import pandas as pd
 def extract_features(features, bodyparts, skeleton, markers_df):
     markers_and_features_df = markers_df.copy()
     for feature_name, params in features.items():
-
+        params = {} if params is None else params
         module_, feature_class = feature_name.rsplit(".", maxsplit=1)
         module_ = FEATURES_EXTRACTION_MODULE + module_
         m = import_module(module_)

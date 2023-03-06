@@ -22,7 +22,8 @@ to_shift = ["rshoulder_y", "rcrest_y", "rhip_y",
 step_left_marker = "lmtp"
 step_right_marker = "rmtp"
 
-file = "../test_data/runway03.c3d"
+#file = "../test_data/runway03.c3d"
+file = "C:/Users/Elisa/Documents/GitHub/temp_data/c3d_fog/53/runway15.c3d"
 
 kin_data = KinematicDataRun(file, CONFIGPATH)  # creating a single run obj
 kin_data.load_kinematics()
@@ -36,7 +37,8 @@ kin_data.get_c3d_compliance()
 
 bodyparts_to_drop = [i[1] for i in kin_data.markers_df.columns.to_list()[::3] if i[1].startswith("*")]
 kin_data.markers_df = kin_data.markers_df.drop(bodyparts_to_drop, axis=1, level=1, inplace=False)
-kin_data.bodyparts =  [bp for bp in kin_data.bodyparts if bp not in bodyparts_to_drop]
+#kin_data.markers_df.columns.names = ["scorer", "bodyparts", "coords"]
+kin_data.bodyparts = [bp for bp in kin_data.bodyparts if bp not in bodyparts_to_drop]
 kin_data.extract_features()
 
 test = kin_data.get_binned_features()
