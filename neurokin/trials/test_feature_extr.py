@@ -1,4 +1,5 @@
 from neurokin.kinematic_data import KinematicDataRun
+import pandas as pd
 from neurokin.neural_data import NeuralData
 from neurokin.utils.neural import processing, neural_plot
 
@@ -23,7 +24,7 @@ step_left_marker = "lmtp"
 step_right_marker = "rmtp"
 
 #file = "../test_data/runway03.c3d"
-file = "C:/Users/Elisa/Documents/GitHub/temp_data/c3d_fog/53/runway15.c3d"
+file = "C:/Users/Elisa/Documents/GitHub/temp_data/c3d_fog/92/runway04.c3d"
 
 kin_data = KinematicDataRun(file, CONFIGPATH)  # creating a single run obj
 kin_data.load_kinematics()
@@ -42,5 +43,9 @@ kin_data.bodyparts = [bp for bp in kin_data.bodyparts if bp not in bodyparts_to_
 kin_data.extract_features()
 
 test = kin_data.get_binned_features()
+step_height = kin_data.get_trace_height(marker="lmtp", axis="z")
+step_length = kin_data.get_trace_fwd_movement(marker="lmtp", axis="y")
+
+kin_data.features_df = pd.concat((kin_data.features_df, step_height, step_length), axis=1)
 
 print(kin_data.features_df.head(10))

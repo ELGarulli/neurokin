@@ -188,7 +188,24 @@ class KinematicDataRun:
             self.features_df = new_features
 
     def get_binned_features(self, window=50, overlap=25):
-        test = binning.get_easy_metrics_on_bins(self.markers_df, self.features_df, window=window, overlap=overlap)
+        reformat_df = binning.parse_df_features_for_binning(self.markers_df, self.features_df)
+        test = binning.get_easy_metrics_on_bins(reformat_df, window=window, overlap=overlap)
+        return test
+
+    def get_trace_height(self, marker, axis="z", window=50, overlap=25):
+        test = binning.get_step_height_on_bins(self.markers_df,
+                                               window=window,
+                                               overlap=overlap,
+                                               marker=marker,
+                                               axis=axis)
+        return test
+
+    def get_trace_fwd_movement(self, marker, axis="y", window=50, overlap=25):
+        test = binning.get_step_height_on_bins(self.markers_df,
+                                               window=window,
+                                               overlap=overlap,
+                                               marker=marker,
+                                               axis=axis)
         return test
 
     def gait_param_to_csv(self, output_folder="./"):

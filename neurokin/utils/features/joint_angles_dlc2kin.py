@@ -42,7 +42,7 @@ class JointAnglesDLC(FeatureExtraction):
         df_joint_reshaped = df_joint_angles.copy()
         df_joint_reshaped.columns = pd.MultiIndex.from_product(
                 [[scorer], source_marker_ids.keys(), df_joint_angles.columns],
-                names=names,)
+                names=names)
 
         self._assert_valid_output(output_df=df_joint_reshaped, marker_df=marker_df)
         return df_joint_reshaped

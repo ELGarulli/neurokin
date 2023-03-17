@@ -9,7 +9,9 @@ skeleton:
             right_ankle: [rknee, rankle, rmtp]
         references:
             full_body_tilt: [lshoulder, lmtp, mcorner]
-            maze_corner_open_right: [mcorner_ol, mcorner_or, mcorner_cr]        
+            maze_corner_open_right: [mcorner_ol, mcorner_or, mcorner_cr]
+    #correlations:
+    #    left_shoulder_knee : [lknee, lshoulder]
     distances:
         lef_shoulder_to_toe: [lshoulder, lmtp]
     elevations:
@@ -36,6 +38,10 @@ features:
     #    window_size: 1
     momentum_dlc2kin.SpeedDLC:
     #     window_size: 1
+    #correlation.speed:
+    #    marker_id: [left_shoulder_knee : [lknee, lshoulder]]
+    #correlation.angles:
+    #
 
 
 
