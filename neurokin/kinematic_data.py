@@ -200,8 +200,8 @@ class KinematicDataRun:
                                                axis=axis)
         return test
 
-    def get_trace_fwd_movement(self, marker, axis="y", window=50, overlap=25):
-        test = binning.get_step_height_on_bins(self.markers_df,
+    def get_step_fwd_movement_on_bins(self, marker, axis="y", window=50, overlap=25):
+        test = binning.get_step_fwd_movement_on_bins(self.markers_df,
                                                window=window,
                                                overlap=overlap,
                                                marker=marker,

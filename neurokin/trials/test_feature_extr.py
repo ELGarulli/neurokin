@@ -44,8 +44,8 @@ kin_data.extract_features()
 
 test = kin_data.get_binned_features()
 step_height = kin_data.get_trace_height(marker="lmtp", axis="z")
-step_length = kin_data.get_trace_fwd_movement(marker="lmtp", axis="y")
+step_length = kin_data.get_step_fwd_movement_on_bins(marker="lmtp", axis="y")
 
-kin_data.features_df = pd.concat((kin_data.features_df, step_height, step_length), axis=1)
+#kin_data.features_df = pd.concat((kin_data.features_df, step_height, step_length), axis=1)
 
 print(kin_data.features_df.head(10))
