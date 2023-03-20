@@ -9,8 +9,7 @@ def parse_df_features_for_binning(df_markers, df_features):
     df_grouped = df_grouped.droplevel("scorer", axis=1)
     df_grouped.columns = df_grouped.columns.to_flat_index()
     df_grouped.columns = ['_'.join(col) for col in df_grouped.columns.values]
-    test_names = [col.replace(" ", "_") for col in df_grouped.columns.values]
-
+    #test_names = [col.replace(" ", "_") for col in df_grouped.columns.values]
     df_grouped.drop(cols, inplace=True, axis=1)
 
     return df_grouped
@@ -49,4 +48,4 @@ def get_step_height(trace):
 
 
 def get_step_len(trace):
-    return trace[-1] - trace[0]
+    return trace.values[-1] - trace.values[0]
