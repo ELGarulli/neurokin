@@ -42,9 +42,6 @@ features:
     #    window_size: 1
     momentum_dlc2kin.SpeedDLC:
     #     window_size: 1
-    #correlation.speed:
-    #    marker_id: [left_shoulder_knee : [lknee, lshoulder]]
-    #correlation.angles:
     #
 
 
