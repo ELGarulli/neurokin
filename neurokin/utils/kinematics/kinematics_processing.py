@@ -64,6 +64,7 @@ def tilt_correct(df, reference_marker, columns_to_correct):
 
 
 def shift_correct(df, reference_marker, columns_to_correct):
+    #TODO compliance with DLC?
     """
     If the origin is not set to the beginning of the runway (e.g. set to the center) one of the axis will have negative
     values. This functions shifts all the columns to be corrected by the minimum value of the reference marker.
