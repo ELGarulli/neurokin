@@ -85,7 +85,8 @@ def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1", s
 
 def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: str, channels=None,
                                    sync_present: bool = False,
-                                   sync_ch: int = None) -> (
+                                   sync_ch: int = None,
+                                   source_processor: str = None) -> (
         float, np.ndarray):
     """
     Imports open ephys data from binary files.
@@ -101,7 +102,8 @@ def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: 
     with open(structure_path) as f:
         structure = json.load(f)
 
-    source_processor = str(structure[CONTINUOUS][0][SOURCE_PROCESSOR_NAME].replace(" ", "_")) + "-" + \
+    if source_processor is None:
+        source_processor = str(structure[CONTINUOUS][0][SOURCE_PROCESSOR_NAME].replace(" ", "_")) + "-" + \
                        str(structure[CONTINUOUS][0][SOURCE_PROCESSOR_ID]) + TRAILING_NUMBER
 
     binary_data_path = folderpath + "/" + experiment + "/" + recording + "/" + \

@@ -1,12 +1,16 @@
 skeleton:
     angles:
         joints:
+            left_crest: [lshoulder, lcrest, lhip]
             left_hip: [lcrest, lhip, lknee]
             left_knee: [lhip, lknee, lankle]
             left_ankle: [lknee, lankle, lmtp]
+            right_crest: [rshoulder, rcrest, rhip]
             right_hip: [rcrest, rhip, rknee]
             right_knee: [rhip, rknee, rankle]
             right_ankle: [rknee, rankle, rmtp]
+            trunk_cross_l: [lshoulder, rcrest, lhip]
+            trunk_cross_r: [rshoulder, lcrest, rhip]
         references:
             full_body_tilt: [lshoulder, lmtp, mcorner]
             maze_corner_open_right: [mcorner_ol, mcorner_or, mcorner_cr]

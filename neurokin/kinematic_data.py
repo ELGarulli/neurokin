@@ -58,12 +58,12 @@ class KinematicDataRun:
 
         if correct_shift:
 
-            if shift_reference_marker not in self.markers_df.columns.tolist():
+            if shift_reference_marker not in self.markers_df.columns.get_level_values("bodyparts").tolist():
                 raise ValueError("The shift reference marker " + shift_reference_marker + " is not among the markers."
                                  + "\n Please select one among the following: \n" +
                                  self.markers_df.columns.tolist())
 
-            if not set(to_shift).issubset(self.markers_df.columns.tolist()):
+            if not set(to_shift).issubset(self.markers_df.columns.get_level_values("bodyparts").tolist()):
                 raise ValueError("Some or all columns to shift are not among the markers. You selected: \n"
                                  + " ,".join(str(x) for x in to_shift)
                                  + "\n Please select them among the following: \n" +
@@ -73,12 +73,12 @@ class KinematicDataRun:
 
         if correct_tilt:
 
-            if tilt_reference_marker not in self.markers_df.columns.tolist():
+            if tilt_reference_marker not in self.markers_df.columns.get_level_values("bodyparts").tolist():
                 raise ValueError("The tilt reference marker " + tilt_reference_marker + " is not among the markers."
                                  + "\n Please select one among the following: \n" +
                                  ", ".join(str(x) for x in self.markers_df.columns.tolist()))
 
-            if not set(to_tilt).issubset(self.markers_df.columns.tolist()):
+            if not set(to_tilt).issubset(self.markers_df.columns.get_level_values("bodyparts").tolist()):
                 raise ValueError("Some or all columns to tilt are not among the markers. You selected: \n"
                                  + " ,".join(str(x) for x in to_tilt)
                                  + "\n Please select them among the following: \n" +

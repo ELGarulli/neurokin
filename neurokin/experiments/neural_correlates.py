@@ -5,7 +5,7 @@ import pandas as pd
 from scipy import stats
 
 from neurokin.utils.neural import (processing, importing)
-from neurokin import NeuralData
+from neurokin.neural_data import NeuralData
 
 
 def get_event_len(csv_path):
@@ -28,9 +28,11 @@ def get_events_df(event_path, skiprows):
 
 def get_event_timestamps_fog(df):
     event_onset_idxs = df.index[(df["Name"] == "Foot Off") & (df["Context"] == "General")].tolist()
+    if not len(event_onset_idxs) > 0:
+        return None
 
     event_onset = [df.iloc[i]["Time (s)"] for i in event_onset_idxs]
-    event_end = [df.iloc[i + 1]["Time (s)"] for i in event_onset_idxs if i + 2 < len(df)]
+    event_end = [df.iloc[i + 1]["Time (s)"] for i in event_onset_idxs if not i + 1 == len(df)]
 
     events = zip(event_onset, event_end)
 
@@ -40,6 +42,14 @@ def get_event_timestamps_fog(df):
 def get_event_timestamps_gait(df):
     event_onset_idxs = df.index[(df["Name"] == "Foot Off") & (df["Context"].isin(["Left", "Right"]))].tolist()
     event_end_idxs = df.index[(df["Name"] == "Foot Strike") & (df["Context"].isin(["Left", "Right"]))].tolist()
+
+    if not len(event_onset_idxs) > 0:
+        return None
+
+    if not len(event_end_idxs) > 0:
+        return None
+
+    event_end_idxs = event_end_idxs if event_end_idxs[0] > event_onset_idxs[0] else event_end_idxs[1:]
 
     event_onset = [df.iloc[i]["Time (s)"] for i in event_onset_idxs]
     event_end = [df.iloc[i]["Time (s)"] for i in event_end_idxs]
@@ -52,6 +62,14 @@ def get_event_timestamps_gait(df):
 def get_event_timestamps_interruption(df):
     event_onset_idxs = df.index[(df["Name"] == "Foot Strike") & (df["Context"].isin(["Left", "Right"]))].tolist()
     event_end_idxs = df.index[(df["Name"] == "Foot Off") & (df["Context"].isin(["Left", "Right"]))].tolist()[1:]
+
+    if not len(event_onset_idxs) > 0:
+        return None
+
+    if not len(event_end_idxs) > 0:
+        return None
+
+    event_end_idxs = event_end_idxs if event_end_idxs[0] > event_onset_idxs[0] else event_end_idxs[1:]
 
     event_onset = [df.iloc[i]["Time (s)"] for i in event_onset_idxs]
     event_end = [df.iloc[i]["Time (s)"] for i in event_end_idxs]
@@ -152,3 +170,12 @@ def get_all_neural_correlates(nfft, nov, skiprows, experiment_path, animals, neu
                     psds[key].append(psd)
 
     return pxxs, psds, freqs_psd, freqs_spec, t
+
+
+def time_to_frame_in_roi(timestamp, fs, first_frame):
+    frame = int(timestamp * fs) - first_frame
+    if frame < 0:
+        raise ValueError(f"First frame value is bigger than frame of event. "
+                         f"First frame is {first_frame} and event frame is {frame}")
+    return frame
+
