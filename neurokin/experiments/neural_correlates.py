@@ -34,7 +34,7 @@ def get_event_timestamps_fog(df):
     event_onset = [df.iloc[i]["Time (s)"] for i in event_onset_idxs]
     event_end = [df.iloc[i + 1]["Time (s)"] for i in event_onset_idxs if not i + 1 == len(df)]
 
-    events = zip(event_onset, event_end)
+    events = tuple(zip(event_onset, event_end))
 
     return events
 
@@ -54,7 +54,7 @@ def get_event_timestamps_gait(df):
     event_onset = [df.iloc[i]["Time (s)"] for i in event_onset_idxs]
     event_end = [df.iloc[i]["Time (s)"] for i in event_end_idxs]
 
-    events = zip(event_onset, event_end)
+    events = tuple(zip(event_onset, event_end))
 
     return events
 
@@ -74,7 +74,7 @@ def get_event_timestamps_interruption(df):
     event_onset = [df.iloc[i]["Time (s)"] for i in event_onset_idxs]
     event_end = [df.iloc[i]["Time (s)"] for i in event_end_idxs]
 
-    events = zip(event_onset, event_end)
+    events = list(zip(event_onset, event_end))
 
     return events
 
@@ -108,9 +108,9 @@ def get_neural_correlate_psd(raw, fs, t_on, t_off, nfft, nov, zscore=True):
     return pxx, freqs
 
 
-def get_neural_ch(neural_path, ch):
+def get_neural_ch(neural_path, ch, stream_name):
     neural = NeuralData(path=neural_path)
-    neural.load_tdt_data(stream_name="LFP1", sync_present=True, stim_stream_name="Wav1")
+    neural.load_tdt_data(stream_name=stream_name)
 
     return neural.raw[ch], neural.fs
 

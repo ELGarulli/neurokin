@@ -46,6 +46,7 @@ def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1", s
     """
     data = tdt.read_block(folderpath, evtype=['streams'], channel=ch)
     stim_data = None
+    sync_fs = None
     try:
         streams = data.streams
         stored = getattr(streams, stream_name)
@@ -67,6 +68,7 @@ def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1", s
     raw = raw[..., s1:s2]
 
     if sync_present:
+
         try:
             streams = data.streams
             stored = getattr(streams, stim_name)
@@ -79,7 +81,7 @@ def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1", s
             print(data.streams.__dict__.keys())
             return
         stim_data = stim_data[s1:s2]
-        sync_fs = None
+
     return fs, raw, stim_data, sync_fs
 
 
@@ -104,7 +106,7 @@ def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: 
 
     if source_processor is None:
         source_processor = str(structure[CONTINUOUS][0][SOURCE_PROCESSOR_NAME].replace(" ", "_")) + "-" + \
-                       str(structure[CONTINUOUS][0][SOURCE_PROCESSOR_ID]) + TRAILING_NUMBER
+                           str(structure[CONTINUOUS][0][SOURCE_PROCESSOR_ID]) + TRAILING_NUMBER
 
     binary_data_path = folderpath + "/" + experiment + "/" + recording + "/" + \
                        CONTINUOUS + "/" + source_processor + "/" + CONTINUOUS + ".dat"
