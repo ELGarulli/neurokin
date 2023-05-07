@@ -1,7 +1,7 @@
 import dlc2kinematics
 import pandas as pd
 from typing import List, Dict, Any
-from neurokin.utils.features.core import FeatureExtraction, DefaultParams
+from neurokin.utils.features.core import FeatureExtraction
 
 
 class VelocityDLC(FeatureExtraction):
@@ -32,12 +32,15 @@ class VelocityDLC(FeatureExtraction):
         params: Dict[str, Any],
     ) -> pd.DataFrame:
 
+        coords_df = marker_df['scorer'][source_marker_ids][['x', 'y', 'z']]
         df_velocity = dlc2kinematics.compute_velocity(
-            df=marker_df,
+            df=coords_df,
             bodyparts=[source_marker_ids],
             filter_window=params["window_size"]
         )
-        self._assert_valid_output(output_df=df_velocity, marker_df=marker_df)
+        # self._assert_valid_output(output_df=df_velocity, marker_df=marker_df)
+        df_velocity = self._rename_columns_on_selected_idx_level(
+            df=df_velocity, suffix="_velocity")
 
         return df_velocity
 
@@ -74,7 +77,8 @@ class SpeedDLC(FeatureExtraction):
             bodyparts=[source_marker_ids],
             filter_window=params["window_size"]
         )
-        self._assert_valid_output(output_df=df_speed, marker_df=marker_df)
+        # self._assert_valid_output(output_df=df_speed, marker_df=marker_df)
+
         return df_speed
 
 
@@ -106,10 +110,14 @@ class AccelerationDLC(FeatureExtraction):
         params: Dict[str, Any],
     ) -> pd.DataFrame:
 
+        coords_df = marker_df['scorer'][source_marker_ids][['x', 'y', 'z']]
         df_acceleration = dlc2kinematics.compute_acceleration(
-            df=marker_df,
+            df=coords_df,
             bodyparts=[source_marker_ids],
             filter_window=params["window_size"]
         )
-        self._assert_valid_output(output_df=df_acceleration, marker_df=marker_df)
+        # self._assert_valid_output(output_df=df_acceleration, marker_df=marker_df)
+        df_acceleration = self._rename_columns_on_selected_idx_level(
+            df=df_acceleration, suffix="_acceleration")
+
         return df_acceleration

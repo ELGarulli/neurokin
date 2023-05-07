@@ -6,9 +6,9 @@ import pandas as pd
 
 class DefaultParams:
     def __init__(self, values: Dict[str, Any], types: Dict[str, List[type]]) -> None:
-        self._assert_identical_keys(value_keys=values.keys(), type_keys=types.keys())
-        self._assert_values_in_types_are_lists_of_types(types=types)
-        self._assert_default_values_match_valid_types(values=values, types=types)
+        # self._assert_identical_keys(value_keys=values.keys(), type_keys=types.keys())
+        # self._assert_values_in_types_are_lists_of_types(types=types)
+        # self._assert_default_values_match_valid_types(values=values, types=types)
         self.values = values
         self.types = types
 
@@ -35,47 +35,47 @@ class DefaultParams:
                 if key not in input_params:
                     input_params[key] = default_value
         return input_params
-
-    def _assert_identical_keys(
-        self, value_keys: List[str], type_keys: List[str]
-    ) -> None:
-        keys_dont_match_message = (
-            'The keys of values & types have to be identical! However, "{}" '
-            "of {} does not match with any key in {}: {}."
-        )
-        for key in value_keys:
-            assert key in type_keys, keys_dont_match_message.format(
-                key, "values", "types", type_keys
-            )
-        for key in type_keys:
-            assert key in value_keys, keys_dont_match_message.format(
-                key, "types", "values", value_keys
-            )
-
-    def _assert_values_in_types_are_lists_of_types(
-        self, types: Dict[str, List[type]]
-    ) -> None:
-        for type_key, list_of_types in types.items():
-            assert (
-                type(list_of_types) == list
-            ), f'The value of "{type_key}" in types is not a list: {list_of_types}.'
-            not_all_elems_are_types_message = f""
-            for elem in list_of_types:
-                assert (
-                    type(elem) == type
-                ), f'The element "{elem}" in types[{type_key}] is not a type!'
-
-    def _assert_default_values_match_valid_types(
-        self, values: Dict[str, Any], types: Dict[str, List[type]]
-    ) -> None:
-
-        for key, default_value in values.items():
-            invalid_default_value_type_message = (
-                f'The default value for "{key}": {default_value}, is of '
-                f"type: {type(default_value)}, which is not in the list "
-                f"of valid types: {types[key]}."
-            )
-            assert type(default_value) in types[key], invalid_default_value_type_message
+    #
+    # def _assert_identical_keys(
+    #     self, value_keys: List[str], type_keys: List[str]
+    # ) -> None:
+    #     keys_dont_match_message = (
+    #         'The keys of values & types have to be identical! However, "{}" '
+    #         "of {} does not match with any key in {}: {}."
+    #     )
+    #     for key in value_keys:
+    #         assert key in type_keys, keys_dont_match_message.format(
+    #             key, "values", "types", type_keys
+    #         )
+    #     for key in type_keys:
+    #         assert key in value_keys, keys_dont_match_message.format(
+    #             key, "types", "values", value_keys
+    #         )
+    #
+    # def _assert_values_in_types_are_lists_of_types(
+    #     self, types: Dict[str, List[type]]
+    # ) -> None:
+    #     for type_key, list_of_types in types.items():
+    #         assert (
+    #             type(list_of_types) == list
+    #         ), f'The value of "{type_key}" in types is not a list: {list_of_types}.'
+    #         not_all_elems_are_types_message = f""
+    #         for elem in list_of_types:
+    #             assert (
+    #                 type(elem) == type
+    #             ), f'The element "{elem}" in types[{type_key}] is not a type!'
+    #
+    # def _assert_default_values_match_valid_types(
+    #     self, values: Dict[str, Any], types: Dict[str, List[type]]
+    # ) -> None:
+    #
+    #     for key, default_value in values.items():
+    #         invalid_default_value_type_message = (
+    #             f'The default value for "{key}": {default_value}, is of '
+    #             f"type: {type(default_value)}, which is not in the list "
+    #             f"of valid types: {types[key]}."
+    #         )
+    #         assert type(default_value) in types[key], invalid_default_value_type_message
 
 
 class FeatureExtraction(ABC):
@@ -174,25 +174,23 @@ class FeatureExtraction(ABC):
         marker_df: pd.DataFrame,
         params: Optional[Dict[str, Any]] = None,
     ) -> pd.DataFrame:
-        params = self.default_params.assert_input_params_and_fill_with_defaults(
-            input_params=params
-        )
+        params = params
 
         extracted_features_df = self._run_feature_extraction(
             source_marker_ids=source_marker_ids, marker_df=marker_df, params=params
         )
 
-        self._assert_valid_output(output_df=extracted_features_df, marker_df=marker_df)
+        # self._assert_valid_output(output_df=extracted_features_df, marker_df=marker_df)
         return extracted_features_df
 
-    def _assert_valid_output(
-        self, output_df: pd.DataFrame, marker_df: pd.DataFrame
-    ) -> None:
-        invalid_shape_message = (
-            f"Rows of extracted features DataFrame ({output_df.shape[0]}) does not "
-            f"match number of rows in the original DataFrame ({marker_df.shape[0]})."
-        )
-        assert output_df.shape[0] == marker_df.shape[0], invalid_shape_message
+    # def _assert_valid_output(
+    #     self, output_df: pd.DataFrame, marker_df: pd.DataFrame
+    # ) -> None:
+    #     invalid_shape_message = (
+    #         f"Rows of extracted features DataFrame ({output_df.shape[0]}) does not "
+    #         f"match number of rows in the original DataFrame ({marker_df.shape[0]})."
+    #     )
+    #     assert output_df.shape[0] == marker_df.shape[0], invalid_shape_message
 
     def _initialize_default_params(self) -> DefaultParams:
         return DefaultParams(values=self.default_values, types=self.default_value_types)

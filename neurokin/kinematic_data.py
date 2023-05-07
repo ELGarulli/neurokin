@@ -1,5 +1,5 @@
 from numpy.typing import ArrayLike
-from neurokin.utils.kinematics import kinematics_processing, c3d_import_export, event_detection
+from neurokin.utils.kinematics import kinematics_processing, c3d_import_export, csv_import_export, event_detection
 from neurokin.utils.helper import load_config
 from neurokin.utils.features import features_extraction, binning
 import pandas as pd
@@ -42,7 +42,7 @@ class KinematicDataRun:
                         to_shift: ArrayLike = None,
                         to_tilt: ArrayLike = None,
                         shift_reference_marker: str = "",
-                        tilt_reference_marker: str = ""):
+                        tilt_reference_marker: str = "",):
         """
         Loads the kinematics from a c3d file into a dataframe with timeframes as rows and markers as columns
         :param correct_shift: bool should there be a correction in the shift of one of the axis?
@@ -54,39 +54,44 @@ class KinematicDataRun:
         :return:
         """
 
-        self.gait_cycles_start, self.gait_cycles_end, self.fs, self.markers_df = c3d_import_export.import_c3d(self.path)
+        if self.path.endswith('.c3d'):
+            self.gait_cycles_start, self.gait_cycles_end, self.fs, self.markers_df = c3d_import_export.import_c3d(self.path)
 
-        if correct_shift:
+            if correct_shift:
 
-            if shift_reference_marker not in self.markers_df.columns.get_level_values("bodyparts").tolist():
-                raise ValueError("The shift reference marker " + shift_reference_marker + " is not among the markers."
-                                 + "\n Please select one among the following: \n" +
-                                 self.markers_df.columns.tolist())
+                if shift_reference_marker not in self.markers_df.columns.get_level_values("bodyparts").tolist():
+                    raise ValueError("The shift reference marker " + shift_reference_marker + " is not among the markers."
+                                     + "\n Please select one among the following: \n" +
+                                     self.markers_df.columns.tolist())
 
-            if not set(to_shift).issubset(self.markers_df.columns.get_level_values("bodyparts").tolist()):
-                raise ValueError("Some or all columns to shift are not among the markers. You selected: \n"
-                                 + " ,".join(str(x) for x in to_shift)
-                                 + "\n Please select them among the following: \n" +
-                                 ", ".join(str(x) for x in self.markers_df.columns.tolist()))
+                if not set(to_shift).issubset(self.markers_df.columns.get_level_values("bodyparts").tolist()):
+                    raise ValueError("Some or all columns to shift are not among the markers. You selected: \n"
+                                     + " ,".join(str(x) for x in to_shift)
+                                     + "\n Please select them among the following: \n" +
+                                     ", ".join(str(x) for x in self.markers_df.columns.tolist()))
 
-            self.markers_df = kinematics_processing.shift_correct(self.markers_df, shift_reference_marker, to_shift)
+                self.markers_df = kinematics_processing.shift_correct(self.markers_df, shift_reference_marker, to_shift)
 
-        if correct_tilt:
+            if correct_tilt:
 
-            if tilt_reference_marker not in self.markers_df.columns.get_level_values("bodyparts").tolist():
-                raise ValueError("The tilt reference marker " + tilt_reference_marker + " is not among the markers."
-                                 + "\n Please select one among the following: \n" +
-                                 ", ".join(str(x) for x in self.markers_df.columns.tolist()))
+                if tilt_reference_marker not in self.markers_df.columns.get_level_values("bodyparts").tolist():
+                    raise ValueError("The tilt reference marker " + tilt_reference_marker + " is not among the markers."
+                                     + "\n Please select one among the following: \n" +
+                                     ", ".join(str(x) for x in self.markers_df.columns.tolist()))
 
-            if not set(to_tilt).issubset(self.markers_df.columns.get_level_values("bodyparts").tolist()):
-                raise ValueError("Some or all columns to tilt are not among the markers. You selected: \n"
-                                 + " ,".join(str(x) for x in to_tilt)
-                                 + "\n Please select them among the following: \n" +
-                                 ", ".join(str(x) for x in self.markers_df.columns.tolist()))
+                if not set(to_tilt).issubset(self.markers_df.columns.get_level_values("bodyparts").tolist()):
+                    raise ValueError("Some or all columns to tilt are not among the markers. You selected: \n"
+                                     + " ,".join(str(x) for x in to_tilt)
+                                     + "\n Please select them among the following: \n" +
+                                     ", ".join(str(x) for x in self.markers_df.columns.tolist()))
 
-            self.markers_df = kinematics_processing.tilt_correct(self.markers_df, tilt_reference_marker, to_tilt)
+                self.markers_df = kinematics_processing.tilt_correct(self.markers_df, tilt_reference_marker, to_tilt)
+
+        elif self.path.endswith('.csv'):
+            self.markers_df = csv_import_export.import_anipose_csv(self.path)
 
         return
+
 
     def get_c3d_compliance(self, smooth=False, filter_window=3, order=1):
         df_ = self.markers_df
