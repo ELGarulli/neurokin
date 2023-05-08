@@ -56,7 +56,7 @@ class AngularVelocityDLC(FeatureExtraction):
 
     @property
     def input_type(self) -> str:
-        return "markers"
+        return "joints"
 
     @property
     def default_values(self) -> Dict[str, Any]:
@@ -77,13 +77,14 @@ class AngularVelocityDLC(FeatureExtraction):
 
         # filter df for specific columns, raise error if angles not calculated yet
         # angels_df = marker_df.loc[:, ('scorer', source_marker_ids, 'angle')]
+
+        joint = list(source_marker_ids.keys())[0]
         try:
             angels_df = self._copy_filtered_columns_of_df(df_to_filter=marker_df,
-                                                      marker_id_filter=source_marker_ids,
+                                                      marker_id_filter=joint,
                                                       coords_filter='angle')
         except ValueError:
-            print('No column "angles" found in third level of multiindex!'
-                  'Be sure to run features_extraction for the angles before calculating angle velocity.')
+            print('No column "angles" found for joint', joint)
 
         df_angular_momentum = dlc2kinematics.compute_joint_velocity(
             joint_angle=angels_df,
@@ -91,6 +92,8 @@ class AngularVelocityDLC(FeatureExtraction):
         # self._assert_valid_output(output_df=df_angular_momentum, marker_df=marker_df)
 
         # reshape df to multiindex df
-        bp = list(source_marker_ids.keys())[0]
-        df_angular_momentum = convert_singleindex_to_multiindex_df(scorer='scorer', bodypart=bp, axis='angle', data=df_angular_momentum)
+        df_angular_momentum = convert_singleindex_to_multiindex_df(scorer='scorer',
+                                                                   bodypart=joint,
+                                                                   axis='angle',
+                                                                   data=df_angular_momentum)
         return df_angular_momentum

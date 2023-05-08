@@ -37,7 +37,10 @@ class SampleFeatureExtractionStrategy(FeatureExtraction):
                 f'to aggregate the data using the requested "{params["aggregation_method"]}" '
                 'method. The currently available options are: "mean" and "sum".'
             )
-        filtered_df = self._rename_columns_on_selected_idx_level(
-            df=filtered_df, suffix=f'_sliding_{params["aggregation_method"]}'
-        )
+        # filtered_df = self.df_acceleration(
+        #     df=filtered_df, suffix=f'_sliding_{params["aggregation_method"]}'
+        # )
+        filtered_df = self._rename_output_of_extraction_methods(df= filtered_df,
+                                                                    bodypart=source_marker_ids,
+                                                                    suffix='_aggregation')
         return filtered_df

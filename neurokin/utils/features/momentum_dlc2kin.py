@@ -41,9 +41,10 @@ class VelocityDLC(FeatureExtraction):
             bodyparts=[source_marker_ids],
             filter_window=params["window_size"]
         )
-        # self._assert_valid_output(output_df=df_velocity, marker_df=marker_df)
-        df_velocity = self._rename_columns_on_selected_idx_level(
-            df=df_velocity, suffix="_velocity")
+
+        df_velocity = self._rename_output_of_extraction_methods(df= df_velocity,
+                                                                    bodypart=source_marker_ids,
+                                                                    suffix='_velocity')
         return df_velocity
 
 
@@ -122,16 +123,7 @@ class AccelerationDLC(FeatureExtraction):
         )
 
         # self._assert_valid_output(output_df=df_acceleration, marker_df=marker_df)
-
-        # this did not work
-        # df_acceleration = self._rename_columns_on_selected_idx_level(
-        #     df=df_acceleration, column_idx_level=2, suffix="_acceleration")
-
-        # but this still does not.
-        current_column_names = list(df_acceleration.columns.get_level_values(2).unique())
-        new_column_names = [
-            f"{column_name}{'_acceleration'}" for column_name in current_column_names
-        ]
-
-        df_acceleration.columns = df_acceleration.columns.set_levels(new_column_names, level=2)
+        df_acceleration = self._rename_output_of_extraction_methods(df= df_acceleration,
+                                                                    bodypart=source_marker_ids,
+                                                                    suffix='_acceleration')
         return df_acceleration

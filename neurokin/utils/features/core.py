@@ -236,6 +236,7 @@ class FeatureExtraction(ABC):
         
         https://pandas.pydata.org/docs/reference/api/pandas.MultiIndex.set_levels.html
         """
+        import pandas as pd
         current_column_names = list(
             df.columns.get_level_values(column_idx_level).unique()
         )
@@ -243,5 +244,33 @@ class FeatureExtraction(ABC):
             f"{prefix}{column_name}{suffix}" for column_name in current_column_names
         ]
 
-        df.columns = df.columns.set_levels(new_column_names, level=column_idx_level)
+        # df.columns = df.columns.set_levels(new_column_names, level=column_idx_level)
+        for elem in df.columns:
+            df.index = df.index.set_levels(df.index.levels[2].str.replace(elem, elem+suffix), level=2)
         return df
+
+    def convert_singleindex_to_multiindex_df(self, scorer: str, bodypart: str, axis: str, data: pd.DataFrame):
+        pdindex = pd.MultiIndex.from_product([[scorer], [bodypart], [axis]], names=["scorer", "bodyparts", "coords"])
+
+        # To create a multiindex dataframe with the data, we need to convert it to a np.array. Why? yeah... good question.
+        data = data.to_numpy()
+
+        df_multiindexed = pd.DataFrame(data=data, columns=pdindex)
+        return df_multiindexed
+
+    def _rename_output_of_extraction_methods(self, df, bodypart, suffix:str, scorer: str = 'scorer'):
+        """
+        requirement: df with multilevel index,
+        three levels and the level 2 (which is the third level) being ['x', 'y', 'z']
+        """
+        x = df[scorer][bodypart]['x']
+        x_axis_name = 'x'+suffix
+        x_df = self.convert_singleindex_to_multiindex_df(scorer= 'scorer', bodypart=bodypart, axis=x_axis_name, data=x)
+        y = df[scorer][bodypart]['y']
+        y_axis_name = 'y'+suffix
+        y_df = self.convert_singleindex_to_multiindex_df(scorer= 'scorer', bodypart=bodypart, axis=y_axis_name, data=y)
+        z = df[scorer][bodypart]['z']
+        z_axis_name = 'z'+suffix
+        z_df = self.convert_singleindex_to_multiindex_df(scorer= 'scorer', bodypart=bodypart, axis=z_axis_name, data= z)
+        renamed_df = pd.concat([x_df, y_df, z_df], axis=1)
+        return renamed_df
