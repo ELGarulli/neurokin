@@ -32,7 +32,10 @@ class VelocityDLC(FeatureExtraction):
         params: Dict[str, Any],
     ) -> pd.DataFrame:
 
-        coords_df = marker_df['scorer'][source_marker_ids][['x', 'y', 'z']]
+
+        coords_df = self._copy_filtered_columns_of_df(df_to_filter=marker_df,
+                                                      marker_id_filter=source_marker_ids,
+                                                      coords_filter= ['x', 'y', 'z'])
         df_velocity = dlc2kinematics.compute_velocity(
             df=coords_df,
             bodyparts=[source_marker_ids],
@@ -41,7 +44,6 @@ class VelocityDLC(FeatureExtraction):
         # self._assert_valid_output(output_df=df_velocity, marker_df=marker_df)
         df_velocity = self._rename_columns_on_selected_idx_level(
             df=df_velocity, suffix="_velocity")
-
         return df_velocity
 
 
@@ -110,14 +112,26 @@ class AccelerationDLC(FeatureExtraction):
         params: Dict[str, Any],
     ) -> pd.DataFrame:
 
-        coords_df = marker_df['scorer'][source_marker_ids][['x', 'y', 'z']]
+        coords_df = self._copy_filtered_columns_of_df(df_to_filter=marker_df,
+                                                      marker_id_filter=source_marker_ids,
+                                                      coords_filter= ['x', 'y', 'z'])
         df_acceleration = dlc2kinematics.compute_acceleration(
             df=coords_df,
             bodyparts=[source_marker_ids],
             filter_window=params["window_size"]
         )
-        # self._assert_valid_output(output_df=df_acceleration, marker_df=marker_df)
-        df_acceleration = self._rename_columns_on_selected_idx_level(
-            df=df_acceleration, suffix="_acceleration")
 
+        # self._assert_valid_output(output_df=df_acceleration, marker_df=marker_df)
+
+        # this did not work
+        # df_acceleration = self._rename_columns_on_selected_idx_level(
+        #     df=df_acceleration, column_idx_level=2, suffix="_acceleration")
+
+        # but this still does not.
+        current_column_names = list(df_acceleration.columns.get_level_values(2).unique())
+        new_column_names = [
+            f"{column_name}{'_acceleration'}" for column_name in current_column_names
+        ]
+
+        df_acceleration.columns = df_acceleration.columns.set_levels(new_column_names, level=2)
         return df_acceleration

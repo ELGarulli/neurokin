@@ -242,5 +242,6 @@ class FeatureExtraction(ABC):
         new_column_names = [
             f"{prefix}{column_name}{suffix}" for column_name in current_column_names
         ]
+
         df.columns = df.columns.set_levels(new_column_names, level=column_idx_level)
         return df

@@ -24,6 +24,9 @@ def extract_features(features, bodyparts, skeleton, markers_df):
                 for joint in target_joints
             ]
 
+        elif input_type == 'feature':
+            target_bodyparts = params.get("marker_ids", bodyparts)
+
         elif input_type == "multiple_markers":
             target_bodyparts = [params.get("marker_ids", bodyparts)]
 

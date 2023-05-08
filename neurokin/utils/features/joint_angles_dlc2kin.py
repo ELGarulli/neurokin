@@ -76,8 +76,15 @@ class AngularVelocityDLC(FeatureExtraction):
     ) -> pd.DataFrame:
 
         # filter df for specific columns, raise error if angles not calculated yet
+        # angels_df = marker_df.loc[:, ('scorer', source_marker_ids, 'angle')]
+        try:
+            angels_df = self._copy_filtered_columns_of_df(df_to_filter=marker_df,
+                                                      marker_id_filter=source_marker_ids,
+                                                      coords_filter='angle')
+        except ValueError:
+            print('No column "angles" found in third level of multiindex!'
+                  'Be sure to run features_extraction for the angles before calculating angle velocity.')
 
-        angels_df = marker_df['scorer'][source_marker_ids]['angle']
         df_angular_momentum = dlc2kinematics.compute_joint_velocity(
             joint_angle=angels_df,
             filter_window=params["window_size"], save=False)

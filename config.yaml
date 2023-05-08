@@ -1,21 +1,17 @@
 skeleton:
     angles:
         joints:
-            left_crest: [lshoulder, lcrest, lhip]
-            left_hip: [lcrest, lhip, lknee]
-            left_knee: [lhip, lknee, lankle]
-            left_ankle: [lknee, lankle, lmtp]
-            right_crest: [rshoulder, rcrest, rhip]
-            right_hip: [rcrest, rhip, rknee]
-            right_knee: [rhip, rknee, rankle]
-            right_ankle: [rknee, rankle, rmtp]
-            trunk_cross_l: [lshoulder, rcrest, lhip]
-            trunk_cross_r: [rshoulder, lcrest, rhip]
+
+            left_back_ankle: [HindKneeLeft, BackAnkleLeft, HindPawLeft]
+#            right_back_ankle: [HindKneeRight, BackAnkleRight, HindPawRight]
+            snout_to_ears: [EarLeft, Snout, EarRight]
+
+
         references:
             full_body_tilt: [lshoulder, lmtp, mcorner]
             maze_corner_open_right: [mcorner_ol, mcorner_or, mcorner_cr]
-    #correlations:
-    #    left_shoulder_knee : [lknee, lshoulder]
+    correlations:
+        left_shoulder_knee : [lknee, lshoulder]
     distances:
         lef_shoulder_to_toe: [lshoulder, lmtp]
     elevations:
@@ -24,26 +20,30 @@ skeleton:
     
     
 features:
-    #extraction_strategies.SampleFeatureExtractionStrategy:
-    #    window_size: 1
-        #marker_ids: [lshoulder, lmtp]
-    #phase.PhasesAngle:
-    #    marker_ids: [left_knee]
-    joint_angles_dlc2kin.JointAnglesDLC:
-    #    window_size: 1
-    #    marker_id: [rknee]
-    joint_angles_dlc2kin.AngularVelocityDLC:
-    #    window_size: 1
-    #    sliding_window_size: True
+    extraction_strategies.SampleFeatureExtractionStrategy:
+        window_size: 1
+        aggregation_method: sum
+        marker_ids: [TailBase]
+#    phase.PhasesAngle:
+#        marker_ids: [left_back_ankle]
+#        window_size: 1
+#    joint_angles_dlc2kin.JointAnglesDLC:
+#        window_size: 1
+#        marker_id: [left_back_ankle]
+#    joint_angles_dlc2kin.AngularVelocityDLC:
+#        window_size: 3
     momentum_dlc2kin.AccelerationDLC:
-    #    window_size: 1
-    #    marker_id: [skeleton, angles, joints]
-    #momentum_dlc2kin.VelocityDLC:
-    #    window_size: 1
+        window_size: 3
+        marker_ids: [TailBase]
+#    momentum_dlc2kin.VelocityDLC:
+#        window_size: 3
+#        marker_ids: [TailBase]
     momentum_dlc2kin.SpeedDLC:
-    #     window_size: 1
-    #
+         window_size: 3
 
+    #threshold_based_classification.Immobility:
+    #     immobility_threshold: 1
+    #     marker_id: [Snout, TailBase]
 
 
 
