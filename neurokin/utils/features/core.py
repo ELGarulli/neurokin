@@ -35,6 +35,7 @@ class DefaultParams:
                 if key not in input_params:
                     input_params[key] = default_value
         return input_params
+
     #
     # def _assert_identical_keys(
     #     self, value_keys: List[str], type_keys: List[str]
@@ -81,20 +82,20 @@ class DefaultParams:
 class FeatureExtraction(ABC):
     """
     Defines the interface for all feature extraction strategies available in neurokin.
-    
-    Takes a pd.DataFrame in DLC format (MultiIndex: ("scorer", "bodypart", "coords") 
+
+    Takes a pd.DataFrame in DLC format (MultiIndex: ("scorer", "bodypart", "coords")
     as input. It is recommended that this dataframe is already sliced to only those
     columns that are relevant for the feature extraction, hence: 'sliced_marker_df'.
-    
-    Optionally, a dictionary with parameter specifications can be passed. Since these 
-    parameters are specified manually by the user in the config.yaml file, an instance 
-    of the DefaultParams class is used to validate the user input, and to fill any 
+
+    Optionally, a dictionary with parameter specifications can be passed. Since these
+    parameters are specified manually by the user in the config.yaml file, an instance
+    of the DefaultParams class is used to validate the user input, and to fill any
     missing parameters with the corresponding default values.
-    
+
     For developers:
-    
-    If you want to implement your own feature extraction strategy, please inherit from 
-    this class & make sure to implement all abstractmethods. Check out their individual 
+
+    If you want to implement your own feature extraction strategy, please inherit from
+    this class & make sure to implement all abstractmethods. Check out their individual
     docstrings for more information.
     """
 
@@ -113,13 +114,13 @@ class FeatureExtraction(ABC):
     @abstractmethod
     def default_values(self) -> Dict[str, Any]:
         """
-        If this feature extraction strategy allows the user to adjust any parameters, 
-        please specify their default values here. For instance, if the user can 
-        specify a parameter called "window_size" & you would like the default window 
+        If this feature extraction strategy allows the user to adjust any parameters,
+        please specify their default values here. For instance, if the user can
+        specify a parameter called "window_size" & you would like the default window
         size to be 5, return:
-        
+
         {'window_size': 5}
-        
+
         If there are no adjustable parameters, simply return an empty dictionary.
         """
         pass
@@ -128,19 +129,19 @@ class FeatureExtraction(ABC):
     @abstractmethod
     def default_value_types(self) -> Dict[str, List[type]]:
         """
-        If this feature extraction strategy allows the user to adjust any parameters, 
+        If this feature extraction strategy allows the user to adjust any parameters,
         please specify the valid types of these adjustable parameters here.
-        For instance, if the user can specify a parameter called "window_size" & you 
+        For instance, if the user can specify a parameter called "window_size" & you
         require that this is an integer, return:
-        
+
         {'window_size': [int]}
-        
-        Note, that the values of this dictionary have to be lists. This is to support 
+
+        Note, that the values of this dictionary have to be lists. This is to support
         multiple valid types. For instance, if both floats & ints are valid, return:
-        
+
         {'any_kind_of_number': [int, float]}
-        
-        Again, as for the "default_values" attribute: if there are no adjustable 
+
+        Again, as for the "default_values" attribute: if there are no adjustable
         parameters, simply return an empty dictionary.
         """
         pass
@@ -153,17 +154,17 @@ class FeatureExtraction(ABC):
         params: [Dict[str, Any]],
     ) -> pd.DataFrame:
         """
-        This is now where the magic of your feature extraction is supposed to happen. 
-        The features shall be extracted for all marker IDs given in the list 
+        This is now where the magic of your feature extraction is supposed to happen.
+        The features shall be extracted for all marker IDs given in the list
         "source_marker_ids".
-        
-        You can access the dataframe as "self.marker_df", and, if applicable, the 
+
+        You can access the dataframe as "self.marker_df", and, if applicable, the
         user-defined and already validated parameters as "self.params".
-        
+
         !!! IMPORTANT !!!
-        
-        Please return a pd.DataFrame that contains ONLY the newly extracted features and 
-        matches the number of rows of the original dataframe "self.marker_df". This will 
+
+        Please return a pd.DataFrame that contains ONLY the newly extracted features and
+        matches the number of rows of the original dataframe "self.marker_df". This will
         be confirmed using the self._assert_valid_output() method.
         """
         pass
@@ -203,8 +204,8 @@ class FeatureExtraction(ABC):
         scorer_filter: Union[slice, List[str], str] = slice(None),
     ) -> pd.DataFrame:
         """
-        Since these DataFrames with multi-indexed columns can be quite annoying to slice while 
-        keeping the correct format (i.e. all three column levels "scorer", "bodyparts", "coords"), 
+        Since these DataFrames with multi-indexed columns can be quite annoying to slice while
+        keeping the correct format (i.e. all three column levels "scorer", "bodyparts", "coords"),
         this function might be relevant for many FeatureExtractionStrategy classes.
         """
 
@@ -223,20 +224,21 @@ class FeatureExtraction(ABC):
         suffix: str = "",
     ) -> pd.DataFrame:
         """
-        Also renaming of columns only on a particular level (e.g. converting the coords 
-        level from "x", "y", "z" to "x_sliding_mean", "y_sliding_mean", "z_sliding_mean") 
-        while keeping all other levels (e.g. scorer & marker_ids) as-is, might be a function 
-        of general in these classes and is therefore implemented here. 
-        
-        Be aware that this (and the underlying pandas function) assumes that the df always has 
+        Also renaming of columns only on a particular level (e.g. converting the coords
+        level from "x", "y", "z" to "x_sliding_mean", "y_sliding_mean", "z_sliding_mean")
+        while keeping all other levels (e.g. scorer & marker_ids) as-is, might be a function
+        of general in these classes and is therefore implemented here.
+
+        Be aware that this (and the underlying pandas function) assumes that the df always has
         the same level values for all markers. For instance, if your input df has the marker
-        columns: ["lshoulder", "rshoulder", "rmtp"], and "lshoulder" has three associated 
+        columns: ["lshoulder", "rshoulder", "rmtp"], and "lshoulder" has three associated
         columns: ["x", "y", "z"] on the "coords" level, it is assumed that these coords-columns
-        are also present for "rshoulder" and "rmtp". See also: 
-        
+        are also present for "rshoulder" and "rmtp". See also:
+
         https://pandas.pydata.org/docs/reference/api/pandas.MultiIndex.set_levels.html
         """
         import pandas as pd
+
         current_column_names = list(
             df.columns.get_level_values(column_idx_level).unique()
         )
@@ -246,31 +248,45 @@ class FeatureExtraction(ABC):
 
         # df.columns = df.columns.set_levels(new_column_names, level=column_idx_level)
         for elem in df.columns:
-            df.index = df.index.set_levels(df.index.levels[2].str.replace(elem, elem+suffix), level=2)
+            df.index = df.index.set_levels(
+                df.index.levels[2].str.replace(elem, elem + suffix), level=2
+            )
         return df
 
-    def convert_singleindex_to_multiindex_df(self, scorer: str, bodypart: str, axis: str, data: pd.DataFrame):
-        pdindex = pd.MultiIndex.from_product([[scorer], [bodypart], [axis]], names=["scorer", "bodyparts", "coords"])
+    def convert_singleindex_to_multiindex_df(
+        self, scorer: str, bodypart: str, axis: str, data: pd.DataFrame
+    ):
+        pdindex = pd.MultiIndex.from_product(
+            [[scorer], [bodypart], [axis]], names=["scorer", "bodyparts", "coords"]
+        )
 
         # To create a multiindex dataframe with the data, we need to convert it to a np.array. Why? yeah... good question.
         data = data.to_numpy()
 
-        df_multiindexed = pd.DataFrame(data=data, columns=pdindex)
-        return df_multiindexed
+        df_multiindex = pd.DataFrame(data=data, columns=pdindex)
+        return df_multiindex
 
-    def _rename_output_of_extraction_methods(self, df, bodypart, suffix:str, scorer: str = 'scorer'):
+    def _rename_output_of_extraction_methods(
+        self, df, bodypart, suffix: str, scorer: str = "scorer"
+    ):
         """
         requirement: df with multilevel index,
         three levels and the level 2 (which is the third level) being ['x', 'y', 'z']
         """
-        x = df[scorer][bodypart]['x']
-        x_axis_name = 'x'+suffix
-        x_df = self.convert_singleindex_to_multiindex_df(scorer= 'scorer', bodypart=bodypart, axis=x_axis_name, data=x)
-        y = df[scorer][bodypart]['y']
-        y_axis_name = 'y'+suffix
-        y_df = self.convert_singleindex_to_multiindex_df(scorer= 'scorer', bodypart=bodypart, axis=y_axis_name, data=y)
-        z = df[scorer][bodypart]['z']
-        z_axis_name = 'z'+suffix
-        z_df = self.convert_singleindex_to_multiindex_df(scorer= 'scorer', bodypart=bodypart, axis=z_axis_name, data= z)
+        x = df[scorer][bodypart]["x"]
+        x_axis_name = "x" + suffix
+        x_df = self.convert_singleindex_to_multiindex_df(
+            scorer="scorer", bodypart=bodypart, axis=x_axis_name, data=x
+        )
+        y = df[scorer][bodypart]["y"]
+        y_axis_name = "y" + suffix
+        y_df = self.convert_singleindex_to_multiindex_df(
+            scorer="scorer", bodypart=bodypart, axis=y_axis_name, data=y
+        )
+        z = df[scorer][bodypart]["z"]
+        z_axis_name = "z" + suffix
+        z_df = self.convert_singleindex_to_multiindex_df(
+            scorer="scorer", bodypart=bodypart, axis=z_axis_name, data=z
+        )
         renamed_df = pd.concat([x_df, y_df, z_df], axis=1)
         return renamed_df

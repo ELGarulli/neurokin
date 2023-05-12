@@ -1,51 +1,77 @@
 skeleton:
     angles:
         joints:
-
+            # some naming mistakes were made during creation of the dlc networks
             left_back_ankle: [HindKneeLeft, BackAnkleLeft, HindPawLeft]
-#            right_back_ankle: [HindKneeRight, BackAnkleRight, HindPawRight]
-            snout_to_ears: [EarLeft, Snout, EarRight]
+            right_back_ankle: [HindKneeRight, BackAngleRight, HindPawRight]
+            left_wrist: [ ElbowLeft, WristLeft, FrontPawLeft ]
+            right_wrist: [ ElbowRight, WristRight, FrontPawRight ]
+            left_knee: [ HindKneeLeft, HindKneeLeft, BackAnkleLeft ]
+            right_knee: [ HindKneeRight, HindKneeRight, BackAngleRight ]
+            left_elbow: [ ShoulderLeft, ElbowLeft, FrontPawLeft ]
+            right_elbow: [ ShoulderRight, ElbowRight, FrontPawRight ]
+            left_hip: [ HipLeft, HindKneeLeft, BackAnkleLeft ]
+            right_hip: [ HipRight, HindKneeRight, BackAnkleRight ]
+            left_shoulder: [ ShoulderLeft, ElbowLeft, FrontPawLeft ]
+            right_shoulder: [ ShoulderRight, ElbowRight, FrontPawRight ]
 
-
-        references:
-            full_body_tilt: [lshoulder, lmtp, mcorner]
-            maze_corner_open_right: [mcorner_ol, mcorner_or, mcorner_cr]
+    references:
+        full_body_tilt: [lshoulder, lmtp, mcorner]
+        maze_corner_open_right: [mcorner_ol, mcorner_or, mcorner_cr]
     correlations:
         left_shoulder_knee : [lknee, lshoulder]
     distances:
-        lef_shoulder_to_toe: [lshoulder, lmtp]
+        left_shoulder_to_paw: [ShoulderLeft, ForePawLeft]
+        right_shoulder_to_paw: [ShoulderRight, ForePawRight]
+        left_hip_to_paw: [HipLeft, HindPawLeft]
+        right_hip_to_paw: [HipRight, HindPawRight]
+        left_hip_to_shoulder: [HipLeft, ShoulderLeft]
+        right_hip_to_shoulder: [HipRight, ShoulderRight]
+        left_forepaw_to_hindpaw: [ForePawLeft, HindPawLeft]
+        right_forepaw_to_hindpaw: [ForePawRight, HindPawRight]
+        hindpaw_to_hindpaw: [HindPawLeft, HindPawRight]
+        forepaw_to_forepaw: [ForePawLeft, ForePawRight]
+        snout_to_tailbase: [Snout, TailBase]
+        maze_corner_closed_right_to_open_right: [MazeCornerClosedRight, MazeCornerOpenRight]
+        maze_corner_closed_left_to_open_left: [MazeCornerClosedLeft, MazeCornerOpenLeft]
+        maze_corner_closed_right_to_closed_left: [MazeCornerClosedRight, MazeCornerClosedLeft]
+        maze_corner_open_right_to_open_left: [MazeCornerOpenRight, MazeCornerOpenLeft]
+
     elevations:
         left_hip: lhip
         right_hip: rhip
     
-    
 features:
-    extraction_strategies.SampleFeatureExtractionStrategy:
-        window_size: 1
-        aggregation_method: sum
-        marker_ids: [TailBase]
-#    phase.PhasesAngle:
-#        marker_ids: [left_back_ankle]
+#    extraction_strategies.SampleFeatureExtractionStrategy:
 #        window_size: 1
-#    joint_angles_dlc2kin.JointAnglesDLC:
-#        window_size: 1
-#        marker_id: [left_back_ankle]
-#    joint_angles_dlc2kin.AngularVelocityDLC:
-#        window_size: 3
-    momentum_dlc2kin.AccelerationDLC:
-        window_size: 3
-        marker_ids: [TailBase]
-#    momentum_dlc2kin.VelocityDLC:
-#        window_size: 3
+#        aggregation_method: sum
 #        marker_ids: [TailBase]
+    distances.Distance:
+    joint_angles_dlc2kin.JointAnglesDLC:
+        window_size: 11
+#        marker_ids: [left_back_ankle]
+    joint_angles_dlc2kin.AngularVelocityDLC:
+        window_size: 11
+        fps: 80
+#        marker_ids: [left_back_ankle]
+    momentum_dlc2kin.AccelerationDLC:
+        window_size: 11
+        fps: 80
+    momentum_dlc2kin.VelocityDLC:
+        window_size: 11
+        fps: 80
     momentum_dlc2kin.SpeedDLC:
-         window_size: 3
-
-    #threshold_based_classification.Immobility:
-    #     immobility_threshold: 1
-    #     marker_id: [Snout, TailBase]
-
-
+         window_size: 11
+         fps: 80
+    threshold_based_classification.ImmobilityAndFreezing:
+        # immobility is always calculated for the whole subject.
+        # please specify which markers need to be immobile to classify the whole subject as immobile
+         immobility_threshold: 2
+         markers_for_immobility: [TailBase, Snout]
+         minimum_duration_immobility: 0.1
+         minimum_duration_freezing: 1.5
+         fps: 80
+         marker_ids: [TailBase]
 
 events:
     freezing_of_gait:

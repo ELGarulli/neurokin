@@ -1,9 +1,12 @@
 from importlib import import_module
 from neurokin.constants.features_extraction import FEATURES_EXTRACTION_MODULE
 import pandas as pd
+from typing import Dict, List, Any, Optional, Union
 
 
-def extract_features(features, bodyparts, skeleton, markers_df):
+def extract_features(
+    features: Dict, bodyparts: List, skeleton: Dict, markers_df: pd.DataFrame
+) -> pd.DataFrame:
     markers_and_features_df = markers_df.copy()
     for feature_name, params in features.items():
         params = {} if params is None else params
@@ -14,18 +17,23 @@ def extract_features(features, bodyparts, skeleton, markers_df):
         extractor_obj = feature_extract_class()
         input_type = extractor_obj.input_type
 
-        if input_type == "markers": # single marker -> loop over
+        if input_type == "markers":  # single marker -> loop over
             target_bodyparts = params.get("marker_ids", bodyparts)
 
-        elif input_type == "joints": # ref in skeleton
+        elif input_type == "joints":  # ref in skeleton
             target_joints = params.get("marker_ids", skeleton["angles"][input_type])
             target_bodyparts = [
                 {joint: skeleton["angles"][input_type][joint]}
                 for joint in target_joints
             ]
+        elif input_type == "distance":
+            target_distance = params.get("marker_ids", skeleton["distances"])
+            target_bodyparts = [
+                {distance: skeleton["distances"][distance]}
+                for distance in target_distance
+            ]
 
-        elif input_type == 'feature':
-            target_bodyparts = params.get("marker_ids", bodyparts)
+            pass
 
         elif input_type == "multiple_markers":
             target_bodyparts = [params.get("marker_ids", bodyparts)]
@@ -40,7 +48,8 @@ def extract_features(features, bodyparts, skeleton, markers_df):
                 marker_df=markers_and_features_df,
                 params=params,
             )
-            extracted_features.append(feature)
+            if feature is not None:
+                extracted_features.append(feature)
 
         new_features = pd.concat(extracted_features, axis=1)
         markers_and_features_df = pd.concat(

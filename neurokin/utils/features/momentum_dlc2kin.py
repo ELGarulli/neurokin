@@ -17,12 +17,12 @@ class VelocityDLC(FeatureExtraction):
 
     @property
     def default_values(self) -> Dict[str, Any]:
-        default_values = {"window_size": 3}
+        default_values = {"window_size": 3, "fps": 80}
         return default_values
 
     @property
     def default_value_types(self) -> Dict[str, List[type]]:
-        default_types = {"window_size": [int]}
+        default_types = {"window_size": [int], "fps": [int]}
         return default_types
 
     def _run_feature_extraction(
@@ -31,20 +31,21 @@ class VelocityDLC(FeatureExtraction):
         marker_df: pd.DataFrame,
         params: Dict[str, Any],
     ) -> pd.DataFrame:
-
-
-        coords_df = self._copy_filtered_columns_of_df(df_to_filter=marker_df,
-                                                      marker_id_filter=source_marker_ids,
-                                                      coords_filter= ['x', 'y', 'z'])
+        coords_df = self._copy_filtered_columns_of_df(
+            df_to_filter=marker_df,
+            marker_id_filter=source_marker_ids,
+            coords_filter=["x", "y", "z"],
+        )
         df_velocity = dlc2kinematics.compute_velocity(
             df=coords_df,
             bodyparts=[source_marker_ids],
-            filter_window=params["window_size"]
+            filter_window=params["window_size"],
         )
-
-        df_velocity = self._rename_output_of_extraction_methods(df= df_velocity,
-                                                                    bodypart=source_marker_ids,
-                                                                    suffix='_velocity')
+        # convert from px/row to px/s
+        df_velocity = df_velocity * params["fps"]
+        df_velocity = self._rename_output_of_extraction_methods(
+            df=df_velocity, bodypart=source_marker_ids, suffix="_velocity"
+        )
         return df_velocity
 
 
@@ -61,12 +62,12 @@ class SpeedDLC(FeatureExtraction):
 
     @property
     def default_values(self) -> Dict[str, Any]:
-        default_values = {"window_size": 3}
+        default_values = {"window_size": 3, "fps": 80}
         return default_values
 
     @property
     def default_value_types(self) -> Dict[str, List[type]]:
-        default_types = {"window_size": [int]}
+        default_types = {"window_size": [int], "fps": [int]}
         return default_types
 
     def _run_feature_extraction(
@@ -78,14 +79,16 @@ class SpeedDLC(FeatureExtraction):
         df_speed = dlc2kinematics.compute_speed(
             df=marker_df,
             bodyparts=[source_marker_ids],
-            filter_window=params["window_size"]
+            filter_window=params["window_size"],
         )
+        # change unit from px/row to px/s
+        df_speed = df_speed * params["fps"]
         # self._assert_valid_output(output_df=df_speed, marker_df=marker_df)
-
         return df_speed
 
 
 class AccelerationDLC(FeatureExtraction):
+
     """
     Computes the acceleration of bodyparts
     Input: df with positon data (i.e. DLC output), source_marker_ids: List of markers for which velocity should be computed
@@ -98,12 +101,12 @@ class AccelerationDLC(FeatureExtraction):
 
     @property
     def default_values(self) -> Dict[str, Any]:
-        default_values = {"window_size": 3}
+        default_values = {"window_size": 3, "fps": 80}
         return default_values
 
     @property
     def default_value_types(self) -> Dict[str, List[type]]:
-        default_types = {"window_size": [int]}
+        default_types = {"window_size": [int], "fps": [int]}
         return default_types
 
     def _run_feature_extraction(
@@ -112,18 +115,21 @@ class AccelerationDLC(FeatureExtraction):
         marker_df: pd.DataFrame,
         params: Dict[str, Any],
     ) -> pd.DataFrame:
-
-        coords_df = self._copy_filtered_columns_of_df(df_to_filter=marker_df,
-                                                      marker_id_filter=source_marker_ids,
-                                                      coords_filter= ['x', 'y', 'z'])
+        coords_df = self._copy_filtered_columns_of_df(
+            df_to_filter=marker_df,
+            marker_id_filter=source_marker_ids,
+            coords_filter=["x", "y", "z"],
+        )
         df_acceleration = dlc2kinematics.compute_acceleration(
             df=coords_df,
             bodyparts=[source_marker_ids],
-            filter_window=params["window_size"]
+            filter_window=params["window_size"],
         )
 
+        # change unit from px/row^2 to px/s^2
+        df_acceleration = df_acceleration * (params["fps"] ^ 2)
         # self._assert_valid_output(output_df=df_acceleration, marker_df=marker_df)
-        df_acceleration = self._rename_output_of_extraction_methods(df= df_acceleration,
-                                                                    bodypart=source_marker_ids,
-                                                                    suffix='_acceleration')
+        df_acceleration = self._rename_output_of_extraction_methods(
+            df=df_acceleration, bodypart=source_marker_ids, suffix="_acceleration"
+        )
         return df_acceleration

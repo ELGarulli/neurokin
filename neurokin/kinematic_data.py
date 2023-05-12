@@ -1,5 +1,12 @@
 from numpy.typing import ArrayLike
-from neurokin.utils.kinematics import kinematics_processing, c3d_import_export, csv_import_export, event_detection
+
+from neurokin.utils.kinematics import (
+    kinematics_processing,
+    c3d_import_export,
+    csv_import_export,
+    event_detection,
+    interpolation,
+)
 from neurokin.utils.helper import load_config
 from neurokin.utils.features import features_extraction, binning
 import pandas as pd
@@ -36,13 +43,15 @@ class KinematicDataRun:
         self.bodyparts: ArrayLike = None
         self.scorer: str = "scorer"
 
-    def load_kinematics(self,
-                        correct_shift: bool = False,
-                        correct_tilt: bool = False,
-                        to_shift: ArrayLike = None,
-                        to_tilt: ArrayLike = None,
-                        shift_reference_marker: str = "",
-                        tilt_reference_marker: str = "",):
+    def load_kinematics(
+        self,
+        correct_shift: bool = False,
+        correct_tilt: bool = False,
+        to_shift: ArrayLike = None,
+        to_tilt: ArrayLike = None,
+        shift_reference_marker: str = "",
+        tilt_reference_marker: str = "",
+    ):
         """
         Loads the kinematics from a c3d file into a dataframe with timeframes as rows and markers as columns
         :param correct_shift: bool should there be a correction in the shift of one of the axis?
@@ -54,44 +63,92 @@ class KinematicDataRun:
         :return:
         """
 
-        if self.path.endswith('.c3d'):
-            self.gait_cycles_start, self.gait_cycles_end, self.fs, self.markers_df = c3d_import_export.import_c3d(self.path)
+        if self.path.endswith(".c3d"):
+            (
+                self.gait_cycles_start,
+                self.gait_cycles_end,
+                self.fs,
+                self.markers_df,
+            ) = c3d_import_export.import_c3d(self.path)
 
             if correct_shift:
+                if (
+                    shift_reference_marker
+                    not in self.markers_df.columns.get_level_values(
+                        "bodyparts"
+                    ).tolist()
+                ):
+                    raise ValueError(
+                        "The shift reference marker "
+                        + shift_reference_marker
+                        + " is not among the markers."
+                        + "\n Please select one among the following: \n"
+                        + self.markers_df.columns.tolist()
+                    )
 
-                if shift_reference_marker not in self.markers_df.columns.get_level_values("bodyparts").tolist():
-                    raise ValueError("The shift reference marker " + shift_reference_marker + " is not among the markers."
-                                     + "\n Please select one among the following: \n" +
-                                     self.markers_df.columns.tolist())
+                if not set(to_shift).issubset(
+                    self.markers_df.columns.get_level_values("bodyparts").tolist()
+                ):
+                    raise ValueError(
+                        "Some or all columns to shift are not among the markers. You selected: \n"
+                        + " ,".join(str(x) for x in to_shift)
+                        + "\n Please select them among the following: \n"
+                        + ", ".join(str(x) for x in self.markers_df.columns.tolist())
+                    )
 
-                if not set(to_shift).issubset(self.markers_df.columns.get_level_values("bodyparts").tolist()):
-                    raise ValueError("Some or all columns to shift are not among the markers. You selected: \n"
-                                     + " ,".join(str(x) for x in to_shift)
-                                     + "\n Please select them among the following: \n" +
-                                     ", ".join(str(x) for x in self.markers_df.columns.tolist()))
-
-                self.markers_df = kinematics_processing.shift_correct(self.markers_df, shift_reference_marker, to_shift)
+                self.markers_df = kinematics_processing.shift_correct(
+                    self.markers_df, shift_reference_marker, to_shift
+                )
 
             if correct_tilt:
+                if (
+                    tilt_reference_marker
+                    not in self.markers_df.columns.get_level_values(
+                        "bodyparts"
+                    ).tolist()
+                ):
+                    raise ValueError(
+                        "The tilt reference marker "
+                        + tilt_reference_marker
+                        + " is not among the markers."
+                        + "\n Please select one among the following: \n"
+                        + ", ".join(str(x) for x in self.markers_df.columns.tolist())
+                    )
 
-                if tilt_reference_marker not in self.markers_df.columns.get_level_values("bodyparts").tolist():
-                    raise ValueError("The tilt reference marker " + tilt_reference_marker + " is not among the markers."
-                                     + "\n Please select one among the following: \n" +
-                                     ", ".join(str(x) for x in self.markers_df.columns.tolist()))
+                if not set(to_tilt).issubset(
+                    self.markers_df.columns.get_level_values("bodyparts").tolist()
+                ):
+                    raise ValueError(
+                        "Some or all columns to tilt are not among the markers. You selected: \n"
+                        + " ,".join(str(x) for x in to_tilt)
+                        + "\n Please select them among the following: \n"
+                        + ", ".join(str(x) for x in self.markers_df.columns.tolist())
+                    )
 
-                if not set(to_tilt).issubset(self.markers_df.columns.get_level_values("bodyparts").tolist()):
-                    raise ValueError("Some or all columns to tilt are not among the markers. You selected: \n"
-                                     + " ,".join(str(x) for x in to_tilt)
-                                     + "\n Please select them among the following: \n" +
-                                     ", ".join(str(x) for x in self.markers_df.columns.tolist()))
+                self.markers_df = kinematics_processing.tilt_correct(
+                    self.markers_df, tilt_reference_marker, to_tilt
+                )
 
-                self.markers_df = kinematics_processing.tilt_correct(self.markers_df, tilt_reference_marker, to_tilt)
-
-        elif self.path.endswith('.csv'):
+        elif self.path.endswith(".csv"):
             self.markers_df = csv_import_export.import_anipose_csv(self.path)
 
         return
 
+    def interpolate_df(self, time_interval: float):
+        pd.options.mode.chained_assignment = None
+
+        bodyparts = self.markers_df.columns.get_level_values("bodyparts").tolist()
+        max_interval_length = interpolation.get_max_odd_n_frames_for_time_interval(
+            fps=self.fs, time_interval=time_interval)
+
+        interpolated_df = interpolation.interpolate_low_likelihood_intervals(
+            df=self.markers_df,
+            marker_ids=bodyparts,
+            max_interval_length=max_interval_length,
+            framerate=self.fs,
+        )
+        self.markers_df = interpolated_df
+        return
 
     def get_c3d_compliance(self, smooth=False, filter_window=3, order=1):
         df_ = self.markers_df
@@ -125,34 +182,76 @@ class KinematicDataRun:
         :return:
         """
 
-        if left_marker not in self.markers_df.columns.get_level_values("bodyparts").unique():
-            raise ValueError("The left reference marker " + left_marker + " is not among the markers."
-                             + "\n Please select one among the following: \n" +
-                             ", ".join(str(x) for x in self.markers_df.columns.get_level_values("bodyparts").unique()))
+        if (
+            left_marker
+            not in self.markers_df.columns.get_level_values("bodyparts").unique()
+        ):
+            raise ValueError(
+                "The left reference marker "
+                + left_marker
+                + " is not among the markers."
+                + "\n Please select one among the following: \n"
+                + ", ".join(
+                    str(x)
+                    for x in self.markers_df.columns.get_level_values(
+                        "bodyparts"
+                    ).unique()
+                )
+            )
 
-        if right_marker not in self.markers_df.columns.get_level_values("bodyparts").unique():
-            raise ValueError("The right reference marker " + right_marker + " is not among the markers."
-                             + "\n Please select one among the following: \n" +
-                             ", ".join(str(x) for x in self.markers_df.columns.get_level_values("bodyparts").unique()))
+        if (
+            right_marker
+            not in self.markers_df.columns.get_level_values("bodyparts").unique()
+        ):
+            raise ValueError(
+                "The right reference marker "
+                + right_marker
+                + " is not among the markers."
+                + "\n Please select one among the following: \n"
+                + ", ".join(
+                    str(x)
+                    for x in self.markers_df.columns.get_level_values(
+                        "bodyparts"
+                    ).unique()
+                )
+            )
 
-        self.left_mtp_lift, self.left_mtp_land, self.left_mtp_max = event_detection.get_toe_lift_landing(
-            self.markers_df[self.scorer][left_marker][axis], self.fs)
-        self.right_mtp_lift, self.right_mtp_land, self.right_mtp_max = event_detection.get_toe_lift_landing(
-            self.markers_df[self.scorer][right_marker][axis], self.fs)
+        (
+            self.left_mtp_lift,
+            self.left_mtp_land,
+            self.left_mtp_max,
+        ) = event_detection.get_toe_lift_landing(
+            self.markers_df[self.scorer][left_marker][axis], self.fs
+        )
+        (
+            self.right_mtp_lift,
+            self.right_mtp_land,
+            self.right_mtp_max,
+        ) = event_detection.get_toe_lift_landing(
+            self.markers_df[self.scorer][right_marker][axis], self.fs
+        )
 
         return
 
     def plot_step_partition(self, step_left, step_right, ax_l, ax_r):
         step_trace_l = self.markers_df[self.scorer][step_left]["z"]
         ax_l.plot(step_trace_l)
-        ax_l.vlines(self.left_mtp_lift, min(step_trace_l), max(step_trace_l), colors="green")
-        ax_l.vlines(self.left_mtp_land, min(step_trace_l), max(step_trace_l), colors="red")
+        ax_l.vlines(
+            self.left_mtp_lift, min(step_trace_l), max(step_trace_l), colors="green"
+        )
+        ax_l.vlines(
+            self.left_mtp_land, min(step_trace_l), max(step_trace_l), colors="red"
+        )
         ax_l.set_title("Left side")
 
         step_trace_r = self.markers_df[self.scorer][step_right]["z"]
         ax_r.plot(step_trace_r)
-        ax_r.vlines(self.right_mtp_lift, min(step_trace_r), max(step_trace_r), colors="green")
-        ax_r.vlines(self.right_mtp_land, min(step_trace_r), max(step_trace_r), colors="red")
+        ax_r.vlines(
+            self.right_mtp_lift, min(step_trace_r), max(step_trace_r), colors="green"
+        )
+        ax_r.vlines(
+            self.right_mtp_land, min(step_trace_r), max(step_trace_r), colors="red"
+        )
         ax_r.set_title("Right side")
 
         ax_l.set_xlim(0, len(step_trace_l))
@@ -166,14 +265,22 @@ class KinematicDataRun:
         filename = output_folder + self.path.split("/")[-1] + "_steps_partition.png"
         step_trace_l = self.markers_df[self.scorer][step_left]
         axs[0].plot(step_trace_l)
-        axs[0].vlines(self.left_mtp_lift, min(step_trace_l), max(step_trace_l), colors="green")
-        axs[0].vlines(self.left_mtp_land, min(step_trace_l), max(step_trace_l), colors="red")
+        axs[0].vlines(
+            self.left_mtp_lift, min(step_trace_l), max(step_trace_l), colors="green"
+        )
+        axs[0].vlines(
+            self.left_mtp_land, min(step_trace_l), max(step_trace_l), colors="red"
+        )
         axs[0].set_title("Left side")
 
         step_trace_r = self.markers_df[self.scorer][step_right]
         axs[1].plot(step_trace_r)
-        axs[1].vlines(self.right_mtp_lift, min(step_trace_r), max(step_trace_r), colors="green")
-        axs[1].vlines(self.right_mtp_land, min(step_trace_r), max(step_trace_r), colors="red")
+        axs[1].vlines(
+            self.right_mtp_lift, min(step_trace_r), max(step_trace_r), colors="green"
+        )
+        axs[1].vlines(
+            self.right_mtp_land, min(step_trace_r), max(step_trace_r), colors="red"
+        )
         axs[1].set_title("Right side")
         plt.savefig(filename, facecolor="white")
         plt.close()
@@ -182,10 +289,12 @@ class KinematicDataRun:
         features = self.config["features"]
         skeleton = self.config["skeleton"]
 
-        new_features = features_extraction.extract_features(features=features,
-                                                            bodyparts=self.bodyparts,
-                                                            skeleton=skeleton,
-                                                            markers_df=self.markers_df)
+        new_features = features_extraction.extract_features(
+            features=features,
+            bodyparts=self.bodyparts,
+            skeleton=skeleton,
+            markers_df=self.markers_df,
+        )
 
         if self.features_df is not None:
             self.features_df = pd.concat((self.features_df, new_features), axis=1)
@@ -193,24 +302,24 @@ class KinematicDataRun:
             self.features_df = new_features
 
     def get_binned_features(self, window=50, overlap=25):
-        reformat_df = binning.parse_df_features_for_binning(self.markers_df, self.features_df)
-        test = binning.get_easy_metrics_on_bins(reformat_df, window=window, overlap=overlap)
+        reformat_df = binning.parse_df_features_for_binning(
+            self.markers_df, self.features_df
+        )
+        test = binning.get_easy_metrics_on_bins(
+            reformat_df, window=window, overlap=overlap
+        )
         return test
 
     def get_trace_height(self, marker, axis="z", window=50, overlap=25):
-        test = binning.get_step_height_on_bins(self.markers_df,
-                                               window=window,
-                                               overlap=overlap,
-                                               marker=marker,
-                                               axis=axis)
+        test = binning.get_step_height_on_bins(
+            self.markers_df, window=window, overlap=overlap, marker=marker, axis=axis
+        )
         return test
 
     def get_step_fwd_movement_on_bins(self, marker, axis="y", window=50, overlap=25):
-        test = binning.get_step_fwd_movement_on_bins(self.markers_df,
-                                               window=window,
-                                               overlap=overlap,
-                                               marker=marker,
-                                               axis=axis)
+        test = binning.get_step_fwd_movement_on_bins(
+            self.markers_df, window=window, overlap=overlap, marker=marker, axis=axis
+        )
         return test
 
     def gait_param_to_csv(self, output_folder="./"):
@@ -218,7 +327,9 @@ class KinematicDataRun:
         Writes the gait_param dataframe to a csv file with the name [INPUT_FILENAME]+_gait_param.csv
         :return:
         """
-        self.gait_param.to_csv(output_folder + self.path.split("/")[-1].replace(".c3d", "_gait_param.csv"))
+        self.gait_param.to_csv(
+            output_folder + self.path.split("/")[-1].replace(".c3d", "_gait_param.csv")
+        )
         return
 
     def stepwise_gait_features_to_csv(self, output_folder="./"):
@@ -227,7 +338,9 @@ class KinematicDataRun:
         :return:
         """
         self.stepwise_gait_features.to_csv(
-            output_folder + self.path.split("/")[-1].replace(".c3d", "stepwise_feature.csv"))
+            output_folder
+            + self.path.split("/")[-1].replace(".c3d", "stepwise_feature.csv")
+        )
         return
 
     def get_angles_features(self, features_df, **kwargs):
@@ -235,30 +348,43 @@ class KinematicDataRun:
         left_features = pd.DataFrame()
         right_features = pd.DataFrame()
 
-        left_features = kinematics_processing.get_angle_features(left_df, self.left_mtp_land,
-                                                                 features_df)  # TODO update features df with all angle features
+        left_features = kinematics_processing.get_angle_features(
+            left_df, self.left_mtp_land, features_df
+        )  # TODO update features df with all angle features
 
         self.stepwise_gait_features = left_features.join(right_features)
 
-    def split_in_unilateral_df(self, left_side="", right_side="",
-                               name_starts_with=False, name_ends_with=False,
-                               expected_columns_number=None,
-                               left_columns=None, right_columns=None):
+    def split_in_unilateral_df(
+        self,
+        left_side="",
+        right_side="",
+        name_starts_with=False,
+        name_ends_with=False,
+        expected_columns_number=None,
+        left_columns=None,
+        right_columns=None,
+    ):
         # self.stepwise_gait_features = 0
         left_df = pd.DataFrame()
         right_df = pd.DataFrame()
         if left_side:
-            left_df = kinematics_processing.get_unilateral_df(df=self.gait_param, side=left_side,
-                                                              name_starts_with=name_starts_with,
-                                                              name_ends_with=name_ends_with,
-                                                              column_names=left_columns,
-                                                              expected_columns_number=expected_columns_number)
+            left_df = kinematics_processing.get_unilateral_df(
+                df=self.gait_param,
+                side=left_side,
+                name_starts_with=name_starts_with,
+                name_ends_with=name_ends_with,
+                column_names=left_columns,
+                expected_columns_number=expected_columns_number,
+            )
 
         if right_side:
-            right_df = kinematics_processing.get_unilateral_df(df=self.gait_param, side=right_side,
-                                                               name_starts_with=name_starts_with,
-                                                               name_ends_with=name_ends_with,
-                                                               column_names=right_columns,
-                                                               expected_columns_number=expected_columns_number)
+            right_df = kinematics_processing.get_unilateral_df(
+                df=self.gait_param,
+                side=right_side,
+                name_starts_with=name_starts_with,
+                name_ends_with=name_ends_with,
+                column_names=right_columns,
+                expected_columns_number=expected_columns_number,
+            )
 
         return left_df, right_df
