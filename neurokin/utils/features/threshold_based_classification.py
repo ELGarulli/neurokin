@@ -100,7 +100,8 @@ class ImmobilityAndFreezing(FeatureExtraction):
             pass
         else:
             # Check whether speed is calculated for all markers critical for immobility
-            if 'speed' in marker_df.loc[:, ('scorer', params['markers_for_immobility'])].columns.all():
+            if all('speed' in marker_df['scorer'][column].columns.get_level_values(0) for column in params["markers_for_immobility"]):
+
 
                 valid_idxs_per_marker_id = []
                 for bodypart_id in params["markers_for_immobility"]:
@@ -138,6 +139,7 @@ class ImmobilityAndFreezing(FeatureExtraction):
                     marker_id_filter=source_marker_ids,
                     coords_filter=["speed"],
                 )
+                immobility_and_freezing_df = immobility_and_freezing_df.droplevel([0, 1], axis=1)
 
                 immobility_and_freezing_df["immobility"] = False
 
@@ -193,17 +195,24 @@ class ImmobilityAndFreezing(FeatureExtraction):
                     axis="freezing",
                     data=immobility_and_freezing_df.loc[:, "freezing"],
                 )
-
+                if 'freezing_bout_duration' in immobility_and_freezing_df.columns:
                 # freezing bout duration
-                if immobility_and_freezing_df['freezing_bout_duration'].any():
                     freezing_bout_df = self.convert_singleindex_to_multiindex_df(
                         scorer="scorer",
                         bodypart="subject",
                         axis="freezing_bout_duration",
                         data=immobility_and_freezing_df.loc[:, "freezing_bout_duration"],
                 )
-                else:
+                if 'freezing_bout_duration' not in immobility_and_freezing_df.columns:
                     print('No freezing bouts detected')
+                    immobility_and_freezing_df['freezing_bout_duration'] = np.nan
+
+                    # freezing bout duration
+                freezing_bout_df = self.convert_singleindex_to_multiindex_df(
+                    scorer="scorer",
+                    bodypart="subject",
+                    axis="freezing_bout_duration",
+                    data=immobility_and_freezing_df.loc[:, "freezing_bout_duration"])
 
                 final_immobility_df = pd.concat(
                     [
@@ -217,7 +226,7 @@ class ImmobilityAndFreezing(FeatureExtraction):
                 return final_immobility_df
             #
             #
-            except ValueError:
+            else:
                 raise ValueError(
                     "Be sure to extract speed for all bodyparts that you want to use for immobility!"
                 )
