@@ -1,4 +1,3 @@
-import dlc2kinematics
 import pandas as pd
 from typing import List, Dict, Any
 from neurokin.utils.features.core import FeatureExtraction
@@ -10,7 +9,7 @@ class Distance(FeatureExtraction):
     """
     Computes the distance between two markers of the df
     Input: df with positon data (i.e. DLC output), source_marker_ids: Dict
-    Output: df with acceleration data for input markers
+    Output: df with distances input distances
     """
 
     @property
@@ -53,8 +52,3 @@ class Distance(FeatureExtraction):
             scorer="scorer", bodypart=distance, axis="distance", data=df_temp
         )
         return distance_df
-
-        df_distance = self._rename_output_of_extraction_methods(
-            df=df_distance, bodypart=source_marker_ids, suffix="_distance"
-        )
-        return df_distance

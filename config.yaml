@@ -46,32 +46,56 @@ features:
 #        window_size: 1
 #        aggregation_method: sum
 #        marker_ids: [TailBase]
-    distances.Distance:
-    joint_angles_dlc2kin.JointAnglesDLC:
-        window_size: 11
-#        marker_ids: [left_back_ankle]
-    joint_angles_dlc2kin.AngularVelocityDLC:
-        window_size: 11
-        fps: 80
-#        marker_ids: [left_back_ankle]
-    momentum_dlc2kin.AccelerationDLC:
-        window_size: 11
-        fps: 80
-    momentum_dlc2kin.VelocityDLC:
-        window_size: 11
-        fps: 80
+#    distances.Distance:
+#    joint_angles_dlc2kin.JointAnglesDLC:
+#        window_size: 11
+#        # marker_ids: [left_back_ankle]
+#    joint_angles_dlc2kin.AngularVelocityDLC:
+#        window_size: 11
+#        fps: 80
+#        # marker_ids: [left_back_ankle]
+#    momentum_dlc2kin.AccelerationDLC:
+#        window_size: 11
+#        fps: 80
+#    momentum_dlc2kin.VelocityDLC:
+#        window_size: 11
+#        fps: 80
     momentum_dlc2kin.SpeedDLC:
-         window_size: 11
-         fps: 80
+        window_size: 11
+        fps: 80
+
+    direction.Direction:
+        "front_marker": Snout
+        "back_marker": TailBase
+        "axis": x
+        marker_ids: [TailBase]
+
     threshold_based_classification.ImmobilityAndFreezing:
         # immobility is always calculated for the whole subject.
         # please specify which markers need to be immobile to classify the whole subject as immobile
-         immobility_threshold: 2
-         markers_for_immobility: [TailBase, Snout]
-         minimum_duration_immobility: 0.1
-         minimum_duration_freezing: 1.5
-         fps: 80
-         marker_ids: [TailBase]
+        immobility_threshold: 4
+        markers_for_immobility: [TailBase, Snout]
+        minimum_duration_immobility: 0.1
+        minimum_duration_freezing: 1.5
+        fps: 80
+        marker_ids: [TailBase]
+
+    threshold_based_classification.GaitDisruption:
+        "min_duration_movement_before": 0.5
+        "min_duration_immobility": 0.1
+        "fps": 80
+        "front_marker": Snout
+        marker_ids: [TailBase]
+
+#    step_parsing.StepParsing:
+#        smoothing: False
+#        smoothing_window_size: 11
+#        relative_height: 0.9
+#        step_filter_freq: 4
+#        prominence: 0.1
+#        fps: 80
+#        min_x_diff: 0.25
+#        marker_ids: [ForePawLeft, ForePawRight, HindPawLeft, HindPawRight]
 
 events:
     freezing_of_gait:
