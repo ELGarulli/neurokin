@@ -49,11 +49,11 @@ features:
 #    distances.Distance:
 #    joint_angles_dlc2kin.JointAnglesDLC:
 #        window_size: 11
-#        # marker_ids: [left_back_ankle]
+#        marker_ids: [left_back_ankle]
 #    joint_angles_dlc2kin.AngularVelocityDLC:
 #        window_size: 11
 #        fps: 80
-#        # marker_ids: [left_back_ankle]
+#        marker_ids: [left_back_ankle]
 #    momentum_dlc2kin.AccelerationDLC:
 #        window_size: 11
 #        fps: 80
@@ -68,24 +68,30 @@ features:
         "front_marker": Snout
         "back_marker": TailBase
         "axis": x
-        marker_ids: [TailBase]
 
-    threshold_based_classification.ImmobilityAndFreezing:
+    threshold_based_classification.Immobility:
         # immobility is always calculated for the whole subject.
         # please specify which markers need to be immobile to classify the whole subject as immobile
-        immobility_threshold: 4
-        markers_for_immobility: [TailBase, Snout]
+        immobility_threshold: 10
         minimum_duration_immobility: 0.1
-        minimum_duration_freezing: 1.5
         fps: 80
-        marker_ids: [TailBase]
+        marker_ids: [TailBase, Snout]
 
-    threshold_based_classification.GaitDisruption:
-        "min_duration_movement_before": 0.5
-        "min_duration_immobility": 0.1
-        "fps": 80
+    threshold_based_classification.Freezing:
+        # immobility is always calculated for the whole subject.
+        # please specify which markers need to be immobile to classify the whole subject as immobile
+        "markers_for_freezing": [Snout, TailBase]
         "front_marker": Snout
-        marker_ids: [TailBase]
+        "minimum_duration_freezing": 0.5
+        "fps": 80
+
+#    threshold_based_classification.GaitDisruption:
+#        "markers_for_gait_disruption": [TailBase],
+#        "min_duration_movement_before": 0.5
+#        "min_duration_immobility": 0.1
+#        "fps": 80
+#        "front_marker": Snout
+#        marker_ids: [TailBase]
 
 #    step_parsing.StepParsing:
 #        smoothing: False
