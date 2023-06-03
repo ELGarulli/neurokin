@@ -240,6 +240,8 @@ class Freezing(FeatureExtraction):
                 bout_nr = 1
                 for start_idx, end_idx in freezing_bout_border_idxs:
                     filtered_df.loc[start_idx:end_idx, "freezing"] = True
+                    filtered_df.loc[start_idx:end_idx, "freezing_bout_start"] = start_idx*1/params["fps"]
+                    filtered_df.loc[start_idx:end_idx, "freezing_bout_end"] = end_idx*1/params["fps"]
                     interval_duration = (end_idx - start_idx + 1) / params["fps"]
                     filtered_df.loc[
                         start_idx:end_idx, "freezing_bout_duration"
@@ -466,6 +468,8 @@ class GaitDisruption(FeatureExtraction):
                 # iterate through shared border idxs of gait disruption bouts
                 for start_idx, end_idx in gait_disruption_bout_border_idxs:
                     filtered_df.loc[start_idx:end_idx, "gait_disruption"] = True
+                    filtered_df.loc[start_idx:end_idx, "gait_disruption_bout_start"] = start_idx*1/params["fps"]
+                    filtered_df.loc[start_idx:end_idx, "gait_disruption_bout_end"] = end_idx*1/params["fps"]
                     interval_duration = (end_idx + 1 - start_idx) * 1 / params["fps"]
                     filtered_df.loc[
                         start_idx:end_idx, "gait_disruption_bout_duration"
