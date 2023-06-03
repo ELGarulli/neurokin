@@ -261,6 +261,19 @@ class Freezing(FeatureExtraction):
                     axis="freezing",
                     data=filtered_df.loc[:, "freezing"],
                 )
+                freezing_start_df = self.convert_singleindex_to_multiindex_df(
+                    scorer="scorer",
+                    bodypart="subject",
+                    axis="freezing_bout_start",
+                    data=filtered_df.loc[:, "freezing_bout_start"],
+                )
+                freezing_end_df = self.convert_singleindex_to_multiindex_df(
+                    scorer="scorer",
+                    bodypart="subject",
+                    axis="freezing_bout_end",
+                    data=filtered_df.loc[:, "freezing_bout_end"],
+                )
+
                 freezing_bout_duration_df = self.convert_singleindex_to_multiindex_df(
                     scorer="scorer",
                     bodypart="subject",
@@ -276,12 +289,14 @@ class Freezing(FeatureExtraction):
                 freezing_bout_nr_df = self.convert_singleindex_to_multiindex_df(
                     scorer="scorer",
                     bodypart="subject",
-                    axis="freezing_bout_nr",
+                    axis="freezing_bout_number",
                     data=filtered_df.loc[:, "freezing_bout_nr"],
                 )
                 final_df = pd.concat(
                     [
                         freezing_col_df,
+                        freezing_start_df,
+                        freezing_end_df,
                         freezing_bout_duration_df,
                         freezing_bout_x_position_df,
                         freezing_bout_nr_df,
@@ -491,7 +506,20 @@ class GaitDisruption(FeatureExtraction):
                     axis="gait_disruption",
                     data=filtered_df.loc[:, "gait_disruption"],
                 )
-
+                # gait disruption bout start
+                gait_disruption_start_df = self.convert_singleindex_to_multiindex_df(
+                    scorer="scorer",
+                    bodypart="subject",
+                    axis="gait_disruption_bout_start",
+                    data=filtered_df.loc[:, "gait_disruption_bout_start"],
+                )
+                # gait disruption bout end
+                gait_disruption_end_df = self.convert_singleindex_to_multiindex_df(
+                    scorer="scorer",
+                    bodypart="subject",
+                    axis="gait_disruption_bout_end",
+                    data=filtered_df.loc[:, "gait_disruption_bout_end"],
+                )
                 # gait disruption bout duration
                 gait_disruption_bout_duration_df = (
                     self.convert_singleindex_to_multiindex_df(
@@ -501,6 +529,7 @@ class GaitDisruption(FeatureExtraction):
                         data=filtered_df.loc[:, "gait_disruption_bout_duration"],
                     )
                 )
+                # gait disruption bout x position
                 gait_disruption_bout_x_position_df = (
                     self.convert_singleindex_to_multiindex_df(
                         scorer="scorer",
@@ -509,16 +538,19 @@ class GaitDisruption(FeatureExtraction):
                         data=filtered_df.loc[:, "gait_disruption_bout_x_position"],
                     )
                 )
+                # gait disruption bout number
                 gait_disruption_bout_nr_df = self.convert_singleindex_to_multiindex_df(
                     scorer="scorer",
                     bodypart="subject",
-                    axis="gait_disruption_bout_nr",
+                    axis="gait_disruption_bout_number",
                     data=filtered_df.loc[:, "gait_disruption_bout_nr"],
                 )
 
                 final_df = pd.concat(
                     [
                         gait_disruption_col_df,
+                        gait_disruption_start_df,
+                        gait_disruption_end_df,
                         gait_disruption_bout_duration_df,
                         gait_disruption_bout_x_position_df,
                         gait_disruption_bout_nr_df,
