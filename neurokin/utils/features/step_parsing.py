@@ -16,9 +16,9 @@ def _get_peaks(y, params):
     :param y: trace of the toe in the z coordinate
     :return: left and right bounds
     """
-    y = _lowpass_array(y, params['step_filter_freq'], params['fps'])
+    y = _lowpass_array(y, params["step_filter_freq"], params["fps"])
 
-    max_x, _ = signal.find_peaks(y, prominence=params['prominence'])
+    max_x, _ = signal.find_peaks(y, prominence=params["prominence"])
 
     if len(max_x) > 2:
         avg_distance = abs(int(_median_distance(max_x) / 2))
@@ -30,7 +30,10 @@ def _get_peaks(y, params):
             left = p - avg_distance if p - avg_distance > 0 else 0
             right = p + avg_distance if p + avg_distance < len(y) else len(y)
             bounds = _get_peak_boundaries_scipy(
-                y=y[left:right], px=p, left_crop=left, RELATIVE_HEIGHT=params['relative_height']
+                y=y[left:right],
+                px=p,
+                left_crop=left,
+                RELATIVE_HEIGHT=params["relative_height"],
             )
             lb.append(bounds[0])
             rb.append(bounds[1])
@@ -40,6 +43,7 @@ def _get_peaks(y, params):
         return lb, rb, max_x
     else:
         return [], [], []
+
 
 def _lowpass_array(array, critical_freq, fs):
     """
@@ -54,8 +58,9 @@ def _lowpass_array(array, critical_freq, fs):
     return filtered
 
 
-def _get_peak_boundaries_scipy(y: ndarray, px: float, left_crop: int, RELATIVE_HEIGHT: float
-                               ) -> Tuple[int, int]:
+def _get_peak_boundaries_scipy(
+    y: ndarray, px: float, left_crop: int, RELATIVE_HEIGHT: float
+) -> Tuple[int, int]:
     peaks = np.asarray([px - left_crop])
     peak_pro = signal.peak_prominences(y, peaks)
     peaks_width = signal.peak_widths(
@@ -108,7 +113,12 @@ class StepParsing(FeatureExtraction):
             "prominence": 5,
             "fps": 80,
             "min_x_diff": 0.1,
-            "marker_ids": ["ForePawRight", "ForePawLeft", "HindPawRight", "HindPawLeft"],
+            "markers_for_step_detection": [
+                "ForePawRight",
+                "ForePawLeft",
+                "HindPawRight",
+                "HindPawLeft",
+            ],
         }
         return default_values
 
@@ -122,7 +132,7 @@ class StepParsing(FeatureExtraction):
             "prominence": [int],
             "fps": [int],
             "min_x_diff": [float],
-            "marker_ids": [list],
+            "markers_for_step_detection": [list],
         }
         return default_types
 
@@ -136,26 +146,24 @@ class StepParsing(FeatureExtraction):
         if ("scorer", source_marker_ids, "gait_cycle_phase") in marker_df.columns:
             pass
         else:
-            # Check whether speed is calculated for all markers critical for immobility
-            if 'speed' in marker_df.loc[:, ('scorer', source_marker_ids)].columns.all():
+            # Check whether speed is calculated for all markers critical for step_detection
+            if ("scorer", source_marker_ids, "speed") in marker_df.columns:
+                speed_df = marker_df.loc[:, ("scorer", source_marker_ids, ["speed"])]
+                speed = speed_df["scorer"][source_marker_ids]["speed"]
 
-                speed_df = marker_df.loc[:, ('scorer', source_marker_ids, ['speed'])]
-                speed = speed_df['scorer'][source_marker_ids]['speed']
-                x_df = marker_df.loc[:, ('scorer', source_marker_ids, 'x')]
-
-                # check whether smoothing is desired
+                # check whether smoothing is desired (not implemented yet)
                 if params["smoothing"]:
                     pass
 
                 # get peak indices
-                start, end, peak = _get_peaks(y = speed, params = params)
+                start, end, peak = _get_peaks(y=speed, params=params)
 
                 # check whether it is actually a step
                 # calculate the difference in x between start and end
                 x_movement_bouts = []
                 for startidx, endidx in zip(start, end):
-                    x_diff = abs(startidx-endidx)
-                    if x_diff > params['min_x_diff']:
+                    x_diff = abs(startidx - endidx)
+                    if x_diff > params["min_x_diff"]:
                         bout_range = np.arange(startidx, endidx + 1)
                         x_movement_bouts.append(bout_range)
                 x_movement_indices = np.concatenate(x_movement_bouts)
@@ -173,34 +181,58 @@ class StepParsing(FeatureExtraction):
                 bout_indices = np.concatenate(bouts)
 
                 # write gait phase into df
-                speed_df.loc[:, ('scorer',source_marker_ids,'gait_cycle_phase')] = 'stance'
-                speed_df.iloc[bout_indices, speed_df.columns.get_loc(('scorer', source_marker_ids, 'gait_cycle_phase'))] = 'swing'
+                speed_df.loc[
+                    :, ("scorer", source_marker_ids, "gait_cycle_phase")
+                ] = "stance"
+                speed_df.iloc[
+                    bout_indices,
+                    speed_df.columns.get_loc(
+                        ("scorer", source_marker_ids, "gait_cycle_phase")
+                    ),
+                ] = "swing"
                 # write gait phase markers into df
-                speed_df.loc[:, ('scorer', source_marker_ids, 'gait_cycle_phase_markers')] = np.nan
-                speed_df.iloc[correct_start, speed_df.columns.get_loc(('scorer', source_marker_ids, 'gait_cycle_phase_markers'))] = 'start'
-                speed_df.iloc[correct_peak, speed_df.columns.get_loc(('scorer', source_marker_ids, 'gait_cycle_phase_markers'))] = 'peak'
-                speed_df.iloc[correct_end, speed_df.columns.get_loc(('scorer', source_marker_ids, 'gait_cycle_phase_markers'))] = 'end'
+                speed_df.loc[
+                    :, ("scorer", source_marker_ids, "gait_cycle_phase_markers")
+                ] = np.nan
+                speed_df.iloc[
+                    correct_start,
+                    speed_df.columns.get_loc(
+                        ("scorer", source_marker_ids, "gait_cycle_phase_markers")
+                    ),
+                ] = "start"
+                speed_df.iloc[
+                    correct_peak,
+                    speed_df.columns.get_loc(
+                        ("scorer", source_marker_ids, "gait_cycle_phase_markers")
+                    ),
+                ] = "peak"
+                speed_df.iloc[
+                    correct_end,
+                    speed_df.columns.get_loc(
+                        ("scorer", source_marker_ids, "gait_cycle_phase_markers")
+                    ),
+                ] = "end"
 
                 # convert dfs into multiindex df
                 gait_phases = self.convert_singleindex_to_multiindex_df(
                     scorer="scorer",
                     bodypart=source_marker_ids,
                     axis="gait_cycle_phase",
-                    data=speed_df.loc[:, ('scorer', source_marker_ids, 'gait_cycle_phase')],
+                    data=speed_df.loc[
+                        :, ("scorer", source_marker_ids, "gait_cycle_phase")
+                    ],
                 )
                 gait_phase_marker = self.convert_singleindex_to_multiindex_df(
                     scorer="scorer",
                     bodypart=source_marker_ids,
                     axis="gait_cycle_phase_markers",
-                    data=speed_df.loc[:, ('scorer', source_marker_ids, 'gait_cycle_phase_markers')],
+                    data=speed_df.loc[
+                        :, ("scorer", source_marker_ids, "gait_cycle_phase_markers")
+                    ],
                 )
 
-
                 final_gait_cycle_df = pd.concat(
-                    [
-                        gait_phases,
-                        gait_phase_marker
-                    ],
+                    [gait_phases, gait_phase_marker],
                     axis=1,
                 )
                 return final_gait_cycle_df

@@ -7,11 +7,6 @@ from neurokin.utils.features.core import FeatureExtraction, DefaultParams
 
 def _get_interval_border_idxs(
     all_matching_idxs: np.ndarray,
-    df: pd.DataFrame,
-    colname: str,
-    min_interval_duration: Optional[float] = None,
-    max_interval_duration: Optional[float] = None,
-    fps: int = 80,
 ) -> List[Tuple[int, int]]:
     """
     Function written by Dennis Segebarth (DSegebarth on GitHub)
@@ -34,26 +29,8 @@ def _get_interval_border_idxs(
         interval_end_idxs = all_matching_idxs[step_end_idxs]
         # loop over all intervals
         for start_idx, end_idx in zip(interval_start_idxs, interval_end_idxs):
-            interval_frame_count = (end_idx + 1) - start_idx
-            interval_duration = interval_frame_count * (1 / fps)
-            if (min_interval_duration != None) and (max_interval_duration != None):
-                append_interval = (
-                    min_interval_duration <= interval_duration <= max_interval_duration
-                )
-            elif min_interval_duration != None:
-                append_interval = min_interval_duration <= interval_duration
-            elif max_interval_duration != None:
-                append_interval = interval_duration <= max_interval_duration
-            else:
-                append_interval = True
-            if append_interval:
-                interval_border_idxs.append((start_idx, end_idx))
-                # write bout_duration in df
-                df.loc[
-                    start_idx:end_idx, (colname + "_bout_duration")
-                ] = interval_duration
-                df.loc[start_idx:end_idx, colname] = True
-    return interval_border_idxs, df
+            interval_border_idxs.append((start_idx, end_idx))
+    return interval_border_idxs
 
 
 class Immobility(FeatureExtraction):
@@ -103,62 +80,59 @@ class Immobility(FeatureExtraction):
             pass
         else:
             # Check whether speed is calculated for all markers critical for immobility
-            if all(
-                ("scorer", column, "speed") in marker_df.columns
-                for column in params["markers_for_immobility"]
-            ):
-
-                immobility_bout_idxs = []
-
+            if ("scorer", source_marker_ids, "speed") in marker_df.columns:
                 filtered_df = self._copy_filtered_columns_of_df(
                     df_to_filter=marker_df,
                     marker_id_filter=source_marker_ids,
                     coords_filter=["speed"],
                 )
+
                 # remove multiindex to make it easier to work with
                 filtered_df = filtered_df.droplevel([0, 1], axis=1)
 
                 # create new col for immobility, set val to false
                 filtered_df["immobility"] = False
-                # filter for rows in which the speed is less than the immobility threshold.
-                filtered_df.loc[
-                    (filtered_df["speed"] < params["immobility_threshold"]),
-                    "immobility",
-                ] = True
+                # filter for indices in which the speed is less than the immobility threshold
+                immobility_candidate_bout_idxs = np.where(
+                    filtered_df["speed"] < params["immobility_threshold"]
+                )[0]
 
-                immobility_bout_idxs.append(filtered_df.loc[filtered_df["immobility"] == True].index.values)
-
-                (immobility_interval_border_idxs,
-                    immobility_df,
-                ) = _get_interval_border_idxs(
-                    all_matching_idxs=immobility_bout_idxs,
-                    min_interval_duration=params["minimum_duration_immobility"],
-                    fps=params["fps"],
-                    df=filtered_df,
-                    colname="immobility",
+                immobility_candidate_border_idxs = _get_interval_border_idxs(
+                    all_matching_idxs=immobility_candidate_bout_idxs
                 )
+
+                # iterate through idxs
+                # set immobility to true, determine duration of immobility bout
+                for start_idx, end_idx in immobility_candidate_border_idxs:
+                    interval_duration = (end_idx - start_idx + 1) * (1 / params["fps"])
+                    if interval_duration >= params["minimum_duration_immobility"]:
+                        filtered_df.loc[start_idx:end_idx, "immobility"] = True
+                        filtered_df.loc[
+                            start_idx:end_idx, "immobility_bout_duration"
+                        ] = interval_duration
 
                 # transform dfs into multiindex df
 
                 # immobility column (boolean)
                 immobility_col_df = self.convert_singleindex_to_multiindex_df(
                     scorer="scorer",
-                    bodypart="subject",
+                    bodypart=source_marker_ids,
                     axis="immobility",
-                    data=immobility_df.loc[:, "immobility"],
+                    data=filtered_df.loc[:, "immobility"],
                 )
 
                 # immobility bout duration
                 immobility_bout_df = self.convert_singleindex_to_multiindex_df(
                     scorer="scorer",
-                    bodypart="subject",
+                    bodypart=source_marker_ids,
                     axis="immobility_bout_duration",
-                    data=immobility_df.loc[:, "immobility_bout_duration"],
+                    data=filtered_df.loc[:, "immobility_bout_duration"],
                 )
 
                 final_df = pd.concat([immobility_col_df, immobility_bout_df], axis=1)
 
                 return final_df
+
 
 class Freezing(FeatureExtraction):
     """
@@ -197,25 +171,23 @@ class Freezing(FeatureExtraction):
         return default_types
 
     def _run_feature_extraction(
-            self,
-            source_marker_ids: List[str],
-            marker_df: pd.DataFrame,
-            params: Dict[str, Any],
+        self,
+        source_marker_ids: List[str],
+        marker_df: pd.DataFrame,
+        params: Dict[str, Any],
     ) -> pd.DataFrame:
-
         # Check whether freezing is already calculated
         if ("scorer", "subject", "freezing") in marker_df.columns:
             pass
         else:
             # Check whether speed is calculated for all markers critical for immobility
             if all(
-                    ("scorer", column, "immobility") in marker_df.columns
-                    for column in params["markers_for_freezing"]
+                ("scorer", column, "immobility") in marker_df.columns
+                for column in params["markers_for_freezing"]
             ):
-
                 filtered_df = self._copy_filtered_columns_of_df(
                     df_to_filter=marker_df,
-                    marker_id_filter=[params["markers_for_freezing"]],
+                    marker_id_filter=params["markers_for_freezing"],
                     coords_filter=["immobility", "immobility_bout_duration"],
                 )
                 # drop scorer level
@@ -223,22 +195,34 @@ class Freezing(FeatureExtraction):
 
                 # get idxs of freezing bouts -> idxs of where all markers are immobile
                 # and immobility bout duration is >= minimum_duration_freezing
-                freezing_bout_idxs_per_marker = np.where(all(filtered_df[marker]["immobility"] == True
-                                                         for marker in params["markers_for_freezing"])&
-                                                         all(filtered_df[marker]["immobility_bout_duration"]
-                                                         >= params["minimum_duration_freezing"]
-                                                         for marker in params["markers_for_freezing"]))
+                all_freezing_bout_idxs = []
+                for marker in params["markers_for_freezing"]:
+                    filtered_df.loc[
+                        filtered_df[marker]["immobility_bout_duration"]
+                        >= params["minimum_duration_freezing"],
+                        "freezing",
+                    ] = True
+
+                    freezing_bout_idxs_per_marker = np.where(
+                        filtered_df[marker]["immobility"] == True
+                    )[0]
+
+                    all_freezing_bout_idxs.append(freezing_bout_idxs_per_marker)
+
+                shared_valid_idxs_for_all_markers = all_freezing_bout_idxs[0]
+                if len(all_freezing_bout_idxs) > 1:
+                    for next_set_of_valid_idxs in all_freezing_bout_idxs[1:]:
+                        shared_valid_idxs_for_all_markers = np.intersect1d(
+                            shared_valid_idxs_for_all_markers, next_set_of_valid_idxs
+                        )
+
                 # drop bodypart level
                 filtered_df.droplevel([0], axis=1)
 
-                # get freezing bout starts and ends
-                freezing_bout_start_idxs = np.where((elem in freezing_bout_idxs_per_marker)
-                                    and (elem - 1 not in freezing_bout_idxs_per_marker)
-                                    for elem in freezing_bout_idxs_per_marker)
-
-                freezing_bout_end_idxs = np.where((elem in freezing_bout_idxs_per_marker)
-                                      and (elem+1 not in freezing_bout_idxs_per_marker)
-                                      for elem in freezing_bout_idxs_per_marker)
+                # get freezing bout start and end idxs
+                freezing_bout_border_idxs = _get_interval_border_idxs(
+                    shared_valid_idxs_for_all_markers
+                )
 
                 # create new col for freezing, set val to false
                 filtered_df["freezing"] = False
@@ -254,19 +238,16 @@ class Freezing(FeatureExtraction):
                 # iterate through idxs
                 # set gait disruption to true, determine duration, x position, and bout nr
                 bout_nr = 1
-                for start_idx, end_idx in zip(
-                        freezing_bout_start_idxs, freezing_bout_end_idxs
-                ):
-
+                for start_idx, end_idx in freezing_bout_border_idxs:
                     filtered_df.loc[start_idx:end_idx, "freezing"] = True
-                    interval_duration = filtered_df.loc[
-                        start_idx, "immobility_bout_duration"
-                    ]
+                    interval_duration = (end_idx - start_idx + 1) / params["fps"]
                     filtered_df.loc[
-                    start_idx:end_idx, "freezing_bout_duration"
+                        start_idx:end_idx, "freezing_bout_duration"
                     ] = interval_duration
-                    x_position = x_position_df.loc[start_idx, 'x']
-                    filtered_df.loc[start_idx:end_idx, "freezing_x_position"] = x_position
+                    x_position = x_position_df.loc[start_idx, "x"]
+                    filtered_df.loc[
+                        start_idx:end_idx, "freezing_bout_x_position"
+                    ] = x_position
                     filtered_df.loc[start_idx:end_idx, "freezing_bout_nr"] = bout_nr
                     bout_nr += 1
 
@@ -297,10 +278,13 @@ class Freezing(FeatureExtraction):
                     data=filtered_df.loc[:, "freezing_bout_nr"],
                 )
                 final_df = pd.concat(
-                    [freezing_col_df,
-                     freezing_bout_duration_df,
-                     freezing_bout_x_position_df,
-                     freezing_bout_nr_df], axis=1
+                    [
+                        freezing_col_df,
+                        freezing_bout_duration_df,
+                        freezing_bout_x_position_df,
+                        freezing_bout_nr_df,
+                    ],
+                    axis=1,
                 )
                 return final_df
 
@@ -309,9 +293,15 @@ class Freezing(FeatureExtraction):
                     "Be sure to classify immobility for each bodypart before classifying freezing!"
                 )
 
+
 class GaitDisruption(FeatureExtraction):
     """
-    Classifies Gait disruption bouts based on immobility bouts and movement
+    Classifies movement per marker for each marker in markers_for_gait_disruption
+    Classifies gait disruption bouts based on immobility bouts and movement for each marker in markers_for_gait_disruption
+    Checks overlap of gait disruption bouts for each marker in markers_for_gait_disruption
+    Using the shared indices of gait disruption, classifies gait disruption bouts for the whole subject
+    Adds information about bout status (bool) bout duration, x_position, and bout number to df
+
     Input:  df with positon data (i.e. DLC output) and immobility detection
             source_marker_ids: list of marker ids
     Additional information required in config file:
@@ -369,64 +359,97 @@ class GaitDisruption(FeatureExtraction):
                 # slice marker df
                 filtered_df = self._copy_filtered_columns_of_df(
                     df_to_filter=marker_df,
-                    marker_id_filter=["subject"],
+                    marker_id_filter=params["markers_for_gait_disruption"],
                     coords_filter=["immobility", "immobility_bout_duration"],
                 )
 
                 # remove multiindex to make it easier to work with
-                filtered_df = filtered_df.droplevel([0, 1], axis=1)
+                filtered_df = filtered_df.droplevel([0], axis=1)
 
-                # Check movement bout and bout duration
-                interval_start_idxs = np.where(
-                    (filtered_df["immobility"] == False)
-                    & (filtered_df["immobility"].shift(1) == True)
-                )[0]
-                if filtered_df["immobility"][0] == False:
-                    interval_start_idxs = np.append(arr=interval_start_idxs, values=0)
-                    interval_start_idxs = np.sort(interval_start_idxs)
-                # add first bout to start idx if
-                interval_end_idxs = np.where(
-                    (filtered_df["immobility"] == False)
-                    & (filtered_df["immobility"].shift(-1) == True)
-                )[0]
+                all_gait_disruption_bout_candidate_idxs = []
+                for marker in params["markers_for_gait_disruption"]:
+                    # create temporary df for each marker to seperate it clearly from df that is used lated
+                    temp_df = filtered_df[marker].copy()
 
-                for start_idx, end_idx in zip(interval_start_idxs, interval_end_idxs):
-                    interval_frame_count = (end_idx + 1) - start_idx
-                    interval_duration = interval_frame_count * 1 / params["fps"]
-                    filtered_df.loc[
-                        start_idx:end_idx, "movement_bout_duration"
-                    ] = interval_duration
+                    # classify movement
+                    movement_interval_start_idxs = np.where(
+                        (temp_df["immobility"] == False)
+                        & (temp_df["immobility"].shift(1) == True)
+                    )[0]
+                    # add first index if first frame is not immobile
+                    if temp_df["immobility"][0] == False:
+                        movement_interval_start_idxs = np.append(
+                            arr=movement_interval_start_idxs, values=0
+                        )
+                        movement_interval_start_idxs = np.sort(
+                            movement_interval_start_idxs
+                        )
 
-                # create new col for gait_disruption, set val to false
-                filtered_df["gait_disruption"] = False
+                    movement_interval_end_idxs = np.where(
+                        (temp_df["immobility"] == False)
+                        & (temp_df["immobility"].shift(-1) == True)
+                    )[0]
 
-                # get idxs of gait disruption bouts
-                # -> where immobility is false for fps*min_duration_movement_before frames
-                # and then is immobile for min_duration_immobility frames*fps
-                idx_gait_disruption_start = np.where(
-                    (filtered_df["immobility"] == True)
-                    & (
-                        filtered_df["immobility_bout_duration"]
-                        >= params["min_duration_immobility"]
+                    for start_idx, end_idx in zip(
+                        movement_interval_start_idxs, movement_interval_end_idxs
+                    ):
+                        movement_interval_frame_count = (end_idx + 1) - start_idx
+                        movement_interval_duration = (
+                            movement_interval_frame_count * 1 / params["fps"]
+                        )
+                        temp_df.loc[
+                            start_idx:end_idx, "movement_bout_duration"
+                        ] = movement_interval_duration
+
+                    gait_disruption_start_idxs = np.where(
+                        (
+                            temp_df["immobility_bout_duration"]
+                            >= params["min_duration_immobility"]
+                        )
+                        & (
+                            temp_df["movement_bout_duration"].shift(1)
+                            >= params["min_duration_movement_before"]
+                        )
+                    )[0]
+
+                    for idx in gait_disruption_start_idxs:
+                        gait_disruption_bout_duration_frames_per_marker = (
+                            temp_df["immobility_bout_duration"].loc[idx] * params["fps"]
+                        )
+
+                        temp_df.loc[
+                            idx : idx + gait_disruption_bout_duration_frames_per_marker,
+                            "gait_disruption_per_marker",
+                        ] = True
+
+                    gait_disruption_bout_idxs_per_marker = np.where(
+                        temp_df["gait_disruption_per_marker"] == True
+                    )[0]
+                    all_gait_disruption_bout_candidate_idxs.append(
+                        gait_disruption_bout_idxs_per_marker
                     )
-                    & (filtered_df["immobility"].shift(1) == False)
-                    & (
-                        filtered_df["movement_bout_duration"].shift(1)
-                        >= params["min_duration_movement_before"]
-                    )
-                )[0]
 
-                # define end of gait disruption bout
-                # start + length -1 to account for starting idx inclusion to duration
-                idx_gait_disruption_end = (
-                    idx_gait_disruption_start
-                    + filtered_df.loc[
-                        idx_gait_disruption_start, "immobility_bout_duration"
-                    ]
-                    * params["fps"]
-                    - 1
-                ).to_numpy()
-                #ugly solution to mutliindexing value error: non-unique index values
+                # drop level 0 of multiindex (bodyparts)
+                filtered_df = filtered_df.droplevel([0], axis=1)
+
+                # get shared valid idxs for all markers
+                shared_valid_idxs_for_all_markers = (
+                    all_gait_disruption_bout_candidate_idxs[0]
+                )
+                if len(all_gait_disruption_bout_candidate_idxs) > 1:
+                    for (
+                        next_set_of_valid_idxs
+                    ) in all_gait_disruption_bout_candidate_idxs[1:]:
+                        shared_valid_idxs_for_all_markers = np.intersect1d(
+                            shared_valid_idxs_for_all_markers, next_set_of_valid_idxs
+                        )
+
+                # get border idxs of gait disruption bouts
+                gait_disruption_bout_border_idxs = _get_interval_border_idxs(
+                    shared_valid_idxs_for_all_markers
+                )
+
+                # get x position of front marker of subject -> position of bout
                 x_position_df = self._copy_filtered_columns_of_df(
                     df_to_filter=marker_df,
                     marker_id_filter=[params["front_marker"]],
@@ -434,23 +457,27 @@ class GaitDisruption(FeatureExtraction):
                 )
                 x_position_df = x_position_df.droplevel([0, 1], axis=1)
 
-                # iterate through idxs
+                # create new col for gait_disruption, set val to false
+                filtered_df["gait_disruption"] = False
+
                 # set gait disruption to true, determine duration, x position, and bout nr
                 bout_nr = 1
-                for start_idx, end_idx in zip(
-                    idx_gait_disruption_start, idx_gait_disruption_end
-                ):
-                    interval_duration = filtered_df.loc[
-                        start_idx, "immobility_bout_duration"
-                    ]
+
+                # iterate through shared border idxs of gait disruption bouts
+                for start_idx, end_idx in gait_disruption_bout_border_idxs:
                     filtered_df.loc[start_idx:end_idx, "gait_disruption"] = True
+                    interval_duration = (end_idx + 1 - start_idx) * 1 / params["fps"]
                     filtered_df.loc[
                         start_idx:end_idx, "gait_disruption_bout_duration"
                     ] = interval_duration
-                    x_position = x_position_df.loc[start_idx,'x']
-                    filtered_df.loc[start_idx:end_idx, "gait_disruption_bout_x_position"]=x_position
-                    filtered_df.loc[start_idx:end_idx, "gait_disruption_bout_nr"]=bout_nr
-                    bout_nr+=1
+                    x_position = x_position_df.loc[start_idx, "x"]
+                    filtered_df.loc[
+                        start_idx:end_idx, "gait_disruption_bout_x_position"
+                    ] = x_position
+                    filtered_df.loc[
+                        start_idx:end_idx, "gait_disruption_bout_nr"
+                    ] = bout_nr
+                    bout_nr += 1
 
                 # transform dfs into multiindex df
                 # gait disruption
@@ -478,20 +505,21 @@ class GaitDisruption(FeatureExtraction):
                         data=filtered_df.loc[:, "gait_disruption_bout_x_position"],
                     )
                 )
-                gait_disruption_bout_nr_df = (
-                    self.convert_singleindex_to_multiindex_df(
-                        scorer="scorer",
-                        bodypart="subject",
-                        axis="gait_disruption_bout_nr",
-                        data=filtered_df.loc[:, "gait_disruption_bout_nr"],
-                    )
+                gait_disruption_bout_nr_df = self.convert_singleindex_to_multiindex_df(
+                    scorer="scorer",
+                    bodypart="subject",
+                    axis="gait_disruption_bout_nr",
+                    data=filtered_df.loc[:, "gait_disruption_bout_nr"],
                 )
 
                 final_df = pd.concat(
-                    [gait_disruption_col_df,
-                     gait_disruption_bout_duration_df,
-                     gait_disruption_bout_x_position_df,
-                     gait_disruption_bout_nr_df], axis=1
+                    [
+                        gait_disruption_col_df,
+                        gait_disruption_bout_duration_df,
+                        gait_disruption_bout_x_position_df,
+                        gait_disruption_bout_nr_df,
+                    ],
+                    axis=1,
                 )
                 return final_df
 
