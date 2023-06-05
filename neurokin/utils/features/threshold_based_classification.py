@@ -239,19 +239,28 @@ class Freezing(FeatureExtraction):
                 # set gait disruption to true, determine duration, x position, and bout nr
                 bout_nr = 1
                 for start_idx, end_idx in freezing_bout_border_idxs:
-                    filtered_df.loc[start_idx:end_idx, "freezing"] = True
-                    filtered_df.loc[start_idx:end_idx, "freezing_bout_start"] = start_idx*1/params["fps"]
-                    filtered_df.loc[start_idx:end_idx, "freezing_bout_end"] = end_idx*1/params["fps"]
                     interval_duration = (end_idx - start_idx + 1) / params["fps"]
-                    filtered_df.loc[
+                    # since the interval min duration is checked per marker and then the idxs are intersected it is
+                    # necessary to check the interval duration again
+                    if interval_duration >= params["minimum_duration_freezing"]:
+
+                        filtered_df.loc[start_idx:end_idx, "freezing"] = True
+                        filtered_df.loc[
                         start_idx:end_idx, "freezing_bout_duration"
-                    ] = interval_duration
-                    x_position = x_position_df.loc[start_idx, "x"]
-                    filtered_df.loc[
-                        start_idx:end_idx, "freezing_bout_x_position"
-                    ] = x_position
-                    filtered_df.loc[start_idx:end_idx, "freezing_bout_nr"] = bout_nr
-                    bout_nr += 1
+                        ] = interval_duration
+                        filtered_df.loc[start_idx:end_idx, "freezing_bout_start"] = start_idx*1/params["fps"]
+                        filtered_df.loc[start_idx:end_idx, "freezing_bout_end"] = end_idx*1/params["fps"]
+                        filtered_df.loc[
+                            start_idx:end_idx, "freezing_bout_duration"
+                        ] = interval_duration
+                        x_position = x_position_df.loc[start_idx, "x"]
+                        filtered_df.loc[
+                            start_idx:end_idx, "freezing_bout_x_position"
+                        ] = x_position
+                        filtered_df.loc[start_idx:end_idx, "freezing_bout_nr"] = bout_nr
+                        bout_nr += 1
+                    else:
+                        continue
 
                 # transform dfs into multiindex df
                 # freezing
@@ -482,21 +491,31 @@ class GaitDisruption(FeatureExtraction):
 
                 # iterate through shared border idxs of gait disruption bouts
                 for start_idx, end_idx in gait_disruption_bout_border_idxs:
-                    filtered_df.loc[start_idx:end_idx, "gait_disruption"] = True
-                    filtered_df.loc[start_idx:end_idx, "gait_disruption_bout_start"] = start_idx*1/params["fps"]
-                    filtered_df.loc[start_idx:end_idx, "gait_disruption_bout_end"] = end_idx*1/params["fps"]
                     interval_duration = (end_idx + 1 - start_idx) * 1 / params["fps"]
-                    filtered_df.loc[
+                    # since the interval min duration is checked per marker and then the idxs are intersected it is
+                    # necessary to check the interval duration again
+                    if interval_duration >= params["min_duration_immobility"]:
+
+                        filtered_df.loc[start_idx:end_idx, "gait_disruption"] = True
+                        filtered_df.loc[
                         start_idx:end_idx, "gait_disruption_bout_duration"
-                    ] = interval_duration
-                    x_position = x_position_df.loc[start_idx, "x"]
-                    filtered_df.loc[
-                        start_idx:end_idx, "gait_disruption_bout_x_position"
-                    ] = x_position
-                    filtered_df.loc[
-                        start_idx:end_idx, "gait_disruption_bout_nr"
-                    ] = bout_nr
-                    bout_nr += 1
+                        ] = interval_duration
+                        filtered_df.loc[start_idx:end_idx, "gait_disruption_bout_start"] = start_idx*1/params["fps"]
+                        filtered_df.loc[start_idx:end_idx, "gait_disruption_bout_end"] = end_idx*1/params["fps"]
+                        interval_duration = (end_idx + 1 - start_idx) * 1 / params["fps"]
+                        filtered_df.loc[
+                            start_idx:end_idx, "gait_disruption_bout_duration"
+                        ] = interval_duration
+                        x_position = x_position_df.loc[start_idx, "x"]
+                        filtered_df.loc[
+                            start_idx:end_idx, "gait_disruption_bout_x_position"
+                        ] = x_position
+                        filtered_df.loc[
+                            start_idx:end_idx, "gait_disruption_bout_nr"
+                        ] = bout_nr
+                        bout_nr += 1
+                    else:
+                        continue
 
                 # transform dfs into multiindex df
                 # gait disruption
