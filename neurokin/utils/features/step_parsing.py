@@ -150,12 +150,19 @@ class StepParsing(FeatureExtraction):
             if ("scorer", source_marker_ids, "speed") in marker_df.columns:
 
                 # get x and speed data
-                x_df =  self._copy_filtered_columns_of_df(
+                x_df = self._copy_filtered_columns_of_df(
                     df_to_filter=marker_df,
                     marker_id_filter=source_marker_ids,
                     coords_filter=["x"],
                 )
-                x_df = x_df.droplevel([0,1], axis=1)
+                x_df = x_df.droplevel([0, 1], axis=1)
+                # get x and speed data
+                y_df = self._copy_filtered_columns_of_df(
+                    df_to_filter=marker_df,
+                    marker_id_filter=source_marker_ids,
+                    coords_filter=["y"],
+                )
+                y_df = y_df.droplevel([0, 1], axis=1)
                 speed_df =  self._copy_filtered_columns_of_df(
                     df_to_filter=marker_df,
                     marker_id_filter=source_marker_ids,
@@ -204,6 +211,11 @@ class StepParsing(FeatureExtraction):
                         speed_df.loc[
                         start_idx:end_idx, "swing_phase_distance_covered"
                         ] = distance_covered
+
+                        max_step_height = y_df.loc[start_idx:end_idx, 'y'].max()
+                        speed_df.loc[start_idx:end_idx, "swing_phase_max_step_height"] = max_step_height
+                        max_step_speed = speed_df.loc[start_idx:end_idx, "speed"].max()
+                        speed_df.loc[start_idx:end_idx, "swing_phase_max_step_speed"] = max_step_speed
 
                     speed_df.loc[start_idx:end_idx, "swing_phase_number"
                     ] = swing_phase_nr
@@ -289,13 +301,29 @@ class StepParsing(FeatureExtraction):
                         :, "swing_phase_duration"
                     ],
                 )
+                step_height = self.convert_singleindex_to_multiindex_df(
+                    scorer="scorer",
+                    bodypart=source_marker_ids,
+                    axis="swing_phase_max_step_height",
+                    data=speed_df.loc[
+                        :, "swing_phase_max_step_height"
+                    ],
+                )
+                step_speed = self.convert_singleindex_to_multiindex_df(
+                    scorer="scorer",
+                    bodypart=source_marker_ids,
+                    axis="swing_phase_max_step_speed",
+                    data=speed_df.loc[
+                         :, "swing_phase_max_step_speed"
+                         ],
+                )
                 swing_phase_distance = self.convert_singleindex_to_multiindex_df(
                     scorer="scorer",
                     bodypart=source_marker_ids,
                     axis="swing_phase_distance_covered",
                     data=speed_df.loc[
-                        :, "swing_phase_distance_covered"
-                    ],
+                         :, "swing_phase_distance_covered"
+                         ],
                 )
                 swing_phase_number = self.convert_singleindex_to_multiindex_df(
                     scorer="scorer",
@@ -349,7 +377,7 @@ class StepParsing(FeatureExtraction):
 
                 final_gait_cycle_df = pd.concat(
                     [gait_phases, gait_phase_marker,
-                     swing_phase_duration, swing_phase_distance, swing_phase_number,
+                     swing_phase_duration, swing_phase_distance, swing_phase_number,step_height, step_speed,
                      stance_phase_duration, stance_phase_distance, stance_phase_number],
                     axis=1,
                 )
