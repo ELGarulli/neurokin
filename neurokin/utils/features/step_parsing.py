@@ -170,20 +170,17 @@ class StepParsing(FeatureExtraction):
                 # get peak indices
                 start, end, peak = _get_peaks(y=speed, params=params)
 
+                correct_start = []
+                correct_peak = []
+                correct_end = []
                 # check whether it is actually a step
                 # calculate the difference in x between start and end
-                x_movement_bouts = []
-                for startidx, endidx in zip(start, end):
-                    x_diff = abs(startidx - endidx)
+                for start_idx, peak_idx, end_idx in zip(start, peak, end):
+                    x_diff = abs(x_df.loc[end_idx, "x"] - x_df.loc[start_idx, "x"])
                     if x_diff > params["min_x_diff"]:
-                        bout_range = np.arange(startidx, endidx + 1)
-                        x_movement_bouts.append(bout_range)
-                x_movement_indices = np.concatenate(x_movement_bouts)
-
-                # get indices of correct start, peak, and end of gait cycle bouts
-                correct_start = np.intersect1d(start, x_movement_indices)
-                correct_peak = np.intersect1d(peak, x_movement_indices)
-                correct_end = np.intersect1d(end, x_movement_indices)
+                        correct_start.append(start_idx)
+                        correct_peak.append(peak_idx)
+                        correct_end.append(end_idx)
 
                 # check if recording ends with a step
                 if len(correct_start) > len(correct_end):
@@ -211,7 +208,7 @@ class StepParsing(FeatureExtraction):
                     speed_df.loc[start_idx:end_idx, "swing_phase_number"
                     ] = swing_phase_nr
 
-                    # same for stance phas
+                    # same for stance phase
                     # check if there are any more stance phases after the current swing phase+
                     if speed_df.shape[0] == end_idx:
                         pass
@@ -222,18 +219,8 @@ class StepParsing(FeatureExtraction):
                             stance_start1 = 0
                             stance_end1 = correct_start[0]-1
                             speed_df.loc[stance_start1:stance_end1, "gait_cycle_phase"] = 'stance'
-
-                            stance_duration = (stance_end1 - stance_start1) * 1 / params["fps"]
-                            speed_df.loc[
-                            stance_start1:stance_end1, "stance_phase_duration"
-                            ] = stance_duration
-
-                            # distance just in x direction since this is the relevant distance for us
-                            distance_covered = abs(x_df.loc[stance_end1, "x"] - x_df.loc[stance_start1, "x"])
-                            speed_df.loc[
-                            stance_start1:stance_end1, "stance_phase_distance_covered"
-                            ] = distance_covered
-
+                            # no duration or distance covered can be calculated
+                            # since we don´t know the start of this phase
                             speed_df.loc[stance_start1:stance_end1, "stance_phase_number"
                             ] = stance_phase_nr
                             stance_phase_nr += 1
