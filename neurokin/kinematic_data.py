@@ -144,7 +144,7 @@ class KinematicDataRun:
         :return df: smoothed dataframe
         """
         if method == "savgol":
-            self.markers_df = smoothing.apply_savgol_filter(self.markers_df, method, window_size, poly_order)
+            self.markers_df = smoothing.apply_savgol_filter(self.markers_df, window_size, poly_order)
         else:
             raise ValueError("The smoothing method " + method + " is not supported")
 
