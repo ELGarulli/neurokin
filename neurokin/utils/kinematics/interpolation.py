@@ -3,12 +3,13 @@ import pandas as pd
 from typing import List, Tuple, Optional
 import math
 
+
 def interpolate_low_likelihood_intervals(
-                                          df: pd.DataFrame,
-                                          marker_ids: List[str],
-                                          max_interval_length: int,
-                                          framerate: float,
-                                          ) -> pd.DataFrame:
+    df: pd.DataFrame,
+    marker_ids: List[str],
+    max_interval_length: int,
+    framerate: float,
+) -> pd.DataFrame:
     """
     Interpolate low likelihood intervals in a dataframe of marker coordinates.
     Input: dataframe of marker coordinates, list of marker ids, max interval length in seconds, framerate
@@ -16,7 +17,7 @@ def interpolate_low_likelihood_intervals(
     """
     interpolated_df = df.copy()
     for marker_id in marker_ids:
-        outlier_series = interpolated_df['scorer'][marker_id]['x'].notna()
+        outlier_series = interpolated_df["scorer"][marker_id]["x"].notna()
         (
             low_likelihood_interval_border_idxs,
             all_low_likelihood_interval_border_idxs,
@@ -26,43 +27,55 @@ def interpolate_low_likelihood_intervals(
             framerate=framerate,
         )
         for start_idx, end_idx in all_low_likelihood_interval_border_idxs:
-            if end_idx + 1 < interpolated_df['scorer'][marker_id]['x'].shape[0]:
-                interpolated_df['scorer'][marker_id]['x'][start_idx: end_idx + 1] = np.NaN
-                interpolated_df['scorer'][marker_id]['y'][start_idx: end_idx + 1] = np.NaN
-                interpolated_df['scorer'][marker_id]['z'][start_idx: end_idx + 1] = np.NaN
+            if end_idx + 1 < interpolated_df["scorer"][marker_id]["x"].shape[0]:
+                interpolated_df["scorer"][marker_id]["x"][
+                    start_idx : end_idx + 1
+                ] = np.NaN
+                interpolated_df["scorer"][marker_id]["y"][
+                    start_idx : end_idx + 1
+                ] = np.NaN
+                interpolated_df["scorer"][marker_id]["z"][
+                    start_idx : end_idx + 1
+                ] = np.NaN
         for start_idx, end_idx in low_likelihood_interval_border_idxs:
-            if (start_idx - 1 >= 0) and (end_idx + 2 < interpolated_df['scorer'][marker_id]['x'].shape[0]):
+            if (start_idx - 1 >= 0) and (
+                end_idx + 2 < interpolated_df["scorer"][marker_id]["x"].shape[0]
+            ):
                 if (
-                        not math.isnan(interpolated_df['scorer'][marker_id]['x'][end_idx + 2])
+                    not math.isnan(
+                        interpolated_df["scorer"][marker_id]["x"][end_idx + 2]
+                    )
                 ) and (
-                        not math.isnan(interpolated_df['scorer'][marker_id]['x'][start_idx - 1])
+                    not math.isnan(
+                        interpolated_df["scorer"][marker_id]["x"][start_idx - 1]
+                    )
                 ):
-                    interpolated_df['scorer'][marker_id]['x'][
-                    start_idx - 1: end_idx + 2
-                    ] = interpolated_df['scorer'][marker_id]['x'][
-                        start_idx - 1: end_idx + 2
-                        ].interpolate()
+                    interpolated_df["scorer"][marker_id]["x"][
+                        start_idx - 1 : end_idx + 2
+                    ] = interpolated_df["scorer"][marker_id]["x"][
+                        start_idx - 1 : end_idx + 2
+                    ].interpolate()
 
-                    interpolated_df['scorer'][marker_id]['y'][
-                    start_idx - 1: end_idx + 2
-                    ] = interpolated_df['scorer'][marker_id]['y'][
-                        start_idx - 1: end_idx + 2
-                        ].interpolate()
+                    interpolated_df["scorer"][marker_id]["y"][
+                        start_idx - 1 : end_idx + 2
+                    ] = interpolated_df["scorer"][marker_id]["y"][
+                        start_idx - 1 : end_idx + 2
+                    ].interpolate()
 
-                    interpolated_df['scorer'][marker_id]['z'][
-                    start_idx - 1: end_idx + 2
-                    ] = interpolated_df['scorer'][marker_id]['z'][
-                        start_idx - 1: end_idx + 2
-                        ].interpolate()
+                    interpolated_df["scorer"][marker_id]["z"][
+                        start_idx - 1 : end_idx + 2
+                    ] = interpolated_df["scorer"][marker_id]["z"][
+                        start_idx - 1 : end_idx + 2
+                    ].interpolate()
 
     return interpolated_df
 
 
 def get_low_likelihood_interval_border_idxs(
-                                             outlier_series: pd.Series,
-                                             framerate: float,
-                                             max_interval_length: int,
-                                             ) -> List[Tuple[int, int]]:
+    outlier_series: pd.Series,
+    framerate: float,
+    max_interval_length: int,
+) -> List[Tuple[int, int]]:
     """
     Get indices of low likelihood intervals in a series of booleans.
     Input: series of booleans of nan values, framerate, max interval length in seconds
@@ -79,15 +92,18 @@ def get_low_likelihood_interval_border_idxs(
         framerate=framerate,
         max_interval_duration=outlier_series.shape[0] * framerate,
     )
-    return short_low_likelihood_interval_border_idxs, all_low_likelihood_interval_border_idxs
+    return (
+        short_low_likelihood_interval_border_idxs,
+        all_low_likelihood_interval_border_idxs,
+    )
 
 
 def get_interval_border_idxs(
-                              all_matching_idxs: np.ndarray,
-                              framerate: float,
-                              min_interval_duration: Optional[float] = None,
-                              max_interval_duration: Optional[float] = None,
-                              ) -> List[Tuple[int, int]]:
+    all_matching_idxs: np.ndarray,
+    framerate: float,
+    min_interval_duration: Optional[float] = None,
+    max_interval_duration: Optional[float] = None,
+) -> List[Tuple[int, int]]:
     """
     Get border indices of intervals in a series of indices.
     """
@@ -105,9 +121,7 @@ def get_interval_border_idxs(
             interval_duration = interval_frame_count * framerate
             if (min_interval_duration != None) and (max_interval_duration != None):
                 append_interval = (
-                        min_interval_duration
-                        <= interval_duration
-                        <= max_interval_duration
+                    min_interval_duration <= interval_duration <= max_interval_duration
                 )
             elif min_interval_duration != None:
                 append_interval = min_interval_duration <= interval_duration
@@ -138,6 +152,6 @@ def get_max_odd_n_frames_for_time_interval(fps: int, time_interval=0.5) -> int:
         else:
             max_odd_frame_count = frames_per_time_interval
     assert (
-            max_odd_frame_count > 0
+        max_odd_frame_count > 0
     ), f"The specified time interval is too short to fit an odd number of frames"
     return int(max_odd_frame_count)

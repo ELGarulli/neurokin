@@ -148,7 +148,6 @@ class StepParsing(FeatureExtraction):
         else:
             # Check whether speed is calculated for all markers critical for step_detection
             if ("scorer", source_marker_ids, "speed") in marker_df.columns:
-
                 # get x and speed data
                 x_df = self._copy_filtered_columns_of_df(
                     df_to_filter=marker_df,
@@ -162,8 +161,8 @@ class StepParsing(FeatureExtraction):
                     marker_id_filter=source_marker_ids,
                     coords_filter=["z"],
                 )
-                z_df =z_df.droplevel([0, 1], axis=1)
-                speed_df =  self._copy_filtered_columns_of_df(
+                z_df = z_df.droplevel([0, 1], axis=1)
+                speed_df = self._copy_filtered_columns_of_df(
                     df_to_filter=marker_df,
                     marker_id_filter=source_marker_ids,
                     coords_filter=["speed"],
@@ -194,40 +193,49 @@ class StepParsing(FeatureExtraction):
                     # add the last col as end. Has to be removed later and is just for the loop to work
                     correct_end = np.append(correct_end, len(speed) - 1)
 
-                speed_df = speed_df.droplevel([0,1], axis=1)
+                speed_df = speed_df.droplevel([0, 1], axis=1)
                 # loop through all gait cycles and write gait phase + some additional information into df
                 swing_phase_nr = 1
                 stance_phase_nr = 1
                 for start_idx, end_idx in zip(correct_start, correct_end):
-                    speed_df.loc[start_idx:end_idx, "gait_cycle_phase"] = 'swing'
+                    speed_df.loc[start_idx:end_idx, "gait_cycle_phase"] = "swing"
 
                     if not end_idx == speed_df.shape[0] - 1:
-                        interval_duration = (end_idx + 1 - start_idx) * 1 / params["fps"]
+                        interval_duration = (
+                            (end_idx + 1 - start_idx) * 1 / params["fps"]
+                        )
                         speed_df.loc[
-                        start_idx:end_idx, "swing_phase_duration"
+                            start_idx:end_idx, "swing_phase_duration"
                         ] = interval_duration
 
                         start_time = start_idx * 1 / params["fps"]
                         speed_df.loc[
-                        start_idx:end_idx, "swing_phase_start_time"
+                            start_idx:end_idx, "swing_phase_start_time"
                         ] = start_time
 
                         end_time = end_idx * 1 / params["fps"]
                         speed_df.loc[
-                        start_idx:end_idx, "swing_phase_end_time"
+                            start_idx:end_idx, "swing_phase_end_time"
                         ] = end_time
 
-                        distance_covered = abs(x_df.loc[end_idx, "x"] - x_df.loc[start_idx, "x"])
+                        distance_covered = abs(
+                            x_df.loc[end_idx, "x"] - x_df.loc[start_idx, "x"]
+                        )
                         speed_df.loc[
-                        start_idx:end_idx, "swing_phase_distance_covered"
+                            start_idx:end_idx, "swing_phase_distance_covered"
                         ] = distance_covered
 
-                        max_step_height = z_df.loc[start_idx:end_idx, 'z'].max()
-                        speed_df.loc[start_idx:end_idx, "swing_phase_max_step_height"] = max_step_height
+                        max_step_height = z_df.loc[start_idx:end_idx, "z"].max()
+                        speed_df.loc[
+                            start_idx:end_idx, "swing_phase_max_step_height"
+                        ] = max_step_height
                         max_step_speed = speed_df.loc[start_idx:end_idx, "speed"].max()
-                        speed_df.loc[start_idx:end_idx, "swing_phase_max_step_speed"] = max_step_speed
+                        speed_df.loc[
+                            start_idx:end_idx, "swing_phase_max_step_speed"
+                        ] = max_step_speed
 
-                    speed_df.loc[start_idx:end_idx, "swing_phase_number"
+                    speed_df.loc[
+                        start_idx:end_idx, "swing_phase_number"
                     ] = swing_phase_nr
 
                     # same for stance phase
@@ -239,18 +247,22 @@ class StepParsing(FeatureExtraction):
                         if stance_phase_nr == 1 and not (correct_start[0] == 0):
                             # add first stance phase if the recording does not start with one
                             stance_start1 = 0
-                            stance_end1 = correct_start[0]-1
-                            speed_df.loc[stance_start1:stance_end1, "gait_cycle_phase"] = 'stance'
+                            stance_end1 = correct_start[0] - 1
+                            speed_df.loc[
+                                stance_start1:stance_end1, "gait_cycle_phase"
+                            ] = "stance"
                             # no duration or distance covered can be calculated
                             # since we don´t know the start of this phase
-                            speed_df.loc[stance_start1:stance_end1, "stance_phase_number"
+                            speed_df.loc[
+                                stance_start1:stance_end1, "stance_phase_number"
                             ] = stance_phase_nr
                             stance_phase_nr += 1
 
                         # calculate the stance phase after the current swing phase
                         stance_start = end_idx + 1
                         start_time_stance = stance_start * 1 / params["fps"]
-                        speed_df.loc[start_idx:end_idx, "stance_phase_start_time"
+                        speed_df.loc[
+                            start_idx:end_idx, "stance_phase_start_time"
                         ] = start_time_stance
 
                         # check if it is the last run through the loop
@@ -260,27 +272,36 @@ class StepParsing(FeatureExtraction):
                         if swing_phase_nr == len(correct_start):
                             stance_end = speed_df.shape[0]
                             end_time_stance = stance_end * 1 / params["fps"]
-                            speed_df.loc[start_idx:end_idx, "stance_phase_end_time"
+                            speed_df.loc[
+                                start_idx:end_idx, "stance_phase_end_time"
                             ] = end_time_stance
                         else:
                             # swing_phase nr starts with 1, so we don´t need to add anything to pick the next start
-                            stance_end = correct_start[swing_phase_nr]-1
+                            stance_end = correct_start[swing_phase_nr] - 1
                             end_time_stance = stance_end * 1 / params["fps"]
-                            speed_df.loc[start_idx:end_idx, "stance_phase_end_time"
+                            speed_df.loc[
+                                start_idx:end_idx, "stance_phase_end_time"
                             ] = end_time_stance
 
-                            stance_duration = (stance_end - stance_start) * 1 / params["fps"]
+                            stance_duration = (
+                                (stance_end - stance_start) * 1 / params["fps"]
+                            )
                             speed_df.loc[
-                            stance_start:stance_end, "stance_phase_duration"
+                                stance_start:stance_end, "stance_phase_duration"
                             ] = stance_duration
                             # distance just in x direction since this is the relevant distance for us
-                            distance_covered = abs(x_df.loc[stance_end, "x"] - x_df.loc[stance_start, "x"])
+                            distance_covered = abs(
+                                x_df.loc[stance_end, "x"] - x_df.loc[stance_start, "x"]
+                            )
                             speed_df.loc[
-                            stance_start:stance_end, "stance_phase_distance_covered"
+                                stance_start:stance_end, "stance_phase_distance_covered"
                             ] = distance_covered
 
-                        speed_df.loc[stance_start:stance_end, "gait_cycle_phase"] = 'stance'
-                        speed_df.loc[stance_start:stance_end, "stance_phase_number"
+                        speed_df.loc[
+                            stance_start:stance_end, "gait_cycle_phase"
+                        ] = "stance"
+                        speed_df.loc[
+                            stance_start:stance_end, "stance_phase_number"
                         ] = stance_phase_nr
                         stance_phase_nr += 1
                     swing_phase_nr += 1
@@ -288,22 +309,16 @@ class StepParsing(FeatureExtraction):
                     # remove the last col that was added to make the loop work
                     correct_end = correct_end[:-1]
                 # write gait phase markers into df
-                speed_df.loc[
-                    :, "gait_cycle_phase_markers"
-                ] = np.nan
+                speed_df.loc[:, "gait_cycle_phase_markers"] = np.nan
 
                 speed_df.iloc[
                     correct_start,
-                    speed_df.columns.get_loc(
-                        "gait_cycle_phase_markers"
-                    ),
+                    speed_df.columns.get_loc("gait_cycle_phase_markers"),
                 ] = "start"
 
                 speed_df.iloc[
                     correct_peak,
-                    speed_df.columns.get_loc(
-                        "gait_cycle_phase_markers"
-                    ),
+                    speed_df.columns.get_loc("gait_cycle_phase_markers"),
                 ] = "peak"
 
                 speed_df.iloc[
@@ -317,126 +332,109 @@ class StepParsing(FeatureExtraction):
                     scorer="scorer",
                     bodypart=source_marker_ids,
                     axis="swing_phase_duration",
-                    data=speed_df.loc[
-                        :, "swing_phase_duration"
-                    ],
+                    data=speed_df.loc[:, "swing_phase_duration"],
                 )
 
                 start_time_swing_phase = self.convert_singleindex_to_multiindex_df(
                     scorer="scorer",
                     bodypart=source_marker_ids,
                     axis="swing_phase_start_time",
-                    data=speed_df.loc[
-                        :, "swing_phase_start_time"
-                    ],
+                    data=speed_df.loc[:, "swing_phase_start_time"],
                 )
                 end_time_swing_phase = self.convert_singleindex_to_multiindex_df(
                     scorer="scorer",
                     bodypart=source_marker_ids,
                     axis="swing_phase_end_time",
-                    data=speed_df.loc[
-                        :, "swing_phase_end_time"
-                    ],
+                    data=speed_df.loc[:, "swing_phase_end_time"],
                 )
 
                 step_height = self.convert_singleindex_to_multiindex_df(
                     scorer="scorer",
                     bodypart=source_marker_ids,
                     axis="swing_phase_max_step_height",
-                    data=speed_df.loc[
-                        :, "swing_phase_max_step_height"
-                    ],
+                    data=speed_df.loc[:, "swing_phase_max_step_height"],
                 )
                 step_speed = self.convert_singleindex_to_multiindex_df(
                     scorer="scorer",
                     bodypart=source_marker_ids,
                     axis="swing_phase_max_step_speed",
-                    data=speed_df.loc[
-                         :, "swing_phase_max_step_speed"
-                         ],
+                    data=speed_df.loc[:, "swing_phase_max_step_speed"],
                 )
                 swing_phase_distance = self.convert_singleindex_to_multiindex_df(
                     scorer="scorer",
                     bodypart=source_marker_ids,
                     axis="swing_phase_distance_covered",
-                    data=speed_df.loc[
-                         :, "swing_phase_distance_covered"
-                         ],
+                    data=speed_df.loc[:, "swing_phase_distance_covered"],
                 )
                 swing_phase_number = self.convert_singleindex_to_multiindex_df(
                     scorer="scorer",
                     bodypart=source_marker_ids,
                     axis="swing_phase_number",
-                    data=speed_df.loc[
-                        :, "swing_phase_number"
-                    ],
+                    data=speed_df.loc[:, "swing_phase_number"],
                 )
                 # stance phase
                 stance_phase_duration = self.convert_singleindex_to_multiindex_df(
                     scorer="scorer",
                     bodypart=source_marker_ids,
                     axis="stance_phase_duration",
-                    data=speed_df.loc[
-                         :, "stance_phase_duration"
-                         ],
+                    data=speed_df.loc[:, "stance_phase_duration"],
                 )
                 start_time_stance_phase = self.convert_singleindex_to_multiindex_df(
                     scorer="scorer",
                     bodypart=source_marker_ids,
                     axis="stance_phase_start_time",
-                    data=speed_df.loc[
-                            :, "stance_phase_start_time"
-                            ],
+                    data=speed_df.loc[:, "stance_phase_start_time"],
                 )
 
                 end_time_stance_phase = self.convert_singleindex_to_multiindex_df(
                     scorer="scorer",
                     bodypart=source_marker_ids,
                     axis="stance_phase_end_time",
-                    data=speed_df.loc[
-                            :, "stance_phase_end_time"
-                            ],
+                    data=speed_df.loc[:, "stance_phase_end_time"],
                 )
 
                 stance_phase_distance = self.convert_singleindex_to_multiindex_df(
                     scorer="scorer",
                     bodypart=source_marker_ids,
                     axis="stance_phase_distance_covered",
-                    data=speed_df.loc[
-                         :, "stance_phase_distance_covered"
-                         ],
+                    data=speed_df.loc[:, "stance_phase_distance_covered"],
                 )
                 stance_phase_number = self.convert_singleindex_to_multiindex_df(
                     scorer="scorer",
                     bodypart=source_marker_ids,
                     axis="stance_phase_number",
-                    data=speed_df.loc[
-                         :, "stance_phase_number"
-                         ],
+                    data=speed_df.loc[:, "stance_phase_number"],
                 )
                 gait_phases = self.convert_singleindex_to_multiindex_df(
                     scorer="scorer",
                     bodypart=source_marker_ids,
                     axis="gait_cycle_phase",
-                    data=speed_df.loc[
-                        :, "gait_cycle_phase"
-                    ],
+                    data=speed_df.loc[:, "gait_cycle_phase"],
                 )
                 gait_phase_marker = self.convert_singleindex_to_multiindex_df(
                     scorer="scorer",
                     bodypart=source_marker_ids,
                     axis="gait_cycle_phase_markers",
-                    data=speed_df.loc[
-                        :, "gait_cycle_phase_markers"
-                    ],
+                    data=speed_df.loc[:, "gait_cycle_phase_markers"],
                 )
 
                 final_gait_cycle_df = pd.concat(
-                    [gait_phases, gait_phase_marker,
-                     swing_phase_duration, start_time_swing_phase, end_time_swing_phase,
-                     swing_phase_distance, swing_phase_number,step_height, step_speed,
-                     stance_phase_duration, start_time_stance_phase, end_time_stance_phase,
-                     stance_phase_distance, stance_phase_number],
+                    [
+                        gait_phases,
+                        gait_phase_marker,
+                        swing_phase_duration,
+                        start_time_swing_phase,
+                        end_time_swing_phase,
+                        swing_phase_distance,
+                        swing_phase_number,
+                        step_height,
+                        step_speed,
+                        stance_phase_duration,
+                        start_time_stance_phase,
+                        end_time_stance_phase,
+                        stance_phase_distance,
+                        stance_phase_number,
+                    ],
                     axis=1,
                 )
                 return final_gait_cycle_df

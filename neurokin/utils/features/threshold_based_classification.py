@@ -243,13 +243,16 @@ class Freezing(FeatureExtraction):
                     # since the interval min duration is checked per marker and then the idxs are intersected it is
                     # necessary to check the interval duration again
                     if interval_duration >= params["minimum_duration_freezing"]:
-
                         filtered_df.loc[start_idx:end_idx, "freezing"] = True
                         filtered_df.loc[
-                        start_idx:end_idx, "freezing_bout_duration"
+                            start_idx:end_idx, "freezing_bout_duration"
                         ] = interval_duration
-                        filtered_df.loc[start_idx:end_idx, "freezing_bout_start"] = start_idx*1/params["fps"]
-                        filtered_df.loc[start_idx:end_idx, "freezing_bout_end"] = end_idx*1/params["fps"]
+                        filtered_df.loc[start_idx:end_idx, "freezing_bout_start"] = (
+                            start_idx * 1 / params["fps"]
+                        )
+                        filtered_df.loc[start_idx:end_idx, "freezing_bout_end"] = (
+                            end_idx * 1 / params["fps"]
+                        )
                         filtered_df.loc[
                             start_idx:end_idx, "freezing_bout_duration"
                         ] = interval_duration
@@ -270,49 +273,58 @@ class Freezing(FeatureExtraction):
                     axis="freezing",
                     data=filtered_df.loc[:, "freezing"],
                 )
-                freezing_start_df = self.convert_singleindex_to_multiindex_df(
-                    scorer="scorer",
-                    bodypart="subject",
-                    axis="freezing_bout_start",
-                    data=filtered_df.loc[:, "freezing_bout_start"],
-                )
-                freezing_end_df = self.convert_singleindex_to_multiindex_df(
-                    scorer="scorer",
-                    bodypart="subject",
-                    axis="freezing_bout_end",
-                    data=filtered_df.loc[:, "freezing_bout_end"],
-                )
+                # check if there are any freezing bouts
+                if filtered_df.loc[filtered_df["freezing"] == True].empty:
+                    print('no freezing bouts were detected with the given parameters')
+                    return freezing_col_df
+                else:
+                    freezing_start_df = self.convert_singleindex_to_multiindex_df(
+                        scorer="scorer",
+                        bodypart="subject",
+                        axis="freezing_bout_start",
+                        data=filtered_df.loc[:, "freezing_bout_start"],
+                    )
+                    freezing_end_df = self.convert_singleindex_to_multiindex_df(
+                        scorer="scorer",
+                        bodypart="subject",
+                        axis="freezing_bout_end",
+                        data=filtered_df.loc[:, "freezing_bout_end"],
+                    )
 
-                freezing_bout_duration_df = self.convert_singleindex_to_multiindex_df(
-                    scorer="scorer",
-                    bodypart="subject",
-                    axis="freezing_bout_duration",
-                    data=filtered_df.loc[:, "freezing_bout_duration"],
-                )
-                freezing_bout_x_position_df = self.convert_singleindex_to_multiindex_df(
-                    scorer="scorer",
-                    bodypart="subject",
-                    axis="freezing_bout_x_position",
-                    data=filtered_df.loc[:, "freezing_bout_x_position"],
-                )
-                freezing_bout_nr_df = self.convert_singleindex_to_multiindex_df(
-                    scorer="scorer",
-                    bodypart="subject",
-                    axis="freezing_bout_number",
-                    data=filtered_df.loc[:, "freezing_bout_nr"],
-                )
-                final_df = pd.concat(
-                    [
-                        freezing_col_df,
-                        freezing_start_df,
-                        freezing_end_df,
-                        freezing_bout_duration_df,
-                        freezing_bout_x_position_df,
-                        freezing_bout_nr_df,
-                    ],
-                    axis=1,
-                )
-                return final_df
+                    freezing_bout_duration_df = (
+                        self.convert_singleindex_to_multiindex_df(
+                            scorer="scorer",
+                            bodypart="subject",
+                            axis="freezing_bout_duration",
+                            data=filtered_df.loc[:, "freezing_bout_duration"],
+                        )
+                    )
+                    freezing_bout_x_position_df = (
+                        self.convert_singleindex_to_multiindex_df(
+                            scorer="scorer",
+                            bodypart="subject",
+                            axis="freezing_bout_x_position",
+                            data=filtered_df.loc[:, "freezing_bout_x_position"],
+                        )
+                    )
+                    freezing_bout_nr_df = self.convert_singleindex_to_multiindex_df(
+                        scorer="scorer",
+                        bodypart="subject",
+                        axis="freezing_bout_number",
+                        data=filtered_df.loc[:, "freezing_bout_nr"],
+                    )
+                    final_df = pd.concat(
+                        [
+                            freezing_col_df,
+                            freezing_start_df,
+                            freezing_end_df,
+                            freezing_bout_duration_df,
+                            freezing_bout_x_position_df,
+                            freezing_bout_nr_df,
+                        ],
+                        axis=1,
+                    )
+                    return final_df
 
             else:
                 raise ValueError(
@@ -495,14 +507,19 @@ class GaitDisruption(FeatureExtraction):
                     # since the interval min duration is checked per marker and then the idxs are intersected it is
                     # necessary to check the interval duration again
                     if interval_duration >= params["min_duration_immobility"]:
-
                         filtered_df.loc[start_idx:end_idx, "gait_disruption"] = True
                         filtered_df.loc[
-                        start_idx:end_idx, "gait_disruption_bout_duration"
+                            start_idx:end_idx, "gait_disruption_bout_duration"
                         ] = interval_duration
-                        filtered_df.loc[start_idx:end_idx, "gait_disruption_bout_start"] = start_idx*1/params["fps"]
-                        filtered_df.loc[start_idx:end_idx, "gait_disruption_bout_end"] = end_idx*1/params["fps"]
-                        interval_duration = (end_idx + 1 - start_idx) * 1 / params["fps"]
+                        filtered_df.loc[
+                            start_idx:end_idx, "gait_disruption_bout_start"
+                        ] = (start_idx * 1 / params["fps"])
+                        filtered_df.loc[
+                            start_idx:end_idx, "gait_disruption_bout_end"
+                        ] = (end_idx * 1 / params["fps"])
+                        interval_duration = (
+                            (end_idx + 1 - start_idx) * 1 / params["fps"]
+                        )
                         filtered_df.loc[
                             start_idx:end_idx, "gait_disruption_bout_duration"
                         ] = interval_duration
