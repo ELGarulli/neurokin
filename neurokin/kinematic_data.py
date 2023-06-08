@@ -6,6 +6,7 @@ from neurokin.utils.kinematics import (
     csv_import_export,
     event_detection,
     interpolation,
+    smoothing,
 )
 from neurokin.utils.helper import load_config
 from neurokin.utils.features import features_extraction, binning
@@ -134,6 +135,20 @@ class KinematicDataRun:
 
         return
 
+    def smooth_df(self, method: str, window_size: int = 11, poly_order: int = 3):
+        """
+        Smooths the kinematics dataframe
+        :param method: str method to use for smoothing
+        :param window: int window size for smoothing
+        :param order: int polynomal order for smoothing
+        :return df: smoothed dataframe
+        """
+        if method == "savgol":
+            self.markers_df = smoothing.apply_savgol_filter(self.markers_df, method, window_size, poly_order)
+        else:
+            raise ValueError("The smoothing method " + method + " is not supported")
+
+        return
     def interpolate_df(self, time_interval: float):
         pd.options.mode.chained_assignment = None
 
