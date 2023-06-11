@@ -275,7 +275,7 @@ class Freezing(FeatureExtraction):
                 )
                 # check if there are any freezing bouts
                 if filtered_df.loc[filtered_df["freezing"] == True].empty:
-                    print('no freezing bouts were detected with the given parameters')
+                    print("no freezing bouts were detected with the given parameters")
                     return freezing_col_df
                 else:
                     freezing_start_df = self.convert_singleindex_to_multiindex_df(
@@ -453,14 +453,14 @@ class GaitDisruption(FeatureExtraction):
                     for idx in gait_disruption_start_idxs:
                         # -1 because first idx is already acounted for in duration
                         gait_disruption_bout_duration_frames_per_marker = (
-                            temp_df["immobility_bout_duration"].loc[idx] * params["fps"]-1
+                            temp_df["immobility_bout_duration"].loc[idx] * params["fps"]
+                            - 1
                         )
 
                         temp_df.loc[
                             idx : idx + gait_disruption_bout_duration_frames_per_marker,
                             "gait_disruption_per_marker",
                         ] = True
-
 
                     gait_disruption_bout_idxs_per_marker = np.where(
                         temp_df["gait_disruption_per_marker"] == True
@@ -510,7 +510,6 @@ class GaitDisruption(FeatureExtraction):
                         idxs_switch_to_movement, 0, 0
                     )  # add first idx if first frame is not immobile
 
-
                 idxs_switch_to_immobility = np.where(
                     (filtered_df["immobility"] == False)
                     & (filtered_df["immobility"].shift(-1) == True)
@@ -549,67 +548,88 @@ class GaitDisruption(FeatureExtraction):
                             start_idx:end_idx, "gait_disruption_bout_nr"
                         ] = bout_nr
 
-
-
                         # calculate movement duration & distance covered before
                         # take the last idx in idxs_switch_to_movement that is smaller than start_idx
                         movement_start_before_idx = idxs_switch_to_movement[
-                            np.where(idxs_switch_to_movement < start_idx)[0][-1]]
+                            np.where(idxs_switch_to_movement < start_idx)[0][-1]
+                        ]
                         if movement_start_before_idx == 0:
                             movement_duration_before = np.nan
                             movement_distance_covered_before = np.nan
 
                         else:
-                            movement_duration_before = (start_idx-1 - movement_start_before_idx) * 1 / params["fps"]
-                            movement_distance_covered_before =  abs(x_position_df.loc[start_idx:end_idx, "x"].mean()
-                                                                - x_position_df.loc[movement_start_before_idx, "x"])
-                        if x_position_df.loc[start_idx:end_idx, "x"].mean() > x_position_df.loc[movement_start_before_idx, "x"]:
-                            movement_direction_before = 'outward'
-                        elif x_position_df.loc[start_idx:end_idx, "x"].mean() < x_position_df.loc[movement_start_before_idx, "x"]:
-                            movement_direction_before = 'inward'
+                            movement_duration_before = (
+                                (start_idx - 1 - movement_start_before_idx)
+                                * 1
+                                / params["fps"]
+                            )
+                            movement_distance_covered_before = abs(
+                                x_position_df.loc[start_idx:end_idx, "x"].mean()
+                                - x_position_df.loc[movement_start_before_idx, "x"]
+                            )
+                        if (
+                            x_position_df.loc[start_idx:end_idx, "x"].mean()
+                            > x_position_df.loc[movement_start_before_idx, "x"]
+                        ):
+                            movement_direction_before = "outward"
+                        elif (
+                            x_position_df.loc[start_idx:end_idx, "x"].mean()
+                            < x_position_df.loc[movement_start_before_idx, "x"]
+                        ):
+                            movement_direction_before = "inward"
                         else:
                             movement_direction_before = np.nan
 
                         # get first idx that is bigger than end_idx (-> comes after) in idxs_switch_to_immobility
-                        movement_stop_after_idx = idxs_switch_to_immobility[np.where(
-                            idxs_switch_to_immobility>end_idx)[0][0]]
-                        if movement_stop_after_idx == len(filtered_df)-1:
+                        movement_stop_after_idx = idxs_switch_to_immobility[
+                            np.where(idxs_switch_to_immobility > end_idx)[0][0]
+                        ]
+                        if movement_stop_after_idx == len(filtered_df) - 1:
                             movement_duration_after = np.nan
                             movement_distance_covered_after = np.nan
                         else:
                             # to get the duration of the movement after the bout, subtract the end_idx of the bout
                             # but add 1 to account for the last frame of the bout
-                            movement_duration_after = (movement_stop_after_idx - (end_idx+1)) * 1 / params["fps"]
-                            movement_distance_covered_after = abs(x_position_df.loc[movement_stop_after_idx, "x"]
-                                                                  - x_position_df.loc[start_idx:end_idx, "x"].mean())
-                        if x_position_df.loc[movement_stop_after_idx, "x"] \
-                                > x_position_df.loc[start_idx:end_idx, "x"].mean():
-                            movement_direction_after = 'outward'
-                        elif x_position_df.loc[movement_stop_after_idx, "x"] \
-                                < x_position_df.loc[start_idx:end_idx, "x"].mean():
-                            movement_direction_after = 'inward'
+                            movement_duration_after = (
+                                (movement_stop_after_idx - (end_idx + 1))
+                                * 1
+                                / params["fps"]
+                            )
+                            movement_distance_covered_after = abs(
+                                x_position_df.loc[movement_stop_after_idx, "x"]
+                                - x_position_df.loc[start_idx:end_idx, "x"].mean()
+                            )
+                        if (
+                            x_position_df.loc[movement_stop_after_idx, "x"]
+                            > x_position_df.loc[start_idx:end_idx, "x"].mean()
+                        ):
+                            movement_direction_after = "outward"
+                        elif (
+                            x_position_df.loc[movement_stop_after_idx, "x"]
+                            < x_position_df.loc[start_idx:end_idx, "x"].mean()
+                        ):
+                            movement_direction_after = "inward"
                         else:
                             movement_direction_after = np.nan
 
-
                         # save information in df
                         filtered_df.loc[
-                        start_idx:end_idx, "movement_duration_before_bout"
+                            start_idx:end_idx, "movement_duration_before_bout"
                         ] = movement_duration_before
                         filtered_df.loc[
-                        start_idx:end_idx, "movement_distance_covered_before_bout"
+                            start_idx:end_idx, "movement_distance_covered_before_bout"
                         ] = movement_distance_covered_before
                         filtered_df.loc[
-                        start_idx:end_idx, "movement_direction_before_bout"
+                            start_idx:end_idx, "movement_direction_before_bout"
                         ] = movement_direction_before
                         filtered_df.loc[
-                        start_idx:end_idx, "movement_duration_after_bout"
+                            start_idx:end_idx, "movement_duration_after_bout"
                         ] = movement_duration_after
                         filtered_df.loc[
-                        start_idx: end_idx, "movement_distance_covered_after_bout"
+                            start_idx:end_idx, "movement_distance_covered_after_bout"
                         ] = movement_distance_covered_after
                         filtered_df.loc[
-                        start_idx: end_idx, "movement_direction_after_bout"
+                            start_idx:end_idx, "movement_direction_after_bout"
                         ] = movement_direction_after
 
                         bout_nr += 1
@@ -670,7 +690,9 @@ class GaitDisruption(FeatureExtraction):
                         scorer="scorer",
                         bodypart="subject",
                         axis="movement_distance_covered_before_bout",
-                        data=filtered_df.loc[:, "movement_distance_covered_before_bout"],
+                        data=filtered_df.loc[
+                            :, "movement_distance_covered_before_bout"
+                        ],
                     )
                 )
                 # gait disruption movement direction before

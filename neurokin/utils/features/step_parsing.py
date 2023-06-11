@@ -276,10 +276,10 @@ class StepParsing(FeatureExtraction):
                                 start_idx:end_idx, "stance_phase_end_time"
                             ] = end_time_stance
                             speed_df.loc[
-                            stance_start:stance_end, "stance_phase_duration"
+                                stance_start:stance_end, "stance_phase_duration"
                             ] = np.nan
                             speed_df.loc[
-                            stance_start:stance_end, "stance_phase_distance_covered"
+                                stance_start:stance_end, "stance_phase_distance_covered"
                             ] = np.nan
                         else:
                             # swing_phase nr starts with 1, so we don´t need to add anything to pick the next start
