@@ -50,10 +50,14 @@ def extract_features(
             )
             if feature is not None:
                 extracted_features.append(feature)
-
-        new_features = pd.concat(extracted_features, axis=1)
-        markers_and_features_df = pd.concat(
-            (markers_and_features_df, new_features), axis=1
-        )
+        # for some features (e.g. threshold_based_classification,
+        # it´s possible that a feature is None for all markers
+        # in this case, extracted_features is empty and cannot be concatenated
+        # -> markers_and_features_df remains unchanged and is just returned
+        if extracted_features:
+            new_features = pd.concat(extracted_features, axis=1)
+            markers_and_features_df = pd.concat(
+                (markers_and_features_df, new_features), axis=1
+            )
 
     return markers_and_features_df
