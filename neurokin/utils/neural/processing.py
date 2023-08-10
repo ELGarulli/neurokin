@@ -57,7 +57,7 @@ def get_timestamps_stim_blocks(neudata, n_amp_tested, pulses, time_stim):
     sync = get_stim_timestamps(neudata.sync_data, total_pulses)
     onset = sync[0:len(sync):pulses]
     stim_len = time_to_sample(time_stim, neudata.fs, is_t2=True)
-    #TODO check that neudata.fs is correct if stim and raw have different fs
+    # TODO check that neudata.fs is correct if stim and raw have different fs
     timestamps_blocks = [(onset[i], onset[i] + stim_len) for i in range(len(onset))]
     return timestamps_blocks
 
@@ -97,20 +97,23 @@ def trim_equal_len(raw: List[ArrayLike]) -> List[float]:
 
 
 def parse_raw(raw: np.ndarray, stimulation_idxs: np.ndarray, samples_before_stim: int,
-              skip_one: bool = False) -> np.ndarray:
+              skip_one: bool = False, min_len_chunk: int = 1) -> np.ndarray:
     """
     Parses the signal given the timestamps of the stimulation.
     :param raw: raw data of one channel
     :param stimulation_idxs: indexes of the stimulation onset
     :param samples_before_stim: how much before the stimulation onset to parse
     :param skip_one: if True parses every second stimulation
+    :param min_len_chunk: filters the chunks to have a minimal len between pulses
     :return: parsed raw signal into an array of equally sized chunks
     """
     stimulation_idxs = stimulation_idxs + samples_before_stim
+
     if skip_one:
         stimulation_idxs = stimulation_idxs[::2]
-    # skip first chunk that precedes the first stimulation to avoid cropping errors
-    split_raw = np.split(raw, stimulation_idxs)[1:]
+    split_raw = np.split(raw, stimulation_idxs)[
+                1:]  # skip chunk that precedes the first stimulation to avoid cropping errors
+    split_raw = [chunk for chunk in split_raw if len(chunk) >= min_len_chunk]
     leveled_list = trim_equal_len(split_raw)
     trimmed_array = np.vstack(leveled_list)
     return trimmed_array
@@ -245,7 +248,7 @@ def get_fast_foofed_specgram(raw: ArrayLike, fs: float, nperseg: int,
 
 
 def get_spectrogram_data(fs: float, raw: ArrayLike, nfft: int = None,
-                         noverlap: int = None, **kwargs) -> Tuple[ArrayLike]:
+                         noverlap: int = None) -> Tuple[ArrayLike]:
     """
     Gets the data used to plot a spectrogram
     :param fs: sampling frequency
@@ -254,9 +257,9 @@ def get_spectrogram_data(fs: float, raw: ArrayLike, nfft: int = None,
     :param noverlap: number of overlap points
     :return:
     """
-    pxx, freq, t, _ = plt.specgram(raw, NFFT=nfft, Fs=fs, noverlap=noverlap, **kwargs)
+    _t, _f, sxx = signal.spectrogram(raw, fs=fs, nperseg=nfft, noverlap=noverlap)
 
-    return pxx, freq, t
+    return sxx, _f, _t
 
 
 def calculate_power_spectral_density(data: ArrayLike, fs: int, **kwargs) -> tuple:
