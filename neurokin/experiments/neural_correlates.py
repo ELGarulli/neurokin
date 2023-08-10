@@ -1,6 +1,8 @@
 import os
 import glob
 import csv
+
+import numpy as np
 import pandas as pd
 from scipy import stats
 
@@ -34,7 +36,8 @@ def get_event_timestamps_fog(df):
     event_onset = [df.iloc[i]["Time (s)"] for i in event_onset_idxs]
     event_end = [df.iloc[i + 1]["Time (s)"] for i in event_onset_idxs if not i + 1 == len(df)]
 
-    events = tuple(zip(event_onset, event_end))
+    #events = tuple(zip(event_onset, event_end))
+    events = list(map(list, zip(event_onset, event_end)))
 
     return events
 
@@ -54,16 +57,21 @@ def get_event_timestamps_gait(df):
     event_onset = [df.iloc[i]["Time (s)"] for i in event_onset_idxs]
     event_end = [df.iloc[i]["Time (s)"] for i in event_end_idxs]
 
-    events = tuple(zip(event_onset, event_end))
+    #events = tuple(zip(event_onset, event_end))
+    events = list(map(list, zip(event_onset, event_end)))
 
     return events
 
 
 def get_event_timestamps_interruption(df):
     event_onset_idxs = df.index[(df["Name"] == "Foot Strike") & (df["Context"].isin(["Left", "Right"]))].tolist()
-    event_end_idxs = df.index[(df["Name"] == "Foot Off") & (df["Context"].isin(["Left", "Right"]))].tolist()[1:]
+    event_end_idxs = df.index[(df["Name"] == "Foot Off") & (df["Context"].isin(["Left", "Right"]))].tolist()  # [1:]
 
     if not len(event_onset_idxs) > 0:
+        # event_onset_idxs = df.index[(df["Name"] == "Event") & (df["Context"] == "General")]
+        # event_end_idxs = df.index[(df["Name"] == "Foot Off") & (df["Context"].isin(["Left", "Right", "General"]))].tolist()
+        # print(event_onset_idxs, event_end_idxs)
+        # if not len(event_onset_idxs) > 0:
         return None
 
     if not len(event_end_idxs) > 0:
@@ -74,8 +82,47 @@ def get_event_timestamps_interruption(df):
     event_onset = [df.iloc[i]["Time (s)"] for i in event_onset_idxs]
     event_end = [df.iloc[i]["Time (s)"] for i in event_end_idxs]
 
-    events = list(zip(event_onset, event_end))
+    #events = list(zip(event_onset, event_end))
+    events = list(map(list, zip(event_onset, event_end)))
 
+    return events
+
+
+def get_event_timestamps_non_locomotion_movement(df, framerate, idxs_to_exclude):
+    first_event_frame = int(df.iloc[0]["Time (s)"] * framerate)
+    last_event_frame = int(df.iloc[-2]["Time (s)"] * framerate)  # -2 as the last row is empty in the Time (s) column
+
+    for idx_pair in idxs_to_exclude:
+        if np.isnan(idx_pair[1]):
+            idx_pair[1] = last_event_frame
+    idxs_to_exclude_frames = [[int(i[0] * framerate), int(i[1] * framerate)] for i in idxs_to_exclude]
+
+    full_idx_array = np.arange(first_event_frame, last_event_frame)
+    mask = np.ones(full_idx_array.size, dtype=int)
+    for idxs_ex in idxs_to_exclude_frames:
+        mask[idxs_ex[0]:idxs_ex[1]] = False
+
+    if mask.size == 0:
+        event_onset = []
+        event_end = []
+        events = list(map(list, zip(event_onset, event_end)))
+        return events
+
+    # ensuring that there is a bool change even if the run starts or ends with a nlm
+    if mask[0] == True:   # dont change to pep8 compliant notation. it breaks this.
+        mask[0] = False
+    if mask[-1] == True:
+        mask[-1] = False
+
+    events_bounds = np.where(np.diff(mask))[0]
+
+    event_onset_idxs = events_bounds[0::2]
+    event_end_idxs = events_bounds[1::2]
+
+    event_onset = [i / framerate for i in event_onset_idxs]
+    event_end = [i / framerate for i in event_end_idxs]
+    #events = list(zip(event_onset, event_end))
+    events = list(map(list, zip(event_onset, event_end)))
     return events
 
 
@@ -174,8 +221,9 @@ def get_all_neural_correlates(nfft, nov, skiprows, experiment_path, animals, neu
 
 def time_to_frame_in_roi(timestamp, fs, first_frame):
     frame = int(timestamp * fs) - first_frame
+    frame = 0 if frame == -1 else frame
     if frame < 0:
         raise ValueError(f"First frame value is bigger than frame of event. "
                          f"First frame is {first_frame} and event frame is {frame}")
-    return frame
 
+    return frame

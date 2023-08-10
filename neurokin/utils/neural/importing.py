@@ -80,7 +80,7 @@ def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1", s
             print("Please chose from: ")
             print(data.streams.__dict__.keys())
             return
-        stim_data = stim_data[s1:s2]
+        stim_data = stim_data[..., s1:s2]
 
     return fs, raw, stim_data, sync_fs
 
