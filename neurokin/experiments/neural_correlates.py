@@ -28,6 +28,34 @@ def get_events_df(event_path, skiprows):
     return df
 
 
+def get_first_frame_from_csv(csv_path):
+    with open(csv_path, newline='') as f:
+        c = 0
+        r = csv.reader(f)
+        for l in r:
+            if not l:
+                break
+            c += 1
+    first_block_end = c + 5
+
+    with open(csv_path, newline='') as f:
+        c = 0
+        r = csv.reader(f)
+        rowcount = 0
+        for l in r:
+            if rowcount <= first_block_end:
+                rowcount += 1
+                continue
+            elif not l:
+                break
+            c += 1
+
+    df = pd.read_csv(csv_path, skiprows=first_block_end, nrows=c)
+    first_frame = df.iloc[0][0]
+    last_frame = df.iloc[-1][0]
+    return int(first_frame), int(last_frame)
+
+
 def get_event_timestamps_fog(df):
     event_onset_idxs = df.index[(df["Name"] == "Foot Off") & (df["Context"] == "General")].tolist()
     if not len(event_onset_idxs) > 0:
@@ -36,9 +64,51 @@ def get_event_timestamps_fog(df):
     event_onset = [df.iloc[i]["Time (s)"] for i in event_onset_idxs]
     event_end = [df.iloc[i + 1]["Time (s)"] for i in event_onset_idxs if not i + 1 == len(df)]
 
-    #events = tuple(zip(event_onset, event_end))
+    # events = tuple(zip(event_onset, event_end))
     events = list(map(list, zip(event_onset, event_end)))
 
+    return events
+
+
+def get_event_timestamps_fog_active(df, timestamp_gait):
+    event_onset_idxs = df.index[(df["Name"] == "Foot Off") & (df["Context"] == "General")].tolist()
+    if not len(event_onset_idxs) > 0:
+        return []
+
+    event_onset = [df.iloc[i]["Time (s)"] for i in event_onset_idxs]
+    event_end = [df.iloc[i + 1]["Time (s)"] for i in event_onset_idxs if not i + 1 == len(df)]
+
+    events_onset_selected = []
+    events_end_selected = []
+
+    for i in range(len(event_onset)):
+        if event_onset[i] >= timestamp_gait[0][0]:
+            events_onset_selected.append(event_onset[i])
+            events_end_selected.append(event_end[i])
+
+    events = list(map(list, zip(events_onset_selected, events_end_selected)))
+
+    return events
+
+
+def get_event_timestamps_fog_rest(df, timestamp_gait):
+    event_onset_idxs = df.index[(df["Name"] == "Foot Off") & (df["Context"] == "General")].tolist()
+    if not len(event_onset_idxs) > 0:
+        return []
+
+    event_onset = [df.iloc[i]["Time (s)"] for i in event_onset_idxs]
+    event_end = [df.iloc[i + 1]["Time (s)"] for i in event_onset_idxs if not i + 1 == len(df)]
+
+    events_onset_selected = []
+    events_end_selected = []
+    for i in range(len(event_onset)):
+        if len(timestamp_gait) > 0:
+            if event_onset[i] > timestamp_gait[0][0]:
+                break
+        events_onset_selected.append(event_onset[i])
+        events_end_selected.append(event_end[i])
+
+    events = list(map(list, zip(events_onset_selected, events_end_selected)))
     return events
 
 
@@ -47,17 +117,17 @@ def get_event_timestamps_gait(df):
     event_end_idxs = df.index[(df["Name"] == "Foot Strike") & (df["Context"].isin(["Left", "Right"]))].tolist()
 
     if not len(event_onset_idxs) > 0:
-        return None
+        return []
 
     if not len(event_end_idxs) > 0:
-        return None
+        return []
 
     event_end_idxs = event_end_idxs if event_end_idxs[0] > event_onset_idxs[0] else event_end_idxs[1:]
 
     event_onset = [df.iloc[i]["Time (s)"] for i in event_onset_idxs]
     event_end = [df.iloc[i]["Time (s)"] for i in event_end_idxs]
 
-    #events = tuple(zip(event_onset, event_end))
+    # events = tuple(zip(event_onset, event_end))
     events = list(map(list, zip(event_onset, event_end)))
 
     return events
@@ -82,9 +152,87 @@ def get_event_timestamps_interruption(df):
     event_onset = [df.iloc[i]["Time (s)"] for i in event_onset_idxs]
     event_end = [df.iloc[i]["Time (s)"] for i in event_end_idxs]
 
-    #events = list(zip(event_onset, event_end))
+    # events = list(zip(event_onset, event_end))
     events = list(map(list, zip(event_onset, event_end)))
 
+    return events
+
+
+def get_event_timestamps_nlm_active(framerate, first_frame, last_frame, ts_to_exclude_fog, ts_to_exclude_gait):
+    idxs_to_exclude = ts_to_exclude_fog + ts_to_exclude_gait
+    for idx_pair in idxs_to_exclude:
+        if np.isnan(idx_pair[1]):
+            idx_pair[1] = last_frame
+    idxs_to_exclude_frames = [[int(i[0] * framerate), int(i[1] * framerate)] for i in idxs_to_exclude]
+    idxs_to_exclude_frames = sorted(idxs_to_exclude_frames, key=lambda x: x[0])
+    idxs_to_exclude_gait = [[int(i[0] * framerate), int(i[1] * framerate)] for i in ts_to_exclude_gait]
+
+    if first_frame is None:
+        first_frame = idxs_to_exclude_frames[0][0]
+        last_frame = idxs_to_exclude_frames[-1][1]
+        print("########################################", first_frame, last_frame)
+    full_idx_array = np.arange(first_frame, last_frame)
+    mask = np.ones(full_idx_array.size, dtype=int)
+    for idxs_ex in idxs_to_exclude_frames:
+        mask[idxs_ex[0]:idxs_ex[1]] = False
+
+    if len(ts_to_exclude_gait) > 0:
+        mask[:idxs_to_exclude_gait[0][0]] = False  # setting to False all frames before gait
+
+    # ensuring that there is a bool change even if the run starts or ends with a nlm
+    if mask[0] == True:  # dont change to pep8 compliant notation. it breaks this.
+        mask[0] = False
+    if mask[-1] == True:
+        mask[-1] = False
+
+    events_bounds = np.where(np.diff(mask))[0]
+
+    event_onset_idxs = events_bounds[0::2]
+    event_end_idxs = events_bounds[1::2]
+
+    event_onset = [i / framerate for i in event_onset_idxs]
+    event_end = [i / framerate for i in event_end_idxs]
+    # events = list(zip(event_onset, event_end))
+    events = list(map(list, zip(event_onset, event_end)))
+    return events
+
+
+def get_event_timestamps_nlm_rest(framerate, first_frame, last_frame, ts_to_exclude_fog, ts_to_exclude_gait=[]):
+    idxs_to_exclude = ts_to_exclude_fog + ts_to_exclude_gait
+    for idx_pair in idxs_to_exclude:
+        if np.isnan(idx_pair[1]):
+            idx_pair[1] = last_frame
+    idxs_to_exclude_frames = [[int(i[0] * framerate), int(i[1] * framerate)] for i in idxs_to_exclude]
+    idxs_to_exclude_frames = sorted(idxs_to_exclude_frames, key=lambda x: x[0])
+    idxs_to_exclude_gait = [[int(i[0] * framerate), int(i[1] * framerate)] for i in ts_to_exclude_gait]
+
+    if first_frame is None:
+        first_frame = idxs_to_exclude_frames[0][0]
+        last_frame = idxs_to_exclude_frames[-1][1]
+    full_idx_array = np.arange(first_frame, last_frame)
+
+    mask = np.ones(full_idx_array.size, dtype=int)
+    for idxs_ex in idxs_to_exclude_frames:
+        mask[idxs_ex[0]:idxs_ex[1]] = False
+
+    if len(ts_to_exclude_gait) > 0:
+        mask[idxs_to_exclude_gait[0][0]:] = False  # setting to False all frames after gait
+
+    # ensuring that there is a bool change even if the run starts or ends with a nlm
+    if mask[0] == True:  # dont change to pep8 compliant notation. it breaks this.
+        mask[0] = False
+    if mask[-1] == True:
+        mask[-1] = False
+
+    events_bounds = np.where(np.diff(mask))[0]
+
+    event_onset_idxs = events_bounds[0::2]
+    event_end_idxs = events_bounds[1::2]
+
+    event_onset = [i / framerate for i in event_onset_idxs]
+    event_end = [i / framerate for i in event_end_idxs]
+    # events = list(zip(event_onset, event_end))
+    events = list(map(list, zip(event_onset, event_end)))
     return events
 
 
@@ -109,7 +257,7 @@ def get_event_timestamps_non_locomotion_movement(df, framerate, idxs_to_exclude)
         return events
 
     # ensuring that there is a bool change even if the run starts or ends with a nlm
-    if mask[0] == True:   # dont change to pep8 compliant notation. it breaks this.
+    if mask[0] == True:  # dont change to pep8 compliant notation. it breaks this.
         mask[0] = False
     if mask[-1] == True:
         mask[-1] = False
@@ -121,7 +269,7 @@ def get_event_timestamps_non_locomotion_movement(df, framerate, idxs_to_exclude)
 
     event_onset = [i / framerate for i in event_onset_idxs]
     event_end = [i / framerate for i in event_end_idxs]
-    #events = list(zip(event_onset, event_end))
+    # events = list(zip(event_onset, event_end))
     events = list(map(list, zip(event_onset, event_end)))
     return events
 
