@@ -17,8 +17,8 @@ class KinematicDataRun:
 
         self.config = load_config.read_config(configpath)
 
-        self.gait_cycles_start: int
-        self.gait_cycles_end: int
+        self.trial_roi_start: int
+        self.trial_roi_end: int
         self.fs: float
         self.condition: str
 
@@ -54,7 +54,7 @@ class KinematicDataRun:
         :return:
         """
 
-        self.gait_cycles_start, self.gait_cycles_end, self.fs, self.markers_df = c3d_import_export.import_c3d(self.path)
+        self.trial_roi_start, self.trial_roi_end, self.fs, self.markers_df = c3d_import_export.import_c3d(self.path)
 
         if correct_shift:
 

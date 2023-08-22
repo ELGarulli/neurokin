@@ -70,15 +70,15 @@ for animal, days in experiment_structure.items():
             events_fog = get_event_timestamps_fog(df)
             if events_gait:
                 for i, j in events_gait:
-                    i = time_to_frame_in_roi(timestamp=i, fs=vicon_fs, first_frame=kin_data.gait_cycles_start)
-                    j = time_to_frame_in_roi(timestamp=j, fs=vicon_fs, first_frame=kin_data.gait_cycles_start)
+                    i = time_to_frame_in_roi(timestamp=i, fs=vicon_fs, first_frame=kin_data.trial_roi_start)
+                    j = time_to_frame_in_roi(timestamp=j, fs=vicon_fs, first_frame=kin_data.trial_roi_start)
                     print(i, j)
                     events[i:j] = (0, 0, 255)
 
             if events_fog:
                 for i, j in events_fog:
-                    i = time_to_frame_in_roi(timestamp=i, fs=vicon_fs, first_frame=kin_data.gait_cycles_start)
-                    j = time_to_frame_in_roi(timestamp=j, fs=vicon_fs, first_frame=kin_data.gait_cycles_start)
+                    i = time_to_frame_in_roi(timestamp=i, fs=vicon_fs, first_frame=kin_data.trial_roi_start)
+                    j = time_to_frame_in_roi(timestamp=j, fs=vicon_fs, first_frame=kin_data.trial_roi_start)
                     events[i:j] = (255, 0, 0)
 
             events_df = pd.DataFrame(events)
