@@ -10,7 +10,7 @@ import os
 import sys
 from neurokin.kinematic_data import KinematicDataRun
 from neurokin.utils.neural import processing
-from neurokin.experiments.neural_correlates import (get_events_df,
+from neurokin.experiments.neural_correlates import (get_first_block_df,
                                                     get_event_timestamps_gait,
                                                     get_event_timestamps_fog,
                                                     time_to_frame_in_roi)
@@ -61,7 +61,7 @@ for animal, days in experiment_structure.items():
 
             event_path = path + "runway" + run_n + ".csv"
 
-            df = get_events_df(event_path=event_path, skiprows=skiprows)
+            df = get_first_block_df(csv_path=event_path, skiprows=skiprows)
             df.sort_values('Time (s)', inplace=True, ignore_index=True)
 
             events = np.full((len(kin_data.markers_df), 3), (0, 255, 0))
