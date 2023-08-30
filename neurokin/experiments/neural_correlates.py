@@ -199,6 +199,34 @@ def get_start_of_gait(framerate: int, ts_gait: List[List[float]]) -> int:
     return start_gait
 
 
+def traspose_idxs(idxs_to_exclude: List[List[int]], first_frame: int) -> List[List[int]]:
+    """
+    Transposes the indexes to an array where first_frame is 0. Moreover it takes care of small idiosyncrasies when
+    an event appears to start at frame -1
+    :param idxs_to_exclude: list of indexes to be set to false
+    :param first_frame: first frame of the region of interest
+    :return: indexes transposed, same shape as inut
+    """
+    idxs_transposed = []
+
+    for idx_pair in idxs_to_exclude:
+        start = idx_pair[0] - first_frame if idx_pair[0] - first_frame >= 0 else 0
+        end = idx_pair[1] - first_frame
+        idxs_transposed.append([start, end])
+    return idxs_transposed
+
+
+def transpose_start_of_gait(start_of_gait: int, first_frame: int) -> int:
+    """
+    Transposes the index of the start of gait where first_frame is 0.
+    Moreover it takes care of small idiosyncrasies when an event appears to start at frame -1
+    :param start_of_gait: start of the first gait event
+    :param first_frame: first frame of the region of interest
+    :return:
+    """
+    return start_of_gait - first_frame if start_of_gait - first_frame > 0 else 0
+
+
 def create_exclusion_mask(idxs_to_exclude: List[List[float]], first_frame: int, last_frame: int) -> np.array:
     """
     Returns an array representing the region of interest of a run with
@@ -208,18 +236,16 @@ def create_exclusion_mask(idxs_to_exclude: List[List[float]], first_frame: int, 
     :param last_frame: last frame of the region of interest
     :return: exclusion mask
     """
-    idxs_to_exclude = [[i[0] - first_frame, i[1] - first_frame] for i in idxs_to_exclude]
+    idxs_to_exclude = traspose_idxs(idxs_to_exclude, first_frame)
     full_idx_array = np.arange(first_frame, last_frame)
-    mask = np.ones(full_idx_array.size, dtype=int)
+    mask = np.ones(full_idx_array.size, dtype=bool)
+
+    # ensuring that there is a bool change even if the run starts or ends with a nlm
+    mask[0] = False
+    mask[-1] = False
 
     for idxs_ex in idxs_to_exclude:
         mask[idxs_ex[0]:idxs_ex[1]] = False
-
-    # ensuring that there is a bool change even if the run starts or ends with a nlm
-    if mask[0] == True:  # dont change to pep8 compliant notation. it breaks this.
-        mask[0] = False
-    if mask[-1] == True:
-        mask[-1] = False
 
     return mask
 
@@ -266,13 +292,13 @@ def get_event_timestamps_nlm_active(framerate: int,
     if first_frame is None:
         first_frame = idxs_to_exclude[0][0]
         last_frame = idxs_to_exclude[-1][1]
-        print("########################################", first_frame, last_frame)
 
     mask = create_exclusion_mask(idxs_to_exclude, first_frame, last_frame)
 
     if len(ts_to_exclude_gait) > 0:
         start_gait = get_start_of_gait(framerate, ts_to_exclude_gait)
-        mask[:start_gait - first_frame] = False  # setting to False all frames before gait
+        start_gait = transpose_start_of_gait(start_gait, first_frame)
+        mask[:start_gait] = False  # setting to False all frames before gait
 
     event_onset, event_end = get_ts_from_exclusion_mask(mask, first_frame, framerate)
 
@@ -295,12 +321,10 @@ def get_event_timestamps_nlm_rest(framerate: int,
     :param ts_to_exclude_gait: timestamps of gait
     :return: non-locomotion movements event after gait has happened
     """
-    # TODO fix fucking bug with first frame aligment
     idxs_to_exclude = get_idxs_events_to_exclude(framerate,
-                                                            last_frame,
-                                                            ts_to_exclude_fog,
-                                                            ts_to_exclude_gait)
-
+                                                 last_frame,
+                                                 ts_to_exclude_fog,
+                                                 ts_to_exclude_gait)
 
     if first_frame is None:
         first_frame = idxs_to_exclude[0][0]
@@ -308,12 +332,10 @@ def get_event_timestamps_nlm_rest(framerate: int,
 
     mask = create_exclusion_mask(idxs_to_exclude, first_frame, last_frame)
 
-    for idxs_ex in idxs_to_exclude:
-        mask[idxs_ex[0]:idxs_ex[1]] = False
-
     if len(ts_to_exclude_gait) > 0:
         start_gait = get_start_of_gait(framerate, ts_to_exclude_gait)
-        mask[start_gait - first_frame:] = False  # setting to False all frames after gait
+        start_gait = transpose_start_of_gait(start_gait, first_frame)
+        mask[start_gait:] = False  # setting to False all frames after gait
 
     event_onset, event_end = get_ts_from_exclusion_mask(mask, first_frame, framerate)
 
