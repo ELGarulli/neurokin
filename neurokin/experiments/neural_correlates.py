@@ -1,4 +1,6 @@
 import csv
+import os
+from pandas.errors import EmptyDataError, ParserError
 
 import numpy as np
 import pandas as pd
@@ -375,7 +377,7 @@ def get_neural_correlate_psd(raw: np.array,
     return pxx, freqs
 
 
-def get_neural_ch(neural_path: str, ch: int, stream_name: str) -> Tuple[any]:
+def get_neural_ch(neural_path: str, ch: int, stream_name: str) -> Tuple[np.array, float]:
     """
     Retireves the raw neural signal and the sampling frequency
     :param neural_path: folder path to TDT recording
@@ -404,3 +406,107 @@ def time_to_frame_in_roi(timestamp: float, fs: float, first_frame: int) -> int:
                          f"First frame is {first_frame} and event frame is {frame}")
 
     return frame
+
+
+def get_events_dict(event_path, skiprows, framerate):
+    """
+    Runs trough all the .csv files in the experiment_path and returns a dictionary with the timestamps of each
+    event, sorted by the type.
+    :param event_path: path to the run to be analyzed
+    :param skiprows: how many rows to skip as a header of the .csv
+    :param framerate: frame rate of the acquisition system
+    :return: events dictionary
+    """
+    events_dict = {}
+    events_dict.setdefault("gait", [])
+    events_dict.setdefault("fog_active", [])
+    events_dict.setdefault("fog_rest", [])
+    events_dict.setdefault("nlm_active", [])
+    events_dict.setdefault("nlm_rest", [])
+
+    df = get_first_block_df(csv_path=event_path, skiprows=skiprows)
+
+    try:
+        first_frame, last_frame = get_first_last_frame_from_csv(event_path)
+    except EmptyDataError:
+        first_frame, last_frame = None, None
+    except ParserError:
+        first_frame, last_frame = None, None
+
+    df.sort_values('Time (s)', inplace=True, ignore_index=True)
+
+    events_dict["gait"] = get_event_timestamps_gait(df)
+
+    if len(events_dict["gait"]) > 0:
+        events_dict["fog_active"] = get_event_timestamps_freezing_active(df, events_dict["gait"])
+
+    events_dict["fog_rest"] = get_event_timestamps_freezing_rest(df, events_dict["gait"])
+
+    events_detected_fog = events_dict["fog_active"] + events_dict["fog_rest"]
+
+    if len(events_dict["gait"]) > 0:
+        events_dict["nlm_active"] = get_event_timestamps_nlm_active(framerate=framerate,
+                                                                    first_frame=first_frame,
+                                                                    last_frame=last_frame,
+                                                                    ts_to_exclude_fog=events_detected_fog,
+                                                                    ts_to_exclude_gait=events_dict["gait"])
+
+    events_dict["nlm_rest"] = get_event_timestamps_nlm_rest(framerate=framerate,
+                                                            first_frame=first_frame,
+                                                            last_frame=last_frame,
+                                                            ts_to_exclude_fog=events_detected_fog,
+                                                            ts_to_exclude_gait=events_dict["gait"])
+
+    return events_dict
+
+
+def get_neural_correlates_dict(neural_path,
+                               channel_of_interest,
+                               stream_names,
+                               events_dict,
+                               time_cutoff):
+    """
+    Returns a dictionary with the raw neural data corresponding to each event in the input events dictionary, from the
+    selected channel of interest. Events duration is capped at time_cutoff to ensure homogeneity in the duration.
+    :param neural_path: path to the folder with neural data
+    :param channel_of_interest: channel to extract the raw data from
+    :param stream_name: list of possible stream_names where the neural data is stored
+    :param events_dict:
+    :param time_cutoff:
+    :return:
+    """
+    neural_dict = {}
+
+    neural_path = neural_path + next(os.walk(neural_path))[1][0]
+
+    is_valid_name = False
+    for name in stream_names:
+        try:
+            raw, fs = get_neural_ch(neural_path, channel_of_interest, name)
+            is_valid_name = True
+            break
+        except:
+            pass
+
+    neural_dict["gait"] = get_single_neural_type(events_dict, "gait", time_cutoff, fs, raw)
+    neural_dict["fog_active"] = get_single_neural_type(events_dict, "fog_active", time_cutoff, fs, raw)
+    neural_dict["fog_rest"] = get_single_neural_type(events_dict, "fog_rest", time_cutoff, fs, raw)
+    neural_dict["nlm_active"] = get_single_neural_type(events_dict, "nlm_active", time_cutoff, fs, raw)
+    neural_dict["nlm_rest"] = get_single_neural_type(events_dict, "nlm_rest", time_cutoff, fs, raw)
+
+    return neural_dict, fs
+
+
+def get_single_neural_type(events_dict, event_type, time_cutoff, fs, raw):
+    correlates = []
+
+    if events_dict[event_type] is not None:
+        for t_onset, t_end in events_dict[event_type]:
+            t_end = check_time_cutoff(t_onset, t_end, time_cutoff)
+            if t_end is None:
+                continue
+            else:
+                s_on = importing.time_to_sample(t_onset, fs=fs, is_t1=True)
+                s_off = importing.time_to_sample(t_end, fs=fs, is_t2=True)
+                correlates.append(raw[s_on:s_off])
+    return correlates
