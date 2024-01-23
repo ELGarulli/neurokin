@@ -2,22 +2,22 @@ import glob
 import numpy as np
 import pickle as pkl
 from typing import List, Dict
-from neurokin.utils.helper import load_config
+from neurokin.utils.helper.load_config import read_config
 from neurokin.experiments.neural_correlates import (get_events_dict, get_neural_correlates_dict)
 
-class NerualCorrelatesStates():
+class NeuralCorrelatesStates():
 
     def __init__(self, timeslice: float,
                  stream_names: List[str],
                  ch_of_interest: Dict[str, int],
-                 experiment_structure_file: str,
+                 experiment_structure_filepath: str,
                  skiprows: int = 2,
                  framerate: float = 200):
 
         self.timeslice = timeslice
         self.stream_names = stream_names
         self.ch_of_interest = ch_of_interest
-        self.experiment_structure = load_config(experiment_structure_file)
+        self.experiment_structure = read_config(experiment_structure_filepath)
         self.skiprows = skiprows
         self.framerate = framerate
         self.freqs: np.array
