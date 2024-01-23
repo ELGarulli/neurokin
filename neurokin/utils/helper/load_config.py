@@ -10,7 +10,7 @@ def read_config(path):
         with open(path, "r") as ymlfile:
             cfg = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     except FileNotFoundError:
-        raise (
+        raise FileNotFoundError(
                 "Could not find the config file at " + path + " \n Please make sure the path is correct and the file exists")
 
     return cfg
