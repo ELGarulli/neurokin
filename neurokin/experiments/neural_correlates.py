@@ -470,14 +470,18 @@ def get_neural_correlates_dict(neural_path,
     selected channel of interest. Events duration is capped at time_cutoff to ensure homogeneity in the duration.
     :param neural_path: path to the folder with neural data
     :param channel_of_interest: channel to extract the raw data from
-    :param stream_name: list of possible stream_names where the neural data is stored
+    :param stream_names: list of possible stream_names where the neural data is stored
     :param events_dict:
     :param time_cutoff:
     :return:
     """
-    neural_dict = {}
-
-    neural_path = neural_path + next(os.walk(neural_path))[1][0]
+    neural_dict = {key: [] for key in ["gait", "fog_active", "fog_rest", "nlm_active", "nlm_rest"]}
+    fs = None
+    try:
+        neural_path = neural_path + next(os.walk(neural_path))[1][0]
+    except StopIteration:
+        print(f"No neural data found for {neural_path}")
+        return neural_dict, fs
 
     is_valid_name = False
     for name in stream_names:
@@ -487,6 +491,8 @@ def get_neural_correlates_dict(neural_path,
             break
         except:
             pass
+    if not is_valid_name:
+        raise Exception("All stream names were invalid")
 
     neural_dict["gait"] = get_single_neural_type(events_dict, "gait", time_cutoff, fs, raw)
     neural_dict["fog_active"] = get_single_neural_type(events_dict, "fog_active", time_cutoff, fs, raw)
@@ -510,3 +516,59 @@ def get_single_neural_type(events_dict, event_type, time_cutoff, fs, raw):
                 s_off = importing.time_to_sample(t_end, fs=fs, is_t2=True)
                 correlates.append(raw[s_on:s_off])
     return correlates
+
+
+def get_psd_dict(neural_dict, fs, nfft, noverlap, zscore=False):
+    psd_dict = {}
+
+    psds_gait, freqs_gait = get_psd_single_event_type(neural_dict, fs, "gait", nfft, noverlap, zscore)
+    psds_fog_active, freqs_fog_active = get_psd_single_event_type(neural_dict, fs, "fog_active", nfft, noverlap, zscore)
+    psds_fog_rest, freqs_fog_rest = get_psd_single_event_type(neural_dict, fs, "fog_rest", nfft, noverlap, zscore)
+    psds_nlm_active, freqs_nlm_active = get_psd_single_event_type(neural_dict, fs, "nlm_active", nfft, noverlap, zscore)
+    psds_nlm_rest, freqs_nlm_rest = get_psd_single_event_type(neural_dict, fs, "nlm_rest", nfft, noverlap, zscore)
+
+    psd_dict["gait"] = psds_gait
+    psd_dict["fog_active"] = psds_fog_active
+    psd_dict["fog_rest"] = psds_fog_rest
+    psd_dict["nlm_active"] = psds_nlm_active
+    psd_dict["nlm_rest"] = psds_nlm_rest
+
+    freqs_collection = [freqs_fog_active, freqs_fog_rest, freqs_gait, freqs_nlm_active, freqs_nlm_rest]
+
+    try:
+        freqs = [x for x in freqs_collection if x is not None][0]
+    except IndexError:
+        freqs = None
+        print("No events that satisfy the conditions were found for this run")
+
+    return psd_dict, freqs
+
+
+def get_psd_single_event_type(neural_dict, fs, event_type, nfft, noverlap, zscore):
+    psds = []
+    freqs = None
+    for raw_neural in neural_dict[event_type]:
+        freqs_psd, pxx = processing.calculate_power_spectral_density(raw_neural,
+                                                                     fs,
+                                                                     nperseg=nfft,
+                                                                     noverlap=noverlap,
+                                                                     scaling="spectrum")
+        if freqs is None:
+            freqs = freqs_psd
+        else:
+            sanity_check = np.array_equal(freqs, freqs_psd)
+            if not sanity_check:
+                raise ValueError("Something wrong with the frequencies in the PSD calculation")
+        if zscore:
+            pxx = stats.zscore(pxx)
+
+        psds.append(pxx)
+    return psds, freqs
+
+
+def check_time_cutoff(t_onset, t_end, time_cutoff):
+    if t_end - t_onset < time_cutoff:
+        return None
+    elif t_end - t_onset > time_cutoff:
+        t_end = t_onset + time_cutoff
+        return t_end
