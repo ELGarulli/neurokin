@@ -6,34 +6,8 @@ import pickle as pkl
 from typing import List, Dict
 from neurokin.utils.helper.load_config import read_config
 from neurokin.experiments.neural_correlates import (get_events_dict, get_neural_correlates_dict, get_psd_dict)
-
-"""
-class :  Neural correlates of states
-
-inputs
-	* (dataset)
-	* timeslice
-	* stream names: List
-	* channel dictionary
-	
-	* experiment structure
-
-attributes
-	+ freqs [autofilled]
-	+ psd_dictionary_all_conditions [autofilled]
-
-methods
-	# dataset load * file name
-	# dataset create * experiment path
-	# create dict psds (now pre_process_data)
-	# split dataset (authomatic detection of conditions? called already by create dict psds?)
-	# sort data animal event (already called in pre_process_data?)
-	# average by animal ### what type should it be at this point? dict or df?###
-
-
-
-aux conditions -> split in methods or utils function
-"""
+from neurokin.utils.experiments.neural_states_helper import (get_events_per_animal, condense_event_types,
+                                                             get_per_animal_average, drop_subject_id)
 
 
 class NeuralCorrelatesStates():
@@ -89,6 +63,7 @@ class NeuralCorrelatesStates():
             self._save_dataset(self.raw_neural_correlates_dict, filename)
         if dataset == "psd_neural_correlates_dataset":
             self._save_dataset(self.psds_correlates_dict, filename)
+            self._save_dataset(self.freqs, "freqs")
 
     def create_events_dataset(self, experiment_path, conditions_of_interest):
         all_events_dict = {c: {} for c in conditions_of_interest}
@@ -176,16 +151,21 @@ class NeuralCorrelatesStates():
                         dataset_psd[condition][date].setdefault(animal, {})
                         neural_dict = self.raw_neural_correlates_dict[condition][date][animal][run]
                         dataset_psd[condition][date][animal][run], freqs_ = get_psd_dict(neural_dict=neural_dict,
-                                                                              fs=self.fs,
-                                                                              nfft=nfft,
-                                                                              noverlap=nov,
-                                                                              zscore=True)
+                                                                                         fs=self.fs,
+                                                                                         nfft=nfft,
+                                                                                         noverlap=nov,
+                                                                                         zscore=True)
                         if freqs_ is not None:
                             self.freqs = freqs_
         self.psds_correlates_dict = dataset_psd
 
-    def process_dataset(self):
-        return
+    def plot_prep_psds_dataset(self, test_sbj_list, condense=True):
+        per_animal_events = get_events_per_animal(self.psds_correlates_dict)
+        if condense:
+            per_animal_events = condense_event_types(per_animal_events)
+        per_animal_avg = get_per_animal_average(per_animal_events)
+        no_sbj_id = drop_subject_id(test_sbj_list=test_sbj_list, animals_avg_psds=per_animal_avg)
+        return no_sbj_id
 
     def __create_dict_psds(self):
         return

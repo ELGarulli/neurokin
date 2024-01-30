@@ -15,32 +15,13 @@ def get_events_per_animal(psds_correlates_dict):
         for date in dates:
             animals = list(psds_correlates_dict[condition][date].keys())
             for animal in animals:
-                cond_animal_event_dict[condition].setdefault(animal, {"gait": [],
-                                                                      "fog_active": [],
-                                                                      "fog_rest": [],
-                                                                      "nlm_active": [],
-                                                                      "nlm_rest": []})
-                runs = list(psds_correlates_dict[condition][date][animal])
+                cond_animal_event_dict[condition].setdefault(animal, {})
+                runs = list(psds_correlates_dict[condition][date][animal].keys())
                 for run in runs:
-                    for fog in conditions_of_interest[date][animal][run]["fog_active"]:
-                        if len(fog) > 0:
-                            cond_animal_event_dict[animal]["fog_active"].append(fog)
-
-                    for fog in conditions_of_interest[date][animal][run]["fog_rest"]:
-                        if len(fog) > 0:
-                            cond_animal_event_dict[animal]["fog_rest"].append(fog)
-
-                    for gait in conditions_of_interest[date][animal][run]["gait"]:
-                        if len(gait) > 0:
-                            cond_animal_event_dict[animal]["gait"].append(gait)
-
-                    for interr in conditions_of_interest[date][animal][run]["nlm_active"]:
-                        if len(interr) > 0:
-                            cond_animal_event_dict[animal]["nlm_active"].append(interr)
-
-                    for interr in conditions_of_interest[date][animal][run]["nlm_rest"]:
-                        if len(interr) > 0:
-                            cond_animal_event_dict[animal]["nlm_rest"].append(interr)
+                    for event_name, event_array in psds_correlates_dict[condition][date][animal][run].items():
+                        cond_animal_event_dict[condition][animal].setdefault(event_name, [])
+                        if len(event_array) > 0:
+                            cond_animal_event_dict[condition][animal][event_name] += event_array
     return cond_animal_event_dict
 
 
@@ -50,7 +31,6 @@ def condense_event_types(cond_animal_event_dict):
     three categories ["fog", "nlm", "gait"]
     :return:
     """
-
     conditions_of_interest = list(cond_animal_event_dict.keys())
     five2three = {c: {} for c in conditions_of_interest}
     for condition in conditions_of_interest:
@@ -58,39 +38,56 @@ def condense_event_types(cond_animal_event_dict):
             five2three[condition][animal] = {}
             for event_type, psds in events.items():
                 if event_type in ["fog_active", "fog_rest"]:
-                    five2three[animal].setdefault("fog", [])
-                    five2three[animal]["fog"].append(psds)
+                    five2three[condition][animal].setdefault("fog", [])
+                    five2three[condition][animal]["fog"] += psds
                 elif event_type in ["nlm_active", "nlm_rest"]:
-                    five2three[animal].setdefault("nlm", [])
-                    five2three[animal]["nlm"].append(psds)
+                    five2three[condition][animal].setdefault("nlm", [])
+                    five2three[condition][animal]["nlm"] += psds
                 else:
-                    five2three[animal].setdefault("gait", [])
-                    five2three[animal]["gait"].append(psds)
+                    five2three[condition][animal].setdefault("gait", [])
+                    five2three[condition][animal]["gait"] += psds
     return five2three
 
 
 def get_per_animal_average(cond_animal_event_dict):
+    """
+    Computes the average psds response per event per animal.
+    :param cond_animal_event_dict:
+    :return:
+    """
     conditions_of_interest = list(cond_animal_event_dict.keys())
     animals_avg_psds = {c: {} for c in conditions_of_interest}
     for condition in conditions_of_interest:
         for animal, events in cond_animal_event_dict[condition].items():
             for event, psds in events.items():
                 animals_avg_psds[condition].setdefault(animal, {})
-                animals_avg_psds[condition][animal][event] = np.mean(psds, axis=0)
+                average_event = np.mean(psds, axis=0)
+                if np.isnan(average_event).any():
+                    print(f"Attention! No valid events was found for animal: {animal}, "
+                          f"event type: {event}.")
+                else:
+                    animals_avg_psds[condition][animal][event] = np.mean(psds, axis=0)
     return animals_avg_psds
 
 
-def get_group_split(model_list, animals_avg_psds):
+def get_group_split(test_sbj_list, animals_avg_psds):
+    """
+    Splits the dataset in two groups depending on which subjects are in the test group and which not (control)
+    :param test_sbj_list: list of subject IDs that belong to teh test group
+    :param animals_avg_psds: dictionary containing the psds organized by condition, animal and event
+    :return:
+    """
     conditions_of_interest = list(animals_avg_psds.keys())
     model_group = {c: {} for c in conditions_of_interest}
     sham_group = {c: {} for c in conditions_of_interest}
     for condition in conditions_of_interest:
-        for animal, event in animals_avg_psds.items():
-            for event_name, event_array in event.items():
-                if animal in model_list:
+        for animal, event in animals_avg_psds[condition].items():
+            if animal in test_sbj_list:
+                for event_name, event_array in event.items():
                     model_group[condition].setdefault(animal, {})
                     model_group[condition][animal][event_name] = event_array
-                else:
+            else:
+                for event_name, event_array in event.items():
                     sham_group[condition].setdefault(animal, {})
                     sham_group[condition][animal][event_name] = event_array
 
@@ -99,19 +96,45 @@ def get_group_split(model_list, animals_avg_psds):
     return groups_psds_split
 
 
-def get_group_average(model_list, groups_psds_split):
-    split_group = get_group_split(model_list, groups_psds_split)
+def drop_subject_id(test_sbj_list, animals_avg_psds):
+    split_group = get_group_split(test_sbj_list, animals_avg_psds)
     groups = list(split_group.keys())
-    groups_avg = {}
+    merged_animal_dict = {groups: {} for groups in groups}
+    groups_avg = {groups: {} for groups in groups}
 
     for group in groups:
-        groups_avg.setdefault(group, {})
-        for condition in list(groups.groups_psds_split[group]()):
+        conditions = list(split_group[group].keys())
+        merged_animal_dict[group] = {condition: {} for condition in conditions}
+        for condition in conditions:
             groups_avg[group].setdefault(condition, {})
-            condition_average = {event: [] for event in groups_psds_split[group][condition]}
-            for animal, event in groups_psds_split.items():
-                for event_name, event_array in event.items():
-                    condition_average[event_name].append(event_array)
-            groups_avg[group][condition] = condition_average
+            for animal, events_dict in split_group[group][condition].items():
+                for event_name, event_array in events_dict.items():
+                    merged_animal_dict[group][condition].setdefault(event_name, [])
+                    merged_animal_dict[group][condition][event_name] += [event_array]
+            for event_name, events_arrays in merged_animal_dict[group][condition].items():
+                groups_avg[group][condition][event_name] = events_arrays
+
+    return groups_avg
+
+
+def get_group_average(test_sbj_list, animals_avg_psds):
+    """
+    Given the dictionary containing the psds organized by condition, animal and event, it splits it in two groups and
+    computes the average per event
+    :param test_sbj_list: list of subject IDs that belong to the test group
+    :param animals_avg_psds: dictionary containing the psds organized by condition, animal and event
+    :return: dictionary organized by experiment group, containing the group average per event per condition
+    """
+
+    no_subject_id_dataset = drop_subject_id(test_sbj_list, animals_avg_psds)
+    groups = list(no_subject_id_dataset.keys())
+    groups_avg = {groups: {} for groups in groups}
+
+    for group in groups:
+        conditions = list(no_subject_id_dataset[group].keys())
+        for condition in conditions:
+            groups_avg[group].setdefault(condition, {})
+            for event_name, event_array in no_subject_id_dataset[group][condition].items():
+                groups_avg[group][condition][event_name] = np.mean(event_array, axis=0)
 
     return groups_avg
