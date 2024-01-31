@@ -475,7 +475,7 @@ def get_neural_correlates_dict(neural_path,
     :param time_cutoff:
     :return:
     """
-    neural_dict = {key: [] for key in ["gait", "fog_active", "fog_rest", "nlm_active", "nlm_rest"]}
+    neural_dict = {key: [] for key in events_dict.keys()}
     fs = None
     try:
         neural_path = neural_path + next(os.walk(neural_path))[1][0]
@@ -494,11 +494,8 @@ def get_neural_correlates_dict(neural_path,
     if not is_valid_name:
         raise Exception("All stream names were invalid")
 
-    neural_dict["gait"] = get_single_neural_type(events_dict, "gait", time_cutoff, fs, raw)
-    neural_dict["fog_active"] = get_single_neural_type(events_dict, "fog_active", time_cutoff, fs, raw)
-    neural_dict["fog_rest"] = get_single_neural_type(events_dict, "fog_rest", time_cutoff, fs, raw)
-    neural_dict["nlm_active"] = get_single_neural_type(events_dict, "nlm_active", time_cutoff, fs, raw)
-    neural_dict["nlm_rest"] = get_single_neural_type(events_dict, "nlm_rest", time_cutoff, fs, raw)
+    for state in events_dict.keys():
+        neural_dict[state] = get_single_neural_type(events_dict, state, time_cutoff, fs, raw)
 
     return neural_dict, fs
 
