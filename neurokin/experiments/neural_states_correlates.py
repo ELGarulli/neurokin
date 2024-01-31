@@ -5,7 +5,10 @@ from typing import List, Dict
 from neurokin.utils.helper.load_config import read_config
 from neurokin.experiments.neural_correlates import (get_events_dict, get_neural_correlates_dict, get_psd_dict)
 from neurokin.utils.experiments.neural_states_helper import (get_events_per_animal, condense_neural_event_types,
-                                                             get_per_animal_average, drop_subject_id, save_dataset)
+                                                             get_per_animal_average, drop_subject_id, save_data,
+                                                             compute_events_percentage,
+                                                             condense_distribution_event_types,
+                                                             get_group_split, compute_state_distribution_stats)
 
 
 class NeuralCorrelatesStates():
@@ -31,8 +34,6 @@ class NeuralCorrelatesStates():
         self.raw_neural_correlates_dict: Dict
         self.psds_correlates_dict: Dict
 
-
-
     def save_dataset(self, dataset, filename):
         """
         Saves dataset dictionary to pickle file
@@ -45,13 +46,13 @@ class NeuralCorrelatesStates():
             raise ValueError(f"Dataset not found. Please select one of the following : {accepted_datasets}")
 
         if dataset == "events_dataset":
-            save_dataset(self.events_dataset_dict, filename)
+            save_data(self.events_dataset_dict, filename)
         if dataset == "raw_neural_correlates_dataset":
-            save_dataset(self.fs, "fs")
-            save_dataset(self.raw_neural_correlates_dict, filename)
+            save_data(self.fs, "fs")
+            save_data(self.raw_neural_correlates_dict, filename)
         if dataset == "psd_neural_correlates_dataset":
-            save_dataset(self.psds_correlates_dict, filename)
-            save_dataset(self.freqs, "freqs")
+            save_data(self.psds_correlates_dict, filename)
+            save_data(self.freqs, "freqs")
 
     def create_events_dataset(self, experiment_path, conditions_of_interest):
         all_events_dict = {c: {} for c in conditions_of_interest}
@@ -158,14 +159,10 @@ class NeuralCorrelatesStates():
         no_sbj_id = drop_subject_id(test_sbj_list=test_sbj_list, animals_avg_psds=per_animal_avg)
         return no_sbj_id
 
-    def __create_dict_psds(self):
-        return
-
-    def __split_dataset_by_condition(self):
-        return
-
-    def __sort_data_animal_event(self):
-        return
-
-    def __average_by_animal(self):
-        return
+    def plot_prep_states_distribution(self, test_sbj_list, condense=True):
+        events_percentage = compute_events_percentage(self.events_dataset_dict)
+        if condense:
+            events_percentage = condense_distribution_event_types(events_percentage)
+        group_split = get_group_split(test_sbj_list=test_sbj_list, animals_avg_dataset=events_percentage)
+        stats = compute_state_distribution_stats(group_split)
+        return stats
