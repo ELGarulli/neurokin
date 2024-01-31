@@ -1,49 +1,37 @@
-import glob
 import re
 import os
 import numpy as np
-import pickle as pkl
 from typing import List, Dict
 from neurokin.utils.helper.load_config import read_config
 from neurokin.experiments.neural_correlates import (get_events_dict, get_neural_correlates_dict, get_psd_dict)
-from neurokin.utils.experiments.neural_states_helper import (get_events_per_animal, condense_event_types,
-                                                             get_per_animal_average, drop_subject_id)
+from neurokin.utils.experiments.neural_states_helper import (get_events_per_animal, condense_neural_event_types,
+                                                             get_per_animal_average, drop_subject_id, save_dataset)
 
 
 class NeuralCorrelatesStates():
 
-    def __init__(self, timeslice: float,
-                 stream_names: List[str],
-                 ch_of_interest: Dict[str, int],
+    def __init__(self,
+                 timeslice: float,
                  experiment_structure_filepath: str,
+                 skip_subjects: List[str] = [],
                  skiprows: int = 2,
                  framerate: float = 200):
 
         self.timeslice = timeslice
-        self.stream_names = stream_names
-        self.ch_of_interest = ch_of_interest
+
         self.experiment_structure = read_config(experiment_structure_filepath)
+        self.skip_subjects = skip_subjects
         self.skiprows = skiprows
         self.framerate = framerate
+        self.stream_names: List[str]
+        self.ch_of_interest: Dict[str, int]
         self.freqs: np.array
         self.fs: float
         self.events_dataset_dict: Dict
         self.raw_neural_correlates_dict: Dict
         self.psds_correlates_dict: Dict
 
-    def load_dataset(self, dataset_path):
-        """
-        Load existing dataset dictionary, avoiding waiting time for processing
-        :param dataset_path: path including filename to the dataset. Expects pickle files
-        :return:
-        """
-        return pkl.load(open(dataset_path, "rb"))
 
-    def _save_dataset(self, dataset, filename):
-        if dataset is None:
-            raise ValueError("The dataset has not been initialized")
-        with open(f"{filename}.pkl", "wb") as handle:
-            pkl.dump(dataset, handle)
 
     def save_dataset(self, dataset, filename):
         """
@@ -57,19 +45,20 @@ class NeuralCorrelatesStates():
             raise ValueError(f"Dataset not found. Please select one of the following : {accepted_datasets}")
 
         if dataset == "events_dataset":
-            self._save_dataset(self.events_dataset_dict, filename)
+            save_dataset(self.events_dataset_dict, filename)
         if dataset == "raw_neural_correlates_dataset":
-            self._save_dataset(self.fs, "fs")
-            self._save_dataset(self.raw_neural_correlates_dict, filename)
+            save_dataset(self.fs, "fs")
+            save_dataset(self.raw_neural_correlates_dict, filename)
         if dataset == "psd_neural_correlates_dataset":
-            self._save_dataset(self.psds_correlates_dict, filename)
-            self._save_dataset(self.freqs, "freqs")
+            save_dataset(self.psds_correlates_dict, filename)
+            save_dataset(self.freqs, "freqs")
 
     def create_events_dataset(self, experiment_path, conditions_of_interest):
         all_events_dict = {c: {} for c in conditions_of_interest}
         dates = [str(date) for date in self.experiment_structure.keys()]
         for date in dates:
             animals = [animal for animal in self.experiment_structure[int(date)].keys()]
+            animals = [animal for animal in animals if animal not in self.skip_subjects]
             for animal in animals:
                 conditions = [condition for condition in self.experiment_structure[int(date)][animal].keys()]
                 for condition in conditions:
@@ -93,13 +82,15 @@ class NeuralCorrelatesStates():
 
         self.events_dataset_dict = all_events_dict
 
-    def create_raw_neural_dataset(self, experiment_path):
+    def create_raw_neural_dataset(self, experiment_path, stream_names: List[str], ch_of_interest: Dict[str, int]):
         if self.events_dataset_dict is None:
             print("Please create or load an events dictionary first, "
                   "using either the method create_events_dataset or load_dataset"
                   "If the dataset is loaded it should be assigned to the attribute events_dataset_dict")
 
             return
+        self.stream_names = stream_names
+        self.ch_of_interest = ch_of_interest
         conditions_of_interest = list(self.events_dataset_dict.keys())
         dataset_raw_correlates = {c: {} for c in conditions_of_interest}
 
@@ -118,7 +109,7 @@ class NeuralCorrelatesStates():
 
                         raw_neural_correlate, fs = get_neural_correlates_dict(neural_path=run_path,
                                                                               channel_of_interest=channel_of_interest,
-                                                                              stream_names=self.stream_names,
+                                                                              stream_names=stream_names,
                                                                               events_dict=event_dict,
                                                                               time_cutoff=self.timeslice)
                         if fs is not None:
@@ -162,7 +153,7 @@ class NeuralCorrelatesStates():
     def plot_prep_psds_dataset(self, test_sbj_list, condense=True):
         per_animal_events = get_events_per_animal(self.psds_correlates_dict)
         if condense:
-            per_animal_events = condense_event_types(per_animal_events)
+            per_animal_events = condense_neural_event_types(per_animal_events)
         per_animal_avg = get_per_animal_average(per_animal_events)
         no_sbj_id = drop_subject_id(test_sbj_list=test_sbj_list, animals_avg_psds=per_animal_avg)
         return no_sbj_id
