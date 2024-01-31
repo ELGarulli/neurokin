@@ -55,6 +55,15 @@ class NeuralCorrelatesStates():
             save_data(self.freqs, "freqs")
 
     def create_events_dataset(self, experiment_path, conditions_of_interest):
+        """
+        Takes the experiment structure and based on the runs listed there it looks for .csv files to import.
+        Then based on the labels, creates a dictionary structured as condition, date, animal, run and event.
+        Each event contains the list of timestamps [start, end] for that specific run
+        :param experiment_path: folder where to find the dataset
+        :param conditions_of_interest: conditions to load
+        :return: dictionary structured as condition, date, animal, run and event
+                containing list of timestamps [start, end] for that specific run
+        """
         all_events_dict = {c: {} for c in conditions_of_interest}
         dates = [str(date) for date in self.experiment_structure.keys()]
         for date in dates:
@@ -84,6 +93,15 @@ class NeuralCorrelatesStates():
         self.events_dataset_dict = all_events_dict
 
     def create_raw_neural_dataset(self, experiment_path, stream_names: List[str], ch_of_interest: Dict[str, int]):
+        """
+        Given the events dataset, it finds the corresponding raw neural correlates (single channel) in the neural file.
+        :param experiment_path: path to the dataset
+        :param stream_names: which streams to look into to retrieve the neural signal. If different names are required
+                            to eb used in the dataset, provide a list. The neural signal will be extracted from the
+                            first valid stream encountered
+        :param ch_of_interest: dictionary animal: channel, detailing which channel to retrieve the neural data from
+        :return: dictionary structured as condition, date, animal, run, event containing the raw neural correlates
+        """
         if self.events_dataset_dict is None:
             print("Please create or load an events dictionary first, "
                   "using either the method create_events_dataset or load_dataset"
@@ -121,6 +139,12 @@ class NeuralCorrelatesStates():
         self.raw_neural_correlates_dict = dataset_raw_correlates
 
     def create_psd_dataset(self, nfft, nov):
+        """
+        Computes the Power Spectra Density of the neural correlates.
+        :param nfft: NFFT parameter to use for the Fourier Transform
+        :param nov: Overlap parameter to use for the Fourier Transform
+        :return: dictionary structured as condition, date, animal, run, event containing the PSD neural correlates.
+        """
         if self.raw_neural_correlates_dict is None:
             print("Please create or load a raw neural dictionary first, "
                   "using either the method create_events_dataset or load_dataset."
@@ -152,6 +176,12 @@ class NeuralCorrelatesStates():
         self.psds_correlates_dict = dataset_psd
 
     def plot_prep_psds_dataset(self, test_sbj_list, condense=True):
+        """
+        Fixed shortcut to generate a PSDs dictionary dataset ready to be plotted
+        :param test_sbj_list: list of subject IDs that belong to the test group
+        :param condense: bool if to condense from 5 categories to 3
+        :return: PSDs dictionary dataset structured as group, condition, state
+        """
         per_animal_events = get_events_per_animal(self.psds_correlates_dict)
         if condense:
             per_animal_events = condense_neural_event_types(per_animal_events)
@@ -160,6 +190,13 @@ class NeuralCorrelatesStates():
         return no_sbj_id
 
     def plot_prep_states_distribution(self, test_sbj_list, condense=True):
+        """
+        Fixed shortcut to generate a stats dictionary of the state distribution, ready to be plotted
+        :param test_sbj_list: list of subject IDs that belong to the test group
+        :param condense:  bool if to condense from 5 categories to 3
+        :return: stats dictionary dataset structured as group, condition,
+                state, stats {"mean":, "upper_bound", "lower_bound}
+        """
         events_percentage = compute_events_percentage(self.events_dataset_dict)
         if condense:
             events_percentage = condense_distribution_event_types(events_percentage)
