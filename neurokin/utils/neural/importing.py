@@ -40,13 +40,17 @@ def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1", s
     Warning: tdt function allows to specify for channels, however it's 1-based and if ch==0
     it returns all channels. Use the indexing carefully.
     :param folderpath: folderpath of the subject experiment
+    :param ch:
+    :param stream_name:
+    :param stim_name:
+    :param sync_present:
     :param t1: initial time to index in seconds
     :param t2: last time to index in seconds
     :return: frequency sample and raw sample
     """
     data = tdt.read_block(folderpath, evtype=['streams'], channel=ch)
     stim_data = None
-    sync_fs = None
+    fs_sync = None
     try:
         streams = data.streams
         stored = getattr(streams, stream_name)
@@ -67,12 +71,11 @@ def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1", s
     raw = raw[..., s1:s2]
 
     if sync_present:
-
         try:
             streams = data.streams
             stored = getattr(streams, stim_name)
             stim_data = stored.data
-            sync_fs = stored.fs
+            fs_sync = stored.fs
 
         except AttributeError:
             print(f"No stimulation data named {stream_name}, please specify the correct stream_name \n "
@@ -80,7 +83,11 @@ def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1", s
             return
         stim_data = stim_data[..., s1:s2]
 
-    return fs, raw, stim_data, sync_fs
+    if fs_sync is None:
+        if fs_sync != fs:
+            print("Warning: sync frequency is different from the data frequency")
+
+    return fs, raw, stim_data, fs_sync
 
 
 def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: str, channels=None,
