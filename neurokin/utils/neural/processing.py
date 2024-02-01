@@ -107,8 +107,10 @@ def parse_raw(raw: np.ndarray, stimulation_idxs: np.ndarray, samples_before_stim
     :param min_len_chunk: filters the chunks to have a minimal len between pulses
     :return: parsed raw signal into an array of equally sized chunks
     """
-    stimulation_idxs = stimulation_idxs + samples_before_stim
-
+    stimulation_idxs = stimulation_idxs - samples_before_stim
+    if stimulation_idxs[0] < 0:
+        stimulation_idxs[0] = 0
+        
     if skip_one:
         stimulation_idxs = stimulation_idxs[::2]
     split_raw = np.split(raw, stimulation_idxs)[
