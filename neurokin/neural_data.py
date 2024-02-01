@@ -14,7 +14,7 @@ class NeuralData:
         self.raw: ArrayLike
         self.fs: float
         self.sync_data: ArrayLike
-        self.sync_fs: float
+        self.fs_sync: float
         self.pulses_count: int
         self.recording: int
         self.freq: ArrayLike[ArrayLike]
@@ -22,7 +22,7 @@ class NeuralData:
         self.recording_duration: float
 
     def load_tdt_data(self, sync_present: bool = False, stream_name="Wav1", stim_stream_name="Wav1", t1=0, t2=-1):
-        self.fs, self.raw, self.sync_data, self.sync_fs = importing.import_tdt_channel_data(folderpath=self.path,
+        self.fs, self.raw, self.sync_data, self.fs_sync = importing.import_tdt_channel_data(folderpath=self.path,
                                                                                             stream_name=stream_name,
                                                                                             stim_name=stim_stream_name,
                                                                                             sync_present=sync_present,
