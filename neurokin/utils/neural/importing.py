@@ -57,9 +57,8 @@ def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1", s
         raw = stored.data
         fs = stored.fs
 
-    except AttributeError:
-        print(f"No stream named  {stream_name}, please specify the correct stream_name \n "
-              f"Please chose from: {data.streams.__dict__.keys()}")
+    except AttributeError(f"No stream named  {stream_name}, please specify the correct stream_name \n "
+                          f"Please chose from: {data.streams.__dict__.keys()}"):
         return
 
     s1 = 0
@@ -83,7 +82,7 @@ def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1", s
             return
         stim_data = stim_data[..., s1:s2]
 
-    if fs_sync is None:
+    if fs_sync is not None:
         if fs_sync != fs:
             print("Warning: sync frequency is different from the data frequency")
 
