@@ -489,7 +489,7 @@ def get_neural_correlates_dict(neural_path,
             raw, fs = get_neural_ch(neural_path, channel_of_interest, name)
             is_valid_name = True
             break
-        except:
+        except (AttributeError, TypeError):
             pass
     if not is_valid_name:
         raise Exception("All stream names were invalid")
