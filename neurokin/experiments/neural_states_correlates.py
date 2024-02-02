@@ -54,13 +54,14 @@ class NeuralCorrelatesStates():
             save_data(self.psds_correlates_dict, filename)
             save_data(self.freqs, "freqs")
 
-    def create_events_dataset(self, experiment_path, conditions_of_interest):
+    def create_events_dataset(self, experiment_path, conditions_of_interest, verbose=False):
         """
         Takes the experiment structure and based on the runs listed there it looks for .csv files to import.
         Then based on the labels, creates a dictionary structured as condition, date, animal, run and event.
         Each event contains the list of timestamps [start, end] for that specific run
         :param experiment_path: folder where to find the dataset
         :param conditions_of_interest: conditions to load
+        :param verbose: if True it will print the currently processed run
         :return: dictionary structured as condition, date, animal, run and event
                 containing list of timestamps [start, end] for that specific run
         """
@@ -79,7 +80,8 @@ class NeuralCorrelatesStates():
                         runs = ["0" + run if len(run) == 1 else run for run in runs]
                         for run in runs:
                             run_path = "/".join([experiment_path, date, animal, run]) + "/"
-
+                            if verbose:
+                                print(f"Currently processing: {date} - {animal} - {condition} - {run}")
                             try:
                                 event_path = [run_path + fname for fname in os.listdir(run_path) if
                                               re.match(r"(?i)[a-z_-]+[0-9]{2}.csv", fname)][0]
@@ -92,7 +94,8 @@ class NeuralCorrelatesStates():
 
         self.events_dataset_dict = all_events_dict
 
-    def create_raw_neural_dataset(self, experiment_path, stream_names: List[str], ch_of_interest: Dict[str, int]):
+    def create_raw_neural_dataset(self, experiment_path, stream_names: List[str], ch_of_interest: Dict[str, int],
+                                  verbose=False):
         """
         Given the events dataset, it finds the corresponding raw neural correlates (single channel) in the neural file.
         :param experiment_path: path to the dataset
@@ -100,6 +103,7 @@ class NeuralCorrelatesStates():
                             to eb used in the dataset, provide a list. The neural signal will be extracted from the
                             first valid stream encountered
         :param ch_of_interest: dictionary animal: channel, detailing which channel to retrieve the neural data from
+        :param verbose: if True it will print the currently processed run
         :return: dictionary structured as condition, date, animal, run, event containing the raw neural correlates
         """
         if self.events_dataset_dict is None:
@@ -125,6 +129,8 @@ class NeuralCorrelatesStates():
                         channel_of_interest = self.ch_of_interest[animal]
                         run_path = "/".join([experiment_path, date, animal, run]) + "/"
                         event_dict = self.events_dataset_dict[condition][date][animal][run]
+                        if verbose:
+                            print(f"Currently processing: {date} - {animal} - {condition} - {run}")
 
                         raw_neural_correlate, fs = get_neural_correlates_dict(neural_path=run_path,
                                                                               channel_of_interest=channel_of_interest,
@@ -138,11 +144,12 @@ class NeuralCorrelatesStates():
 
         self.raw_neural_correlates_dict = dataset_raw_correlates
 
-    def create_psd_dataset(self, nfft, nov):
+    def create_psd_dataset(self, nfft, nov, verbose=False):
         """
         Computes the Power Spectra Density of the neural correlates.
         :param nfft: NFFT parameter to use for the Fourier Transform
         :param nov: Overlap parameter to use for the Fourier Transform
+        :param verbose: if True it will print the currently processed run
         :return: dictionary structured as condition, date, animal, run, event containing the PSD neural correlates.
         """
         if self.raw_neural_correlates_dict is None:
@@ -163,6 +170,8 @@ class NeuralCorrelatesStates():
                 for animal in animals:
                     runs = list(self.raw_neural_correlates_dict[condition][date][animal])
                     for run in runs:
+                        if verbose:
+                            print(f"Currently processing: {date} - {animal} - {condition} - {run}")
                         dataset_psd[condition].setdefault(date, {})
                         dataset_psd[condition][date].setdefault(animal, {})
                         neural_dict = self.raw_neural_correlates_dict[condition][date][animal][run]
