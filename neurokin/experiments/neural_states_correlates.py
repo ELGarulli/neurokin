@@ -84,7 +84,7 @@ class NeuralCorrelatesStates():
                                 print(f"Currently processing: {date} - {animal} - {condition} - {run}")
                             try:
                                 event_path = [run_path + fname for fname in os.listdir(run_path) if
-                                              re.match(r"(?i)[a-z_-]+[0-9]{2}.csv", fname)][0]
+                                              re.match(r"(?i)[a-z_-]+[0-9]{1,3}.csv", fname)][0]
                                 events_dict = get_events_dict(event_path=event_path,
                                                               skiprows=self.skiprows,
                                                               framerate=self.framerate)
