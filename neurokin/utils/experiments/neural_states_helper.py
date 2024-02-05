@@ -114,7 +114,8 @@ def get_per_animal_average(cond_animal_event_dict):
         for animal, events in cond_animal_event_dict[condition].items():
             for event, psds in events.items():
                 animals_avg_psds[condition].setdefault(animal, {})
-                average_event = np.mean(psds, axis=0)
+                psds = [psd for psd in psds if not np.isnan(psd).any()]
+                average_event = np.mean(psds, axis=0) #FIXME why is this calculated twice
                 if np.isnan(average_event).any():
                     print(f"Attention! No valid events was found for condition: {condition}, animal: {animal}, "
                           f"event type: {event}.")

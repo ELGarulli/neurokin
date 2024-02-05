@@ -512,6 +512,10 @@ def get_single_neural_type(events_dict, event_type, time_cutoff, fs, raw):
                 s_on = importing.time_to_sample(t_onset, fs=fs, is_t1=True)
                 s_off = importing.time_to_sample(t_end, fs=fs, is_t2=True)
                 correlates.append(raw[s_on:s_off])
+                if len(raw[s_on:s_off]) == 0:
+                    raise ValueError("Warning the neural chunk is of 0 length, "
+                                     "check match between neural and states files")
+
     return correlates
 
 
