@@ -5,7 +5,7 @@ from matplotlib import axes as ax
 
 
 def plot_spectrogram(ax: ax, fs: float, raw: ArrayLike, ylim: List[int], title: str = "", tick_spacing: int = 10,
-                     nfft: int = None, noverlap: int = None, vmin=None, vmax=None) -> ax:
+                     nfft: int = None, noverlap: int = None, vmin=None, vmax=None, **kwargs) -> ax:
     """
     Wrapper for matplotlib spectrogram to add some style elements.
     :param ax: axes where to plot
@@ -19,7 +19,7 @@ def plot_spectrogram(ax: ax, fs: float, raw: ArrayLike, ylim: List[int], title: 
     :return:
     """
     ax.set_title(title)
-    ax.specgram(raw, NFFT=nfft, Fs=fs, noverlap=noverlap, vmin=vmin, vmax=vmax,)
+    ax.specgram(raw, NFFT=nfft, Fs=fs, noverlap=noverlap, vmin=vmin, vmax=vmax, **kwargs)
     ax.set_ylim(ylim)
     ax.set_yticks(np.arange(ylim[0], ylim[1], tick_spacing))
     return ax
