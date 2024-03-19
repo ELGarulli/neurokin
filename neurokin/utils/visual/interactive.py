@@ -1,6 +1,7 @@
 from matplotlib import pyplot as plt
 from matplotlib.widgets import Slider
 
+#TODO delete
 def plot_sliding(array):
     fig, ax = plt.subplots()
     line, = ax.plot(array)

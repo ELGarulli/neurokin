@@ -2,7 +2,7 @@ import numpy as np
 from scipy import signal
 from matplotlib import pyplot as plt
 
-
+#TESTME
 def get_angle(coordinates):
     """
     Get angle between 3 points in a 3d or 2d space
@@ -18,7 +18,7 @@ def get_angle(coordinates):
     angle = np.arccos(cosine_angle)
     return np.degrees(angle)
 
-
+#TESTME
 def get_phase_at_max_amplitude(input_signal):
     """
     Computes the phase of a signal at frequency that has the maximum amplitude.
@@ -34,6 +34,7 @@ def get_phase_at_max_amplitude(input_signal):
     phase = phase if phase > 0 else 360 + phase
     return phase
 
+#TESTME
 def get_phase(input_signal):
     """
     Computes the phase of a signal at frequency that has the maximum amplitude.
@@ -46,7 +47,7 @@ def get_phase(input_signal):
     phase = np.angle(spectrum)
     return phase
 
-
+#TESTME
 def compare_phase(signal_a, signal_b):
     """
     Gets the difference of phase of two signals

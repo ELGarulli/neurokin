@@ -1,12 +1,15 @@
 from neurokin.utils.kinematics.event_detection import get_toe_lift_landing
 import numpy as np
 
+
+#TODO delete this is from GGait compliance
 def load_raw_kinematics(eng, gait_file, pathname):
     h = eng.minEx_0(gait_file, pathname, nargout=1)
     h = eng.minEx_1(h, nargout=1)
     return h
 
 
+#TODO delete this is from GGait compliance
 def get_gait_cycle_bounds(h, data_name: str, fs=200):
     """
     event detection function using detection based on line from peaks, intersection at 2 points

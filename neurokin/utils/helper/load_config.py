@@ -1,6 +1,6 @@
 import yaml
 
-
+#TESTME with config file
 def read_config(path):
     """
     Reads structured config file defining a project.

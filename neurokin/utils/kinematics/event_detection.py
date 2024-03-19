@@ -1,10 +1,13 @@
 from typing import Tuple
+
+import numpy as np
 from numpy import ndarray
 from scipy import signal
+
 from neurokin.constants.gait_cycle_detection import RELATIVE_HEIGHT, STEP_FILTER_FREQ, PROMINENCE
-import numpy as np
 
 
+# TESTME with pickled steps data
 def get_toe_lift_landing(y, recording_fs):
     """
     Returns the left and right bounds of the gait cycle, corresponding to the toe lift off and the heel strike.
@@ -34,6 +37,7 @@ def get_toe_lift_landing(y, recording_fs):
     return lb, rb, max_x
 
 
+# TESTME with pickled steps data
 def get_peak_boundaries_scipy(y: ndarray, px: float, left_crop: int) -> Tuple[int, int]:
     """
     Computes the boundaries of a step by getting
@@ -59,6 +63,7 @@ def get_peak_boundaries_scipy(y: ndarray, px: float, left_crop: int) -> Tuple[in
     return left, right
 
 
+# TESTME
 def lowpass_array(array, critical_freq, fs):
     """
     Low passes the array for a given frequency using a 2nd order butterworth filter and filtfilt to avoid phase shift.
@@ -72,6 +77,7 @@ def lowpass_array(array, critical_freq, fs):
     return filtered
 
 
+# TESTME
 def median_distance(a: ndarray) -> ndarray:
     """
     Gets median distance between peaks
