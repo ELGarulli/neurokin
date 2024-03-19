@@ -2,7 +2,7 @@ import c3d
 import numpy as np
 import pandas as pd
 
-
+#TESTME
 def c3d2csv(filename):
     with open(filename, "rb") as f:
         labels = get_c3d_labels(f)
@@ -20,7 +20,7 @@ def c3d2csv(filename):
     markers_df = pd.DataFrame(run, columns=labels)
     markers_df.to_csv(filename.replace('.c3d', '.csv'), sep="\t")
 
-
+#TESTME
 def import_c3d(path):
     """
     Fills df from c3d file
@@ -54,7 +54,7 @@ def import_c3d(path):
 
     return first_frame, last_frame, sample_rate, df
 
-
+#TESTME
 def create_empty_df(scorer, bodyparts, frames_no):
     """
     Creates empty dataframe to receive 3d data frm c3d file
@@ -75,7 +75,7 @@ def create_empty_df(scorer, bodyparts, frames_no):
         dataFrame = pd.concat([frame, dataFrame], axis=1)
     return dataFrame
 
-
+#TESTME
 def get_c3d_labels(handle):
     """
     Reads in the labels from a .c3d handle
@@ -88,7 +88,7 @@ def get_c3d_labels(handle):
     labels = [a.bytes[r * C: (r + 1) * C].strip().decode().lower() for r in range(R)]
     return labels
 
-
+#TESTME
 def import_c3d_events(path):
     """
     Gets labels and timing of events, together with first, last frame and sample rate

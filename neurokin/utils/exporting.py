@@ -1,6 +1,7 @@
 from array import array
 import numpy as np
 
+#TODO move to neural
 def export_neural_data_to_bin(data, filename):
     """
     Export the raw data to a binary file in C major order.

@@ -3,7 +3,7 @@ import pandas as pd
 from scipy import signal
 from neurokin.utils.kinematics.gait_params_basics import get_angle, get_phase_at_max_amplitude
 
-
+#TESTME with mock df
 def get_marker_coordinates_names(df_columns_names, markers):
     """
     Returns the names of the columns that contain the name of the marker, to retrieve the 2 or 3 coordinates.
@@ -19,7 +19,8 @@ def get_marker_coordinates_names(df_columns_names, markers):
     abc.sort()  # courtesy of me dreaming code. makes xyz order assumption more likely, still an assumption.
     return tuple(abc)
 
-
+#TESTME with mock df
+#TODO change name of variable a
 def get_marker_coordinate_values(df, a, frame):
     """
     Given a dataframe, a list of column names referring to x, y (and z) of the same marker, and a frame number,
@@ -34,7 +35,7 @@ def get_marker_coordinate_values(df, a, frame):
         coordinates.append(df[a[i]][frame])
     return coordinates
 
-
+#TESTME with mock df
 def compute_angle(coordinates):
     """
     Computes the angle in degrees given a set of (3,2) or (3, 3) coordinates.
@@ -48,7 +49,7 @@ def compute_angle(coordinates):
                "\nThis could happen if a marker has xy coordinate and another one xyz."
                "\n Or if your markers are named ambiguously and multiple ones have the same name.")
 
-
+#TESTME with mock df
 def tilt_correct(df, reference_marker, columns_to_correct):
     """
     If the runway is not perfectly aligned there can be a linear trend in one of the axis.
@@ -62,7 +63,7 @@ def tilt_correct(df, reference_marker, columns_to_correct):
     df_tilt_corrected = df.apply(lambda x: x.add(trend, axis=0) if x.name in columns_to_correct else x)
     return df_tilt_corrected
 
-
+#TESTME with mock df
 def shift_correct(df, reference_marker, columns_to_correct):
     #TODO compliance with DLC?
     """
@@ -86,7 +87,7 @@ def check_correct_columns_extraction(actual, expected, side):
                          "expected " + str(expected) +
                          ". Please check if there are ambiguity in the column names.")
 
-
+#TESTME with mock df for the the 3 correct cases
 def get_unilateral_df(df, side="", name_starts_with=False, name_ends_with=False,
                       column_names=None, expected_columns_number=None):
     if column_names is None:

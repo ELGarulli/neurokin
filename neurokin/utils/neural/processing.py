@@ -4,11 +4,10 @@ from fooof import FOOOF
 from fooof.sim.gen import gen_aperiodic
 from scipy import signal
 from typing import List, Tuple
-from matplotlib import pyplot as plt
 from neurokin.utils.neural.importing import time_to_sample
 
-
-def simply_sync_data_binarize(sync_ch: np.ndarray):
+#TESTME
+def simply_mean_data_binarize(sync_ch: np.ndarray):
     """
     Return a simply binarized array by setting anything below the mean to 0 and everything above to 1.
     Use only in very clear cut cases
@@ -19,7 +18,7 @@ def simply_sync_data_binarize(sync_ch: np.ndarray):
     x_bin = [0 if i < mean else 1 for i in sync_ch]
     return np.asarray(x_bin)
 
-
+#TESTME
 def get_stim_timestamps(sync_ch: np.ndarray, expected_pulses: int = None) -> np.ndarray:
     """
     Get indexes of only threshold crossing up from 0, i.e. edge detection.
@@ -39,7 +38,7 @@ def get_stim_timestamps(sync_ch: np.ndarray, expected_pulses: int = None) -> np.
 
     return stim_starts_trimmed
 
-
+#TESTME
 def get_timestamps_stim_blocks(neudata, n_amp_tested, pulses, time_stim):
     """
     Given a DBS recording with multiple stimulation amplitudes tested it gives the time stamps of the onset and end
@@ -61,7 +60,7 @@ def get_timestamps_stim_blocks(neudata, n_amp_tested, pulses, time_stim):
     timestamps_blocks = [(onset[i], onset[i] + stim_len) for i in range(len(onset))]
     return timestamps_blocks
 
-
+#TESTME
 def get_median_distance(a: ArrayLike) -> float:
     """
     Gets median distance between points
@@ -73,7 +72,7 @@ def get_median_distance(a: ArrayLike) -> float:
         distances.append(a[i] - a[i + 1])
     return abs(np.median(distances))
 
-
+#TESTME
 def running_mean(x: ArrayLike, n: int) -> ArrayLike:
     """
     Returns the running mean with window n
@@ -84,7 +83,7 @@ def running_mean(x: ArrayLike, n: int) -> ArrayLike:
     cumsum = np.cumsum(np.insert(x, 0, 0))
     return (cumsum[n:] - cumsum[:-n]) / float(n)
 
-
+#TESTME
 def trim_equal_len(raw: List[ArrayLike]) -> List[float]:
     """
     Trims a list of arrays to all have the same length.
@@ -95,7 +94,7 @@ def trim_equal_len(raw: List[ArrayLike]) -> List[float]:
     equaled = [r[:min(lens)] for r in raw]
     return equaled
 
-
+#TESTME
 def parse_raw(raw: np.ndarray, stimulation_idxs: np.ndarray, samples_before_stim: int,
               skip_one: bool = False, min_len_chunk: int = 1) -> np.ndarray:
     """
@@ -120,7 +119,7 @@ def parse_raw(raw: np.ndarray, stimulation_idxs: np.ndarray, samples_before_stim
     trimmed_array = np.vstack(leveled_list)
     return trimmed_array
 
-
+#TESTME
 def get_average_amplitudes(parsed_raw, tested_amplitudes, pulses_number=None):
     """
     Assumes an experiment where a sequence of stimulation amplitudes are applied,
@@ -145,7 +144,8 @@ def get_average_amplitudes(parsed_raw, tested_amplitudes, pulses_number=None):
         averaged_amplitudes.append(averaged_amp)
     return averaged_amplitudes
 
-
+#TESTME
+#TODO subset is misleading, consider refactoring to a better word for "chunk"
 def average_subset(array: ArrayLike, start: int, stop: int) -> np.ndarray:
     """
     Averages a subset of elements
@@ -157,6 +157,68 @@ def average_subset(array: ArrayLike, start: int, stop: int) -> np.ndarray:
     parsed = array[start:stop]
     averaged = np.mean(parsed, axis=0)
     return averaged
+
+
+
+#TESTME
+def find_closest_index(data: ArrayLike, datapoint: float) -> int:
+    """
+    Given an array of data and a datapoint it returns the index of the element that has
+    the minimum difference to the datapoint
+    :param data: data array-like
+    :param datapoint: datapoint to find a close value to
+    :return: index of the closest element
+    """
+    data = np.asarray(data)
+    if np.any(np.isnan(data)):
+        raise ValueError('The input array contains nan which will always return as the nearest to datapoint')
+    idx = (np.abs(data - datapoint)).argmin()
+    return idx
+
+#TESTME
+def find_closest_smaller_index(data: ArrayLike, datapoint: float) -> int:
+    """
+    Given an array of data and a datapoint it returns the index of the element that is the closest but lower than
+    the datapoint
+    :param data: data array-like
+    :param datapoint: datapoint to find a close value to
+    :return: index of the closest element, lower than the datapoint
+    """
+    min_difference = np.inf
+    idx = 0
+    for i in range(len(data)):
+        if abs(data[i] - datapoint) < min_difference:
+            if data[i] < datapoint:
+                min_difference = abs(data[i] - datapoint)
+                idx = i
+    return idx
+
+#TESTME with TDT data
+def get_spectrogram_data(fs: float, raw: ArrayLike, nfft: int = None,
+                         noverlap: int = None) -> Tuple[ArrayLike]:
+    """
+    Gets the data used to plot a spectrogram
+    :param fs: sampling frequency
+    :param raw: raw data
+    :param nfft: nfft to compute the fft
+    :param noverlap: number of overlap points
+    :return:
+    """
+    _t, _f, sxx = signal.spectrogram(raw, fs=fs, nperseg=nfft, noverlap=noverlap)
+
+    return sxx, _f, _t
+
+#TESTME with TDT data
+def calculate_power_spectral_density(data: ArrayLike, fs: int, **kwargs) -> tuple:
+    """
+    Calculate the frequencies and power spectral densities from the raw recording time series data.
+
+    :param data: raw recording data
+    :param fs: sampling frequency
+    :return: frequencies, power spectral density
+    """
+    freq, pxx = signal.welch(data, fs, **kwargs)
+    return freq, pxx
 
 
 def get_fooofed_psd(freqs: ArrayLike, psd: ArrayLike, frange: List[int] = None) -> (ArrayLike, ArrayLike):
@@ -187,40 +249,6 @@ def get_aperiodic(freqs: ArrayLike, psd: ArrayLike, frange: List[int] = None) ->
     init_ap_fit = gen_aperiodic(fm.freqs, fm._robust_ap_fit(fm.freqs, fm.power_spectrum))
     return fm.freqs, init_ap_fit
 
-
-def find_closest_index(data: ArrayLike, datapoint: float) -> int:
-    """
-    Given an array of data and a datapoint it returns the index of the element that has
-    the minimum difference to the datapoint
-    :param data: data array-like
-    :param datapoint: datapoint to find a close value to
-    :return: index of the closest element
-    """
-    data = np.asarray(data)
-    if np.any(np.isnan(data)):
-        raise ValueError('The input array contains nan which will always return as the nearest to datapoint')
-    idx = (np.abs(data - datapoint)).argmin()
-    return idx
-
-
-def find_closest_smaller_index(data: ArrayLike, datapoint: float) -> int:
-    """
-    Given an array of data and a datapoint it returns the index of the element that is the closest but lower than
-    the datapoint
-    :param data: data array-like
-    :param datapoint: datapoint to find a close value to
-    :return: index of the closest element, lower than the datapoint
-    """
-    min_difference = np.inf
-    idx = 0
-    for i in range(len(data)):
-        if abs(data[i] - datapoint) < min_difference:
-            if data[i] < datapoint:
-                min_difference = abs(data[i] - datapoint)
-                idx = i
-    return idx
-
-
 def get_fast_foofed_specgram(raw: ArrayLike, fs: float, nperseg: int,
                              noverlap: int, frange: List[int] = None) -> (ArrayLike, ArrayLike, ArrayLike):
     """
@@ -247,30 +275,3 @@ def get_fast_foofed_specgram(raw: ArrayLike, fs: float, nperseg: int,
     nt = len(foofed[-1]) * (nperseg - noverlap)
     t = np.linspace(0, nt, num=len(foofed[-1]))
     return t, f, foofed
-
-
-def get_spectrogram_data(fs: float, raw: ArrayLike, nfft: int = None,
-                         noverlap: int = None) -> Tuple[ArrayLike]:
-    """
-    Gets the data used to plot a spectrogram
-    :param fs: sampling frequency
-    :param raw: raw data
-    :param nfft: nfft to compute the fft
-    :param noverlap: number of overlap points
-    :return:
-    """
-    _t, _f, sxx = signal.spectrogram(raw, fs=fs, nperseg=nfft, noverlap=noverlap)
-
-    return sxx, _f, _t
-
-
-def calculate_power_spectral_density(data: ArrayLike, fs: int, **kwargs) -> tuple:
-    """
-    Calculate the frequencies and power spectral densities from the raw recording time series data.
-
-    :param data: raw recording data
-    :param fs: sampling frequency
-    :return: frequencies, power spectral density
-    """
-    freq, pxx = signal.welch(data, fs, **kwargs)
-    return freq, pxx

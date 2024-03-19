@@ -5,7 +5,7 @@ from numpy.typing import ArrayLike
 from neurokin.constants.open_ephys_structure import STRUCTURE, CONTINUOUS, SOURCE_PROCESSOR_NAME, SOURCE_PROCESSOR_ID, \
     TRAILING_NUMBER, SAMPLE_RATE, CHANNEL_NUMBER
 
-
+#TESTME
 def time_to_sample(timestamp: float, fs: float, is_t1: bool = False, is_t2: bool = False) -> int:
     """
     Function adapted from time2sample in TDTbin2py.py
@@ -31,7 +31,7 @@ def time_to_sample(timestamp: float, fs: float, is_t1: bool = False, is_t2: bool
     sample = int(sample)
     return sample
 
-
+#TESTME
 def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1", stim_name="Wav1",
                             sync_present=False) -> (
         float, ArrayLike):
@@ -91,7 +91,7 @@ def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1", s
 
     return fs, raw, stim_data, fs_sync
 
-
+#TESTME
 def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: str, channels=None,
                                    sync_present: bool = False,
                                    sync_ch: int = None,
@@ -138,7 +138,7 @@ def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: 
 
     return fs, neural_data_au, sync_data
 
-
+#TESTME
 def import_binary_to_float32(filename, channel_number, sample_number):
     """
     Imports binary data stored in C major to a float32 array
