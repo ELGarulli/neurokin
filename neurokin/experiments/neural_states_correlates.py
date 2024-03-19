@@ -21,7 +21,6 @@ class NeuralCorrelatesStates():
                  framerate: float = 200):
 
         self.timeslice = timeslice
-
         self.experiment_structure = read_config(experiment_structure_filepath)
         self.skip_subjects = skip_subjects
         self.skiprows = skiprows
