@@ -20,19 +20,18 @@ def get_marker_coordinates_names(df_columns_names, markers):
     return tuple(abc)
 
 #TESTME with mock df
-#TODO change name of variable a
-def get_marker_coordinate_values(df, a, frame):
+def get_marker_coordinate_values(df, marker_column_names, frame):
     """
     Given a dataframe, a list of column names referring to x, y (and z) of the same marker, and a frame number,
     it returns the corresponding values.
     :param df: dataframe
-    :param a: sets of markers names
+    :param marker_column_names: sets of markers names
     :param frame: frame number
     :return: sets of coordinates values
     """
     coordinates = []
-    for i in range(len(a)):
-        coordinates.append(df[a[i]][frame])
+    for i in range(len(marker_column_names)):
+        coordinates.append(df[marker_column_names[i]][frame])
     return coordinates
 
 #TESTME with mock df
