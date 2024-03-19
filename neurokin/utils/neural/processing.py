@@ -133,20 +133,19 @@ def get_average_amplitudes(parsed_raw, tested_amplitudes, pulses_number=None):
     number_tested_amplitudes = len(tested_amplitudes)
     averaged_amplitudes = []
     if number_tested_amplitudes == 1:
-        averaged_amp = average_subset(parsed_raw, 0, len(parsed_raw))
+        averaged_amp = average_block(parsed_raw, 0, len(parsed_raw))
         return [averaged_amp]
     if not pulses_number:
         pulses_number = int(len(parsed_raw) / len(tested_amplitudes))
     for i in range(number_tested_amplitudes):
         start = i * pulses_number
         stop = (i + 1) * pulses_number
-        averaged_amp = average_subset(parsed_raw, start, stop)
+        averaged_amp = average_block(parsed_raw, start, stop)
         averaged_amplitudes.append(averaged_amp)
     return averaged_amplitudes
 
 #TESTME
-#TODO subset is misleading, consider refactoring to a better word for "chunk"
-def average_subset(array: ArrayLike, start: int, stop: int) -> np.ndarray:
+def average_block(array: ArrayLike, start: int, stop: int) -> np.ndarray:
     """
     Averages a subset of elements
     :param array: input array
