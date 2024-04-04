@@ -80,7 +80,7 @@ def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1", s
             fs_sync = stored.fs
 
         except AttributeError:
-            print(f"No stimulation data named {stream_name}, please specify the correct stream_name \n "
+            print(f"No stimulation data named {stim_name}, please specify the correct stream_name \n "
                   f"Please chose from: {data.streams.__dict__.keys()}")
             return
         stim_data = stim_data[..., s1:s2]
