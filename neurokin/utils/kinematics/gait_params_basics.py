@@ -9,6 +9,12 @@ def get_angle(coordinates):
     :param coordinates: array with coordinates of 3 points
     :return: angle in degree
     """
+    if coordinates.shape != (3, 3) and coordinates.shape != (3, 2):
+        raise ValueError(
+            "The coordinates set have different length, it can only compute an angle in 3d space or 2d not mixed. "
+            "\nThis could happen if a marker has xy coordinate and another one xyz."
+            "\n Or if your markers are named ambiguously and multiple ones have the same name.")
+
     a = coordinates[0]
     b = coordinates[1]
     c = coordinates[2]

@@ -34,19 +34,6 @@ def get_marker_coordinate_values(df, marker_column_names, frame):
         coordinates.append(df[marker_column_names[i]][frame])
     return coordinates
 
-#TESTME with mock df
-def compute_angle(coordinates):
-    """
-    Computes the angle in degrees given a set of (3,2) or (3, 3) coordinates.
-    :param coordinates:
-    :return:
-    """
-    if coordinates.shape == (3, 3) or coordinates.shape == (3, 2):
-        return get_angle(coordinates)
-    else:
-        raise ("The coordinates set have different length, it can only compute an angle in 3d space or 2d not mixed. "
-               "\nThis could happen if a marker has xy coordinate and another one xyz."
-               "\n Or if your markers are named ambiguously and multiple ones have the same name.")
 
 #TESTME with mock df
 def tilt_correct(df, reference_marker, columns_to_correct):
