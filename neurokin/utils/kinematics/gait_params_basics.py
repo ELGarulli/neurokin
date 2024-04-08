@@ -37,11 +37,10 @@ def get_phase_at_max_amplitude(input_signal):
 #TESTME
 def get_phase(input_signal):
     """
-    Computes the phase of a signal at frequency that has the maximum amplitude.
-    First computes the fft, then gets the index of maximum value from the real component, then the phase from the
-    complex element at that index.
+    Computes the phase of a signal.
+    First computes the fft, then the phase from the complex element at each index.
     :param input_signal:
-    :return: phase
+    :return: phases
     """
     spectrum = np.fft.fft(input_signal)
     phase = np.angle(spectrum)
