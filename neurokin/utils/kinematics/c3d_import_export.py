@@ -58,3 +58,17 @@ def create_empty_df(scorer, bodyparts, frames_no):
         frame = pd.DataFrame(a, columns=pdindex, index=range(0, frames_no))
         dataFrame = pd.concat([frame, dataFrame], axis=1)
     return dataFrame
+
+
+#TESTME
+def get_c3d_labels(handle):
+    """
+    Reads in the labels from a .c3d handle
+    :param handle:
+    :return: labels
+    """
+    reader = c3d.Reader(handle)
+    a = reader._groups["POINT"]._params["LABELS"]
+    C, R = a.dimensions
+    labels = [a.bytes[r * C: (r + 1) * C].strip().decode().lower() for r in range(R)]
+    return labels
