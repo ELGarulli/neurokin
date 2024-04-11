@@ -137,17 +137,3 @@ def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: 
             neural_data_au = neural_data_au[0]
 
     return fs, neural_data_au, sync_data
-
-#TESTME
-def import_binary_to_float32(filename, channel_number, sample_number):
-    """
-    Imports binary data stored in C major to a float32 array
-    :param filename: file to import from
-    :param sample_number: number of sample in each channel
-    :param channel_number: number of channels
-    :return the array with shape channel_number*sample_number
-    """
-    dt = np.dtype('f4')
-    test = np.fromfile(filename, dtype=dt)
-    float_array = np.reshape(a=test, newshape=(channel_number, sample_number), order='C')
-    return float_array
