@@ -1,0 +1,2 @@
+neurokin/test_data/* filter=lfs diff=lfs merge=lfs -text
+neurokin/test_data/** filter=lfs diff=lfs merge=lfs -text
