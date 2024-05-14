@@ -40,13 +40,6 @@ class NeuralData:
                                                                                      source_processor=source_processor)
         self.recording = recording
 
-    def compute_psd(self, **kwargs):
-        self.freq = []
-        self.pxx = []
-        for i in range(self.raw.shape[0]):
-            f, p = neurokin.utils.commons.calculate_power_spectral_density(self.raw[i], self.fs, **kwargs)
-            self.freq.append(f)
-            self.freq.append(p)
 
     def compute_recording_duration(self):
         self.recording_duration = self.raw.shape[1] / self.fs
