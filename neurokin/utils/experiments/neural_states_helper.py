@@ -1,6 +1,6 @@
-import numpy as np
 import pickle as pkl
 
+import numpy as np
 import pandas as pd
 
 
@@ -26,9 +26,10 @@ def save_data(data, filename):
         pkl.dump(data, handle)
 
 
+# PANDIZE
 def get_events_per_animal(psds_correlates_dict):
     """
-    Simplifies the dataset, merging all the dates and run levels. Returning a dictionary that contatins the stimulation
+    Simplifies the dataset, merging all the dates and run levels. Returning a dictionary that contains the stimulation
     categories, the animals ID and the event type.
     :param psds_correlates_dict: psds correlates dictionary structured as condition, date, animal, run, events.
     :return:
@@ -50,6 +51,7 @@ def get_events_per_animal(psds_correlates_dict):
     return cond_animal_event_dict
 
 
+# PANDIZE
 def condense_neural_event_types(cond_animal_event_dict):
     """
     Condenses the dataset from the five categories analysis
@@ -76,7 +78,23 @@ def condense_neural_event_types(cond_animal_event_dict):
     return five2three
 
 
-def condense_distribution_event_types(cond_animal_event_dict):
+def condense_distribution_event_types(percentage_states_df):
+    """
+    Condenses from the dataset five categories analysis
+    ["fog_active", "fog_rest", "nlm_active", "nlm_rest", gait] to only
+    three categories ["fog", "nlm", "gait"]
+    :param cond_animal_event_dict: states dictionary structured as condition, animal, events.
+    :return:  same dictionary with 3 conditions instead of 5
+    """
+    five2three = percentage_states_df.copy()
+    five2three["state_fog"] = five2three["state_fog_active"] + five2three["state_fog_rest"]
+    five2three["state_nlm"] = five2three["state_nlm_active"] + five2three["state_nlm_rest"]
+    return five2three
+
+
+
+# PANDIZE
+def _condense_distribution_event_types(cond_animal_event_dict):
     """
     Condenses from the dataset five categories analysis
     ["fog_active", "fog_rest", "nlm_active", "nlm_rest", gait] to only
@@ -102,6 +120,7 @@ def condense_distribution_event_types(cond_animal_event_dict):
     return five2three
 
 
+# PANDIZE
 def get_per_animal_average(cond_animal_event_dict):
     """
     Computes the average psds response per event per animal.
@@ -115,7 +134,7 @@ def get_per_animal_average(cond_animal_event_dict):
             for event, psds in events.items():
                 animals_avg_psds[condition].setdefault(animal, {})
                 psds = [psd for psd in psds if not np.isnan(psd).any()]
-                average_event = np.mean(psds, axis=0) #FIXME why is this calculated twice
+                average_event = np.mean(psds, axis=0)  # FIXME why is this calculated twice
                 if np.isnan(average_event).any():
                     print(f"Attention! No valid events was found for condition: {condition}, animal: {animal}, "
                           f"event type: {event}.")
@@ -124,7 +143,19 @@ def get_per_animal_average(cond_animal_event_dict):
     return animals_avg_psds
 
 
-def get_group_split(test_sbj_list, animals_avg_dataset):
+def get_group_split(test_sbj_list, percentage_df):
+    """
+    Splits the dataset in two groups depending on which subjects are in the test group and which not (control)
+    :param test_sbj_list: list of subject IDs that belong to teh test group
+    :param animals_avg_dataset: dictionary containing the psds organized by condition, animal and event
+    :return: split dictionary between test_group and sham_group
+    """
+    subject_groups = percentage_df.copy()
+    subject_groups["group"] = subject_groups["subject"].apply(lambda x: x in test_sbj_list)
+    return subject_groups
+
+# PANDIZE
+def _get_group_split(test_sbj_list, animals_avg_dataset):
     """
     Splits the dataset in two groups depending on which subjects are in the test group and which not (control)
     :param test_sbj_list: list of subject IDs that belong to teh test group
@@ -150,6 +181,7 @@ def get_group_split(test_sbj_list, animals_avg_dataset):
     return groups_split
 
 
+# PANDIZE
 def drop_subject_id(test_sbj_list, animals_avg_psds):
     """
     First it splits the dictionary in test and sham group. Then in each group it runs through the categories,
@@ -179,6 +211,7 @@ def drop_subject_id(test_sbj_list, animals_avg_psds):
     return groups_avg
 
 
+# PANDIZE
 def get_group_average(test_sbj_list, animals_avg_psds):
     """
     Given the dictionary containing the psds organized by condition, animal and event, it splits it in two groups and
@@ -201,8 +234,31 @@ def get_group_average(test_sbj_list, animals_avg_psds):
 
     return groups_avg
 
+def compute_duration(timestamps_lists):
+    time = 0
+    for times in timestamps_lists:
+        time += times[1] - times[0]
+    return time
+
+def compute_percentage(array):
+    return 100*array/np.sum(array)
 
 def compute_events_percentage(events_dataset):
+    """
+    Computes the average percentage of time spent in each state for each animal. It normalizes every state duration to
+    the total length of the run, then takes the average across all the runs available for that condition.
+    :param events_dataset: dataset with event timestamps
+    :return: dataframe containing condition, animal and event containing the average time spent in each state
+    """
+    durations = events_dataset.copy()
+    events_col = [col for col in durations.columns if col.startswith("event")]
+    durations[events_col] = durations[events_col].applymap(compute_duration).apply(compute_percentage, axis=1)
+    durations.drop("date", inplace=True, axis=1)
+    means = durations.groupby(["condition", "subject"], as_index=False).mean(numeric_only=True)
+    return means
+
+# PANDIZE
+def _compute_events_percentage(events_dataset):
     """
     Computes the average percentage of time spent in each state for each animal. It normalizes every state duration to
     the total length of the run, then takes the average across all the runs available for that condition.
@@ -243,6 +299,7 @@ def compute_events_percentage(events_dataset):
     return events_percentage_dict
 
 
+# PANDIZE
 def compute_state_distribution_stats(group_cond_dataset, stat="std"):
     """
     Takes a dictionary structured as group, condition, animal and event containing the average
@@ -280,3 +337,20 @@ def compute_state_distribution_stats(group_cond_dataset, stat="std"):
                                                        "upper_bound": positive_stat,
                                                        "lower_bound": negative_stat}
     return stats_dict
+
+
+def get_runs_list(experiment_structure, skip_subjects, skip_conditions):
+    experiment_combos = []
+    dates = [date for date in experiment_structure.keys()]
+    for date in dates:
+        subjects = [subject for subject in experiment_structure[date].keys() if subject not in skip_subjects]
+        for subject in subjects:
+            conditions = [condition for condition in experiment_structure[date][subject].keys() if
+                          condition not in skip_conditions]
+            for condition in conditions:
+                runs = [str(run) for run in experiment_structure[date][subject][condition]]
+                runs = ["0" + run if len(run) == 1 else run for run in runs]
+                for run in runs:
+                    experiment_combos.append([date, subject, condition, run])
+
+    return experiment_combos

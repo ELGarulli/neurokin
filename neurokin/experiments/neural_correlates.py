@@ -1,15 +1,14 @@
 import csv
 import os
-from pandas.errors import EmptyDataError, ParserError
+from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
+from pandas.errors import EmptyDataError, ParserError
 from scipy import stats
 
-from neurokin.utils.neural import (processing, importing)
 from neurokin.neural_data import NeuralData
-
-from typing import List, Tuple
+from neurokin.utils.neural import (processing, importing)
 
 
 def get_csv_first_block_len(csv_path: str) -> int:
@@ -463,7 +462,7 @@ def get_events_dict(event_path, skiprows, framerate):
 def get_neural_correlates_dict(neural_path,
                                channel_of_interest,
                                stream_names,
-                               events_dict,
+                               events_df,
                                time_cutoff):
     """
     Returns a dictionary with the raw neural data corresponding to each event in the input events dictionary, from the
@@ -471,16 +470,18 @@ def get_neural_correlates_dict(neural_path,
     :param neural_path: path to the folder with neural data
     :param channel_of_interest: channel to extract the raw data from
     :param stream_names: list of possible stream_names where the neural data is stored
-    :param events_dict:
+    :param events_df:
     :param time_cutoff:
     :return:
     """
-    neural_dict = {key: [] for key in events_dict.keys()}
+    states = [key for key in events_df.columns if key.startswith("event")]
+    neural_dict = {key: [] for key in states}
     fs = None
+    print(neural_path)
     try:
         neural_path = neural_path + next(os.walk(neural_path))[1][0]
-    except StopIteration:
-        print(f"No neural data found for {neural_path}")
+    except (StopIteration, IndexError) as e:
+        print(f"{e} No neural data found for {neural_path}")
         return neural_dict, fs
 
     is_valid_name = False
@@ -494,17 +495,17 @@ def get_neural_correlates_dict(neural_path,
     if not is_valid_name:
         raise Exception("All stream names were invalid")
 
-    for state in events_dict.keys():
-        neural_dict[state] = get_single_neural_type(events_dict, state, time_cutoff, fs, raw)
+    for state in states:
+        neural_dict[state] = get_single_neural_type(events_df, state, time_cutoff, fs, raw)
 
     return neural_dict, fs
 
 
 def get_single_neural_type(events_dict, event_type, time_cutoff, fs, raw):
     correlates = []
-
-    if events_dict[event_type] is not None:
-        for t_onset, t_end in events_dict[event_type]:
+    states_events_list = events_dict[event_type].values
+    for states_events in states_events_list:
+        for t_onset, t_end in states_events:
             t_end = check_time_cutoff(t_onset, t_end, time_cutoff)
             if t_end is None:
                 continue
@@ -519,6 +520,7 @@ def get_single_neural_type(events_dict, event_type, time_cutoff, fs, raw):
     return correlates
 
 
+# PANDIZE
 def get_psd_dict(neural_dict, fs, nfft, noverlap, zscore=False):
     psd_dict = {}
 
@@ -545,6 +547,7 @@ def get_psd_dict(neural_dict, fs, nfft, noverlap, zscore=False):
     return psd_dict, freqs
 
 
+# PANDIZE
 def get_psd_single_event_type(neural_dict, fs, event_type, nfft, noverlap, zscore):
     psds = []
     freqs = None
