@@ -10,7 +10,7 @@ from neurokin.utils.experiments.neural_states_helper import (get_events_per_anim
                                                              get_per_animal_average, drop_subject_id, save_data,
                                                              compute_events_percentage,
                                                              condense_distribution_event_types,
-                                                             get_group_split, compute_state_distribution_stats,
+                                                             get_group_split, get_state_graph_stats,
                                                              get_runs_list)
 from neurokin.utils.helper.load_config import read_config
 
@@ -207,7 +207,7 @@ class NeuralCorrelatesStates():
         return no_sbj_id
 
     # PANDIZE
-    def plot_prep_states_distribution(self, test_sbj_list, condense=True):
+    def plot_prep_states_distribution(self, test_sbj_list, condense=True, stat="std"):
         """
         Fixed shortcut to generate a stats dictionary of the state distribution, ready to be plotted
         :param test_sbj_list: list of subject IDs that belong to the test group
@@ -215,9 +215,9 @@ class NeuralCorrelatesStates():
         :return: stats dictionary dataset structured as group, condition,
                 state, stats {"mean":, "upper_bound", "lower_bound}
         """
-        events_percentage = compute_events_percentage(self.events_dataset_dict)
+        events_percentage = compute_events_percentage(self.events_dataset)
         if condense:
             events_percentage = condense_distribution_event_types(events_percentage)
-        group_split = get_group_split(test_sbj_list=test_sbj_list, animals_avg_dataset=events_percentage)
-        stats = compute_state_distribution_stats(group_split)
+        group_split = get_group_split(test_sbj_list=test_sbj_list, percentage_df=events_percentage)
+        stats = get_state_graph_stats(group_cond_df=group_split, stat=stat)
         return stats

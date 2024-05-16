@@ -87,10 +87,10 @@ def condense_distribution_event_types(percentage_states_df):
     :return:  same dictionary with 3 conditions instead of 5
     """
     five2three = percentage_states_df.copy()
-    five2three["state_fog"] = five2three["state_fog_active"] + five2three["state_fog_rest"]
-    five2three["state_nlm"] = five2three["state_nlm_active"] + five2three["state_nlm_rest"]
+    five2three["event_fog"] = five2three["event_fog_active"] + five2three["event_fog_rest"]
+    five2three["event_nlm"] = five2three["event_nlm_active"] + five2three["event_nlm_rest"]
+    five2three.drop(["event_fog_active", "event_nlm_active", "event_fog_rest", "event_nlm_rest"], inplace=True, axis=1)
     return five2three
-
 
 
 # PANDIZE
@@ -153,6 +153,7 @@ def get_group_split(test_sbj_list, percentage_df):
     subject_groups = percentage_df.copy()
     subject_groups["group"] = subject_groups["subject"].apply(lambda x: x in test_sbj_list)
     return subject_groups
+
 
 # PANDIZE
 def _get_group_split(test_sbj_list, animals_avg_dataset):
@@ -234,14 +235,17 @@ def get_group_average(test_sbj_list, animals_avg_psds):
 
     return groups_avg
 
+
 def compute_duration(timestamps_lists):
     time = 0
     for times in timestamps_lists:
         time += times[1] - times[0]
     return time
 
+
 def compute_percentage(array):
-    return 100*array/np.sum(array)
+    return 100 * array / np.sum(array)
+
 
 def compute_events_percentage(events_dataset):
     """
@@ -257,47 +261,41 @@ def compute_events_percentage(events_dataset):
     means = durations.groupby(["condition", "subject"], as_index=False).mean(numeric_only=True)
     return means
 
-# PANDIZE
-def _compute_events_percentage(events_dataset):
+
+def compute_ci(array):
+    ci = 1.96 * np.std(array) / np.sqrt(len(array))
+    return ci
+
+
+def get_state_graph_stats(group_cond_df, stat="std"):
     """
-    Computes the average percentage of time spent in each state for each animal. It normalizes every state duration to
-    the total length of the run, then takes the average across all the runs available for that condition.
-    :param events_dataset: dataset with event timestamps
-    :return: dictionary structured as condition, animal and event containing the average time spent in each state
+    Takes the group dataset and returns a dataframe with mean, upper bound and lower bound to be used to graph.
+    :param group_cond_df:
+    :param stat: which statistic to use to compute the upper and lowe bounds. Takes "std" for standard deviation,
+                 "sem" for standard error of mean and "ci" for confidence interval.
+    :return: df
     """
-    events_percentage_dict = {}
-    runs_num = {}
-    for condition, dates_dict in events_dataset.items():
-        events_percentage_dict.setdefault(condition, {})
-        runs_num.setdefault(condition, {})
-        for date, animals_dict in dates_dict.items():
-            for animal, runs_dict in animals_dict.items():
-                n_runs = len(runs_dict.keys())
-                runs_num[condition].setdefault(animal, 0)
-                runs_num[condition][animal] += n_runs
-                for run, events_dict in runs_dict.items():
-                    len_run = 0
-                    temp_dict = {}
-                    for event_name, times in events_dict.items():
-                        temp_dict.setdefault(event_name, 0)
-                        for event_timestamps in times:
-                            duration = event_timestamps[1] - event_timestamps[0]
-                            temp_dict[event_name] += duration
-                            len_run += duration
-                    for event_type, raw_len in temp_dict.items():
-                        events_percentage_dict[condition].setdefault(animal, {})
-                        events_percentage_dict[condition][animal].setdefault(event_type, 0)
-                        if len_run > 0:
-                            events_percentage_dict[condition][animal][event_type] += raw_len / len_run
 
-    for condition, animal_dict in events_percentage_dict.items():
-        for animal, event_dict in animal_dict.items():
-            for event_name, event_percentage in event_dict.items():
-                events_percentage_dict[condition][animal][event_name] = 100 * event_percentage / runs_num[condition][
-                    animal]
+    mean_df = group_cond_df.groupby(["group", "condition"], as_index=False).mean(numeric_only=True)
+    if stat == "std":
+        dist_df = group_cond_df.groupby(["group", "condition"], as_index=False).std(numeric_only=True)
+    elif stat == "ci":
+        dist_df = group_cond_df.groupby(["group", "condition"], as_index=False).apply(compute_ci, axis=0)
+    elif stat == "sem":
+        dist_df = group_cond_df.groupby(["group", "condition"], as_index=False).sem(numeric_only=True)
+    else:
+        raise ValueError(f"The statistic value {stat} is unsupported, please choose between std, sem or ci")
 
-    return events_percentage_dict
+    mean_df = pd.melt(mean_df, id_vars=['group', 'condition'], value_vars=['event_gait', 'event_fog', 'event_nlm'],
+            var_name='event_type', value_name='mean')
 
+    dist_df = pd.melt(dist_df, id_vars=['group', 'condition'], value_vars=['event_gait', 'event_fog', 'event_nlm'],
+                      var_name='event_type', value_name='distribution')
+    stats = mean_df.copy()
+    stats["lower_bound"] = mean_df["mean"] - dist_df["distribution"]
+    stats["upper_bound"] = mean_df["mean"] + dist_df["distribution"]
+
+    return stats
 
 # PANDIZE
 def compute_state_distribution_stats(group_cond_dataset, stat="std"):

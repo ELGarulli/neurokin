@@ -109,8 +109,8 @@ def get_polygon_corners(theta, bottom, top):
         y.append(top[i])
     return x, y
 
-
-def plot_spider_single_trace(ax, data, color, theta, zorder=0):
+#PANDIZE
+def _plot_spider_single_trace(ax, data, color, theta, zorder=0):
     count_avg = []
     n_std = []
     p_std = []
@@ -118,6 +118,23 @@ def plot_spider_single_trace(ax, data, color, theta, zorder=0):
         count_avg.append(state_stats["mean"])
         n_std.append(state_stats["lower_bound"] if state_stats["lower_bound"] > 0 else 0)
         p_std.append(state_stats["upper_bound"])
+
+    ax.plot(theta, count_avg, color=color, linewidth=3, zorder=zorder + 10)
+
+    ax.scatter(theta, count_avg, color=color, s=50, zorder=zorder + 20)
+
+    ax.fill_between(theta, n_std, p_std,
+                    facecolor=color, alpha=0.4, zorder=zorder)
+
+    ax.fill([theta[0], theta[0], theta[-1], theta[-1]], [p_std[0], n_std[0], n_std[-1], p_std[-1]],
+            facecolor=color, alpha=0.4, zorder=zorder)
+
+
+def plot_spider_single_trace(ax, data, color, theta, zorder=0):
+    count_avg = data["mean"].values
+    n_std = data["lower_bound"].values
+    n_std[n_std < 0] = 0
+    p_std = data["upper_bound"].values
 
     ax.plot(theta, count_avg, color=color, linewidth=3, zorder=zorder + 10)
 
