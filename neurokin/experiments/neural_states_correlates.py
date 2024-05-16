@@ -5,7 +5,8 @@ from typing import List, Dict
 import numpy as np
 import pandas as pd
 
-from neurokin.experiments.neural_correlates import (get_events_dict, get_neural_correlates_dict, get_psd_dict)
+from neurokin.experiments.neural_correlates import (get_events_dict, get_neural_correlates_dict, get_psd_dict,
+                                                    get_psd_single_event_type)
 from neurokin.utils.experiments.neural_states_helper import (get_events_per_animal, condense_neural_event_types,
                                                              get_per_animal_average, drop_subject_id, save_data,
                                                              compute_events_percentage,
@@ -36,8 +37,8 @@ class NeuralCorrelatesStates():
         self.freqs: np.array
         self.fs: float = None
         self.events_dataset: pd.DataFrame = None
-        self.raw_neural_correlates_dataset: Dict
-        self.psds_correlates_dict: Dict
+        self.raw_neural_correlates_dataset: pd.DataFrame = None
+        self.psds_correlates_dataset: pd.DataFrame = None
 
     def save_dataset(self, dataset, filename):
         """
@@ -51,10 +52,10 @@ class NeuralCorrelatesStates():
             raise ValueError(f"Dataset not found. Please select one of the following : {accepted_datasets}")
 
         if dataset == "events_dataset":
-            save_data(self.events_dataset_dict, filename)
+            save_data(self.events_dataset, filename)
         if dataset == "raw_neural_correlates_dataset":
             save_data(self.fs, "fs")
-            save_data(self.raw_neural_correlates_dict, filename)
+            save_data(self.raw_neural_correlates_dataset, filename)
         if dataset == "psd_neural_correlates_dataset":
             save_data(self.psds_correlates_dict, filename)
             save_data(self.freqs, "freqs")
@@ -149,9 +150,7 @@ class NeuralCorrelatesStates():
         df = pd.DataFrame(trial_neural_data, columns=self.events_dataset.columns)
         self.raw_neural_correlates_dataset = df
 
-
-    # PANDIZE
-    def create_psd_dataset(self, nfft, nov, verbose=False):
+    def create_psd_dataset(self, nfft, nov, zscore=False):
         """
         Computes the Power Spectra Density of the neural correlates.
         :param nfft: NFFT parameter to use for the Fourier Transform
@@ -159,7 +158,28 @@ class NeuralCorrelatesStates():
         :param verbose: if True it will print the currently processed run
         :return: dictionary structured as condition, date, animal, run, event containing the PSD neural correlates.
         """
-        if self.raw_neural_correlates_dict is None:
+        if self.raw_neural_correlates_dataset is None:
+            print("Please create or load a raw neural dictionary first, "
+                  "using either the method create_events_dataset or load_dataset."
+                  "If the dataset is loaded it should be assigned to the attribute raw_neural_correlates_dict")
+            return
+        self.psds_correlates_dataset = self.raw_neural_correlates_dataset.applymap(get_psd_single_event_type,
+                                                                                   fs=self.fs,
+                                                                                   nfft=nfft,
+                                                                                   noverlap=nov,
+                                                                                   zscore=zscore)
+
+
+    # PANDIZE
+    def _create_psd_dataset(self, nfft, nov, verbose=False):
+        """
+        Computes the Power Spectra Density of the neural correlates.
+        :param nfft: NFFT parameter to use for the Fourier Transform
+        :param nov: Overlap parameter to use for the Fourier Transform
+        :param verbose: if True it will print the currently processed run
+        :return: dictionary structured as condition, date, animal, run, event containing the PSD neural correlates.
+        """
+        if self.raw_neural_correlates_dataset is None:
             print("Please create or load a raw neural dictionary first, "
                   "using either the method create_events_dataset or load_dataset."
                   "If the dataset is loaded it should be assigned to the attribute raw_neural_correlates_dict")
@@ -206,7 +226,7 @@ class NeuralCorrelatesStates():
         no_sbj_id = drop_subject_id(test_sbj_list=test_sbj_list, animals_avg_psds=per_animal_avg)
         return no_sbj_id
 
-    # PANDIZE
+
     def plot_prep_states_distribution(self, test_sbj_list, condense=True, stat="std"):
         """
         Fixed shortcut to generate a stats dictionary of the state distribution, ready to be plotted

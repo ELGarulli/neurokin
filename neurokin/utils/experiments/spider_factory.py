@@ -1,11 +1,11 @@
+import numpy as np
 from matplotlib.patches import Circle, RegularPolygon
 from matplotlib.path import Path
-from matplotlib.projections.polar import PolarAxes
 from matplotlib.projections import register_projection
+from matplotlib.projections.polar import PolarAxes
 from matplotlib.spines import Spine
 from matplotlib.transforms import Affine2D
 
-import numpy as np
 
 def spider_factory(num_vars, frame='circle'):
     """
@@ -23,7 +23,7 @@ def spider_factory(num_vars, frame='circle'):
 
     """
     # calculate evenly-spaced axis angles
-    theta = np.linspace(0, 2*np.pi, num_vars, endpoint=False)
+    theta = np.linspace(0, 2 * np.pi, num_vars, endpoint=False)
 
     class RadarTransform(PolarAxes.PolarTransform):
 
@@ -108,26 +108,6 @@ def get_polygon_corners(theta, bottom, top):
         y.append(bottom[i])
         y.append(top[i])
     return x, y
-
-#PANDIZE
-def _plot_spider_single_trace(ax, data, color, theta, zorder=0):
-    count_avg = []
-    n_std = []
-    p_std = []
-    for state, state_stats in data.items():
-        count_avg.append(state_stats["mean"])
-        n_std.append(state_stats["lower_bound"] if state_stats["lower_bound"] > 0 else 0)
-        p_std.append(state_stats["upper_bound"])
-
-    ax.plot(theta, count_avg, color=color, linewidth=3, zorder=zorder + 10)
-
-    ax.scatter(theta, count_avg, color=color, s=50, zorder=zorder + 20)
-
-    ax.fill_between(theta, n_std, p_std,
-                    facecolor=color, alpha=0.4, zorder=zorder)
-
-    ax.fill([theta[0], theta[0], theta[-1], theta[-1]], [p_std[0], n_std[0], n_std[-1], p_std[-1]],
-            facecolor=color, alpha=0.4, zorder=zorder)
 
 
 def plot_spider_single_trace(ax, data, color, theta, zorder=0):

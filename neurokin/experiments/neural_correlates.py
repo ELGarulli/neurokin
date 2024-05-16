@@ -266,7 +266,6 @@ def get_ts_from_exclusion_mask(mask: np.array, first_frame: int, framerate: int)
 
     event_onset = [i / framerate for i in event_onset_idxs]
     event_end = [i / framerate for i in event_end_idxs]
-
     return event_onset, event_end
 
 
@@ -501,9 +500,9 @@ def get_neural_correlates_dict(neural_path,
     return neural_dict, fs
 
 
-def get_single_neural_type(events_dict, event_type, time_cutoff, fs, raw):
+def get_single_neural_type(events_df, event_type, time_cutoff, fs, raw):
     correlates = []
-    states_events_list = events_dict[event_type].values
+    states_events_list = events_df[event_type].values
     for states_events in states_events_list:
         for t_onset, t_end in states_events:
             t_end = check_time_cutoff(t_onset, t_end, time_cutoff)
@@ -520,8 +519,25 @@ def get_single_neural_type(events_dict, event_type, time_cutoff, fs, raw):
     return correlates
 
 
-# PANDIZE
 def get_psd_dict(neural_dict, fs, nfft, noverlap, zscore=False):
+    states = [key for key in neural_dict.columns if key.startswith("event")]
+    psd_dict = {key: [] for key in states}
+    freqs = []
+    for state in states:
+        psds, freq = get_psd_single_event_type(neural_dict, fs, state, nfft, noverlap, zscore)
+        psd_dict[state] = psds
+        freqs.append(freq)
+    try:
+        freqs = [x for x in freqs if x is not None][0]
+    except IndexError:
+        freqs = None
+        print("No events that satisfy the conditions were found for this run")
+
+    return psd_dict, freqs
+
+
+# PANDIZE
+def _get_psd_dict(neural_dict, fs, nfft, noverlap, zscore=False):
     psd_dict = {}
 
     psds_gait, freqs_gait = get_psd_single_event_type(neural_dict, fs, "gait", nfft, noverlap, zscore)
@@ -547,8 +563,54 @@ def get_psd_dict(neural_dict, fs, nfft, noverlap, zscore=False):
     return psd_dict, freqs
 
 
+def get_psd_single_event_type(raw_nerual_list, fs, nfft, noverlap, zscore):
+    psds = []
+    freqs = None
+    for raw_neural in raw_nerual_list:
+        freqs_psd, pxx = processing.calculate_power_spectral_density(raw_neural,
+                                                                     fs,
+                                                                     nperseg=nfft,
+                                                                     noverlap=noverlap,
+                                                                     scaling="spectrum")
+        if freqs is None:
+            freqs = freqs_psd
+        else:
+            sanity_check = np.array_equal(freqs, freqs_psd)
+            if not sanity_check:
+                raise ValueError("The frequencies in the PSD calculation are unequal for different events. "
+                                 "Check for consistency in the events length")
+        if zscore:
+            pxx = stats.zscore(pxx)
+        psds.append(pxx)
+
+        return psds
+
+
+def __get_psd_single_event_type(raw_nerual_list, fs, nfft, noverlap, zscore):
+    psds = []
+    freqs = None
+    for raw_neural in raw_nerual_list:
+        freqs_psd, pxx = processing.calculate_power_spectral_density(raw_neural,
+                                                                     fs,
+                                                                     nperseg=nfft,
+                                                                     noverlap=noverlap,
+                                                                     scaling="spectrum")
+        if freqs is None:
+            freqs = freqs_psd
+        else:
+            sanity_check = np.array_equal(freqs, freqs_psd)
+            if not sanity_check:
+                raise ValueError("The frequencies in the PSD calculation are unequal for different events. "
+                                 "Check for consistency in the events length")
+        if zscore:
+            pxx = stats.zscore(pxx)
+        psds.append(pxx)
+
+        return psds, freqs
+
+
 # PANDIZE
-def get_psd_single_event_type(neural_dict, fs, event_type, nfft, noverlap, zscore):
+def _get_psd_single_event_type(neural_dict, fs, event_type, nfft, noverlap, zscore):
     psds = []
     freqs = None
     for raw_neural in neural_dict[event_type]:
