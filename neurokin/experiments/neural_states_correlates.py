@@ -125,9 +125,9 @@ class NeuralCorrelatesStates():
             run_path = "/".join([experiment_path, date, subject, run]) + "/"
             channel_of_interest = self.ch_of_interest[subject]
             neural_event_df = self.events_dataset[(self.events_dataset["date"] == date) &
-                                           (self.events_dataset["subject"] == subject) &
-                                           (self.events_dataset["condition"] == condition) &
-                                           (self.events_dataset["run"] == run)]
+                                                  (self.events_dataset["subject"] == subject) &
+                                                  (self.events_dataset["condition"] == condition) &
+                                                  (self.events_dataset["run"] == run)]
             if verbose:
                 print(f"Currently processing: {date} - {subject} - {condition} - {run}")
 
@@ -163,12 +163,16 @@ class NeuralCorrelatesStates():
                   "using either the method create_events_dataset or load_dataset."
                   "If the dataset is loaded it should be assigned to the attribute raw_neural_correlates_dict")
             return
-        self.psds_correlates_dataset = self.raw_neural_correlates_dataset.applymap(get_psd_single_event_type,
-                                                                                   fs=self.fs,
-                                                                                   nfft=nfft,
-                                                                                   noverlap=nov,
-                                                                                   zscore=zscore)
-
+        events_columns = [c for c in self.raw_neural_correlates_dataset.columns if c.startswith("event")]
+        meta_columns = [c for c in self.raw_neural_correlates_dataset.columns if not c.startswith("event")]
+        psds_correlates_dataset = self.raw_neural_correlates_dataset[events_columns].applymap(
+                                                                                            get_psd_single_event_type,
+                                                                                            fs=self.fs,
+                                                                                            nfft=nfft,
+                                                                                            noverlap=nov,
+                                                                                            zscore=zscore)
+        self.psds_correlates_dataset = pd.concat((self.raw_neural_correlates_dataset[meta_columns],
+                                                  psds_correlates_dataset), axis=1)
 
     # PANDIZE
     def _create_psd_dataset(self, nfft, nov, verbose=False):
@@ -226,7 +230,6 @@ class NeuralCorrelatesStates():
         no_sbj_id = drop_subject_id(test_sbj_list=test_sbj_list, animals_avg_psds=per_animal_avg)
         return no_sbj_id
 
-
     def plot_prep_states_distribution(self, test_sbj_list, condense=True, stat="std"):
         """
         Fixed shortcut to generate a stats dictionary of the state distribution, ready to be plotted
@@ -241,3 +244,23 @@ class NeuralCorrelatesStates():
         group_split = get_group_split(test_sbj_list=test_sbj_list, percentage_df=events_percentage)
         stats = get_state_graph_stats(group_cond_df=group_split, stat=stat)
         return stats
+
+
+if __name__ == "__main__":
+    NFFT = 2 ** 12
+    NOV = int(NFFT / 4)
+    TIME_CUTOFF = 1.5
+    experiment_structure_path = "../../../analysis/neural_correlates_states_clean/experiment_structure.yaml"
+    pda = ["NWE00053", "NWE00054", "NWE00130", "NWE00160", "NWE00161", "NWE00162", "NWE00163", "NWE00164"]
+    skip_animals = ["NWE00053", "NWE00054", "NWE00052"]
+
+    ncs = NeuralCorrelatesStates(timeslice=TIME_CUTOFF,
+                                 experiment_structure_filepath=experiment_structure_path,
+                                 skip_subjects=skip_animals)
+
+
+    ncs.fs = 24414.1
+    ncs.raw_neural_correlates_dataset = pd.read_pickle("../../../analysis/neural_correlates_states_clean/raw_neural.pkl")
+    ncs.create_psd_dataset(NFFT, NOV, zscore=False)
+    t = get_per_animal_average(ncs.psds_correlates_dataset, condense=True)
+    print("")

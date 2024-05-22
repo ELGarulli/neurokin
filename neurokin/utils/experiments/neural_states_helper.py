@@ -121,7 +121,7 @@ def _condense_distribution_event_types(cond_animal_event_dict):
 
 
 # PANDIZE
-def get_per_animal_average(cond_animal_event_dict):
+def _get_per_animal_average(cond_animal_event_dict):
     """
     Computes the average psds response per event per animal.
     :param cond_animal_event_dict:
@@ -141,6 +141,29 @@ def get_per_animal_average(cond_animal_event_dict):
                 else:
                     animals_avg_psds[condition][animal][event] = np.mean(psds, axis=0)
     return animals_avg_psds
+
+def mean_psds(psds_list):
+    if psds_list:
+        return np.mean(psds_list, axis=0)
+
+def get_per_animal_average(psds_dataset, condense=False):
+    psds_means = psds_dataset.copy()
+    events_col = [c for c in psds_means.columns if c.startswith("event")]
+    psds_means.drop(["date", "run"], inplace=True, axis=1)
+    psds_means = psds_means.groupby(["subject", "condition"], as_index=False)[events_col].agg(sum)
+    psds_means.replace(to_replace=0, value=None, inplace=True)
+     
+    ## How the fuck am I supposed to replace 0 with empty lists to allow for proper concatenation. Why the fuck are
+    # there 0s in the first place.
+
+    if condense:
+        psds_means["event_nlm"] = psds_means["event_nlm_rest"] + psds_means["event_nlm_active"]
+        psds_means["event_fog"] = psds_means["event_fog_rest"] + psds_means["event_fog_active"]
+        psds_means.drop(["event_nlm_rest", "event_fog_rest", "event_nlm_active", "event_fog_active"],
+                        inplace=True, axis=1)
+
+    psds_means[events_col] = psds_means[events_col].applymap(mean_psds, na_action="ignore")
+    return
 
 
 def get_group_split(test_sbj_list, percentage_df):

@@ -563,10 +563,10 @@ def _get_psd_dict(neural_dict, fs, nfft, noverlap, zscore=False):
     return psd_dict, freqs
 
 
-def get_psd_single_event_type(raw_nerual_list, fs, nfft, noverlap, zscore):
+def get_psd_single_event_type(raw_neural_list, fs, nfft, noverlap, zscore):
     psds = []
     freqs = None
-    for raw_neural in raw_nerual_list:
+    for raw_neural in raw_neural_list:
         freqs_psd, pxx = processing.calculate_power_spectral_density(raw_neural,
                                                                      fs,
                                                                      nperseg=nfft,
