@@ -8,7 +8,7 @@ import pandas as pd
 from neurokin.experiments.neural_correlates import (get_events_dict, get_neural_correlates_dict, get_psd_dict,
                                                     get_psd_single_event_type)
 from neurokin.utils.experiments.neural_states_helper import (get_events_per_animal, condense_neural_event_types,
-                                                             get_per_animal_average, drop_subject_id, save_data,
+                                                             get_per_animal_psds_df, drop_subject_id, save_data,
                                                              compute_events_percentage,
                                                              condense_distribution_event_types,
                                                              get_group_split, get_state_graph_stats,
@@ -34,7 +34,7 @@ class NeuralCorrelatesStates():
         self.framerate = framerate
         self.stream_names: List[str] = []
         self.ch_of_interest: Dict[str, int] = {}
-        self.freqs: np.array
+        self.freqs: np.array = None
         self.fs: float = None
         self.events_dataset: pd.DataFrame = None
         self.raw_neural_correlates_dataset: pd.DataFrame = None
@@ -166,13 +166,14 @@ class NeuralCorrelatesStates():
         events_columns = [c for c in self.raw_neural_correlates_dataset.columns if c.startswith("event")]
         meta_columns = [c for c in self.raw_neural_correlates_dataset.columns if not c.startswith("event")]
         psds_correlates_dataset = self.raw_neural_correlates_dataset[events_columns].applymap(
-                                                                                            get_psd_single_event_type,
-                                                                                            fs=self.fs,
-                                                                                            nfft=nfft,
-                                                                                            noverlap=nov,
-                                                                                            zscore=zscore)
+            get_psd_single_event_type,
+            fs=self.fs,
+            nfft=nfft,
+            noverlap=nov,
+            zscore=zscore)
         self.psds_correlates_dataset = pd.concat((self.raw_neural_correlates_dataset[meta_columns],
                                                   psds_correlates_dataset), axis=1)
+        self.freqs = np.fft.rfftfreq(n=nfft, d=1 / self.fs)
 
     # PANDIZE
     def _create_psd_dataset(self, nfft, nov, verbose=False):
@@ -215,8 +216,19 @@ class NeuralCorrelatesStates():
                             self.freqs = freqs_
         self.psds_correlates_dict = dataset_psd
 
-    # PANDIZE
     def plot_prep_psds_dataset(self, test_sbj_list, condense=True):
+        """
+
+        :param test_sbj_list:
+        :param condense:
+        :return:
+        """
+        per_animal_avg = get_per_animal_psds_df(self.psds_correlates_dataset, condense=condense)
+        group_split = get_group_split(test_sbj_list=test_sbj_list, df=per_animal_avg)
+        return group_split
+
+    # PANDIZE
+    def _plot_prep_psds_dataset(self, test_sbj_list, condense=True):
         """
         Fixed shortcut to generate a PSDs dictionary dataset ready to be plotted
         :param test_sbj_list: list of subject IDs that belong to the test group
@@ -226,7 +238,7 @@ class NeuralCorrelatesStates():
         per_animal_events = get_events_per_animal(self.psds_correlates_dict)
         if condense:
             per_animal_events = condense_neural_event_types(per_animal_events)
-        per_animal_avg = get_per_animal_average(per_animal_events)
+        per_animal_avg = get_per_animal_psds_df(per_animal_events)
         no_sbj_id = drop_subject_id(test_sbj_list=test_sbj_list, animals_avg_psds=per_animal_avg)
         return no_sbj_id
 
@@ -241,7 +253,7 @@ class NeuralCorrelatesStates():
         events_percentage = compute_events_percentage(self.events_dataset)
         if condense:
             events_percentage = condense_distribution_event_types(events_percentage)
-        group_split = get_group_split(test_sbj_list=test_sbj_list, percentage_df=events_percentage)
+        group_split = get_group_split(test_sbj_list=test_sbj_list, df=events_percentage)
         stats = get_state_graph_stats(group_cond_df=group_split, stat=stat)
         return stats
 
@@ -258,9 +270,9 @@ if __name__ == "__main__":
                                  experiment_structure_filepath=experiment_structure_path,
                                  skip_subjects=skip_animals)
 
-
     ncs.fs = 24414.1
-    ncs.raw_neural_correlates_dataset = pd.read_pickle("../../../analysis/neural_correlates_states_clean/raw_neural.pkl")
+    ncs.raw_neural_correlates_dataset = pd.read_pickle(
+        "../../../analysis/neural_correlates_states_clean/raw_neural.pkl")
     ncs.create_psd_dataset(NFFT, NOV, zscore=False)
-    t = get_per_animal_average(ncs.psds_correlates_dataset, condense=True)
+    t = get_per_animal_psds_df(ncs.psds_correlates_dataset, condense=True)
     print("")

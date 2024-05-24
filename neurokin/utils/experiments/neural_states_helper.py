@@ -146,15 +146,12 @@ def mean_psds(psds_list):
     if psds_list:
         return np.mean(psds_list, axis=0)
 
-def get_per_animal_average(psds_dataset, condense=False):
+def get_per_animal_psds_df(psds_dataset, condense=False):
     psds_means = psds_dataset.copy()
     events_col = [c for c in psds_means.columns if c.startswith("event")]
     psds_means.drop(["date", "run"], inplace=True, axis=1)
-    psds_means = psds_means.groupby(["subject", "condition"], as_index=False)[events_col].agg(sum)
-    psds_means.replace(to_replace=0, value=None, inplace=True)
-     
-    ## How the fuck am I supposed to replace 0 with empty lists to allow for proper concatenation. Why the fuck are
-    # there 0s in the first place.
+    psds_means = psds_means.groupby(["subject", "condition"], as_index=False)[events_col].sum(min_count=1)
+    psds_means = psds_means.applymap(lambda x: [] if x is None else x)
 
     if condense:
         psds_means["event_nlm"] = psds_means["event_nlm_rest"] + psds_means["event_nlm_active"]
@@ -162,18 +159,19 @@ def get_per_animal_average(psds_dataset, condense=False):
         psds_means.drop(["event_nlm_rest", "event_fog_rest", "event_nlm_active", "event_fog_active"],
                         inplace=True, axis=1)
 
+    events_col = [c for c in psds_means.columns if c.startswith("event")]
     psds_means[events_col] = psds_means[events_col].applymap(mean_psds, na_action="ignore")
-    return
+    return psds_means
 
 
-def get_group_split(test_sbj_list, percentage_df):
+def get_group_split(test_sbj_list, df):
     """
     Splits the dataset in two groups depending on which subjects are in the test group and which not (control)
     :param test_sbj_list: list of subject IDs that belong to teh test group
     :param animals_avg_dataset: dictionary containing the psds organized by condition, animal and event
     :return: split dictionary between test_group and sham_group
     """
-    subject_groups = percentage_df.copy()
+    subject_groups = df.copy()
     subject_groups["group"] = subject_groups["subject"].apply(lambda x: x in test_sbj_list)
     return subject_groups
 
