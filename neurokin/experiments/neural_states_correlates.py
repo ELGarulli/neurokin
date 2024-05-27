@@ -6,10 +6,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from neurokin.experiments.neural_correlates import (get_events_dict, get_neural_correlates_dict, get_psd_dict,
+from neurokin.experiments.neural_correlates import (get_events_dict, get_neural_correlates_dict,
                                                     get_psd_single_event_type)
-from neurokin.utils.experiments.neural_states_helper import (get_events_per_animal, condense_neural_event_types,
-                                                             get_per_animal_psds_df, drop_subject_id, save_data,
+from neurokin.utils.experiments.neural_states_helper import (
+                                                             get_per_animal_psds_df, save_data,
                                                              compute_events_percentage,
                                                              condense_distribution_event_types,
                                                              get_group_split, get_state_graph_stats,
@@ -59,7 +59,7 @@ class NeuralCorrelatesStates():
             save_data(self.fs, "fs")
             save_data(self.raw_neural_correlates_dataset, filename)
         if dataset == "psd_neural_correlates_dataset":
-            save_data(self.psds_correlates_dict, filename)
+            save_data(self.psds_correlates_dataset, filename)
             save_data(self.freqs, "freqs")
 
     def create_events_dataset(self, experiment_path, verbose=False):
@@ -177,46 +177,6 @@ class NeuralCorrelatesStates():
                                                   psds_correlates_dataset), axis=1)
         self.freqs = np.fft.rfftfreq(n=nfft, d=1 / self.fs)
 
-    # PANDIZE
-    def _create_psd_dataset(self, nfft, nov, verbose=False):
-        """
-        Computes the Power Spectra Density of the neural correlates.
-        :param nfft: NFFT parameter to use for the Fourier Transform
-        :param nov: Overlap parameter to use for the Fourier Transform
-        :param verbose: if True it will print the currently processed run
-        :return: dictionary structured as condition, date, animal, run, event containing the PSD neural correlates.
-        """
-        if self.raw_neural_correlates_dataset is None:
-            print("Please create or load a raw neural dictionary first, "
-                  "using either the method create_events_dataset or load_dataset."
-                  "If the dataset is loaded it should be assigned to the attribute raw_neural_correlates_dict")
-            return
-
-        conditions_of_interest = list(self.raw_neural_correlates_dict.keys())
-        dataset_psd = {c: {} for c in conditions_of_interest}
-
-        self.freqs = None
-
-        for condition in conditions_of_interest:
-            dates = list(self.raw_neural_correlates_dict[condition].keys())
-            for date in dates:
-                animals = list(self.raw_neural_correlates_dict[condition][date].keys())
-                for animal in animals:
-                    runs = list(self.raw_neural_correlates_dict[condition][date][animal])
-                    for run in runs:
-                        if verbose:
-                            print(f"Currently processing: {date} - {animal} - {condition} - {run}")
-                        dataset_psd[condition].setdefault(date, {})
-                        dataset_psd[condition][date].setdefault(animal, {})
-                        neural_dict = self.raw_neural_correlates_dict[condition][date][animal][run]
-                        dataset_psd[condition][date][animal][run], freqs_ = get_psd_dict(neural_dict=neural_dict,
-                                                                                         fs=self.fs,
-                                                                                         nfft=nfft,
-                                                                                         noverlap=nov,
-                                                                                         zscore=True)
-                        if freqs_ is not None:
-                            self.freqs = freqs_
-        self.psds_correlates_dict = dataset_psd
 
     def plot_prep_psds_dataset(self, test_sbj_list, condense=True):
         """
@@ -229,20 +189,6 @@ class NeuralCorrelatesStates():
         group_split = get_group_split(test_sbj_list=test_sbj_list, df=per_animal_avg)
         return group_split
 
-    # PANDIZE
-    def _plot_prep_psds_dataset(self, test_sbj_list, condense=True):
-        """
-        Fixed shortcut to generate a PSDs dictionary dataset ready to be plotted
-        :param test_sbj_list: list of subject IDs that belong to the test group
-        :param condense: bool if to condense from 5 categories to 3
-        :return: PSDs dictionary dataset structured as group, condition, state
-        """
-        per_animal_events = get_events_per_animal(self.psds_correlates_dict)
-        if condense:
-            per_animal_events = condense_neural_event_types(per_animal_events)
-        per_animal_avg = get_per_animal_psds_df(per_animal_events)
-        no_sbj_id = drop_subject_id(test_sbj_list=test_sbj_list, animals_avg_psds=per_animal_avg)
-        return no_sbj_id
 
     def plot_prep_states_distribution(self, test_sbj_list, condense=True, stat="std"):
         """

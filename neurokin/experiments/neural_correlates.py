@@ -519,49 +519,6 @@ def get_single_neural_type(events_df, event_type, time_cutoff, fs, raw):
     return correlates
 
 
-def get_psd_dict(neural_dict, fs, nfft, noverlap, zscore=False):
-    states = [key for key in neural_dict.columns if key.startswith("event")]
-    psd_dict = {key: [] for key in states}
-    freqs = []
-    for state in states:
-        psds, freq = get_psd_single_event_type(neural_dict, fs, state, nfft, noverlap, zscore)
-        psd_dict[state] = psds
-        freqs.append(freq)
-    try:
-        freqs = [x for x in freqs if x is not None][0]
-    except IndexError:
-        freqs = None
-        print("No events that satisfy the conditions were found for this run")
-
-    return psd_dict, freqs
-
-
-# PANDIZE
-def _get_psd_dict(neural_dict, fs, nfft, noverlap, zscore=False):
-    psd_dict = {}
-
-    psds_gait, freqs_gait = get_psd_single_event_type(neural_dict, fs, "gait", nfft, noverlap, zscore)
-    psds_fog_active, freqs_fog_active = get_psd_single_event_type(neural_dict, fs, "fog_active", nfft, noverlap, zscore)
-    psds_fog_rest, freqs_fog_rest = get_psd_single_event_type(neural_dict, fs, "fog_rest", nfft, noverlap, zscore)
-    psds_nlm_active, freqs_nlm_active = get_psd_single_event_type(neural_dict, fs, "nlm_active", nfft, noverlap, zscore)
-    psds_nlm_rest, freqs_nlm_rest = get_psd_single_event_type(neural_dict, fs, "nlm_rest", nfft, noverlap, zscore)
-
-    psd_dict["gait"] = psds_gait
-    psd_dict["fog_active"] = psds_fog_active
-    psd_dict["fog_rest"] = psds_fog_rest
-    psd_dict["nlm_active"] = psds_nlm_active
-    psd_dict["nlm_rest"] = psds_nlm_rest
-
-    freqs_collection = [freqs_fog_active, freqs_fog_rest, freqs_gait, freqs_nlm_active, freqs_nlm_rest]
-
-    try:
-        freqs = [x for x in freqs_collection if x is not None][0]
-    except IndexError:
-        freqs = None
-        print("No events that satisfy the conditions were found for this run")
-
-    return psd_dict, freqs
-
 
 def get_psd_single_event_type(raw_neural_list, fs, nfft, noverlap, zscore):
     psds = []
@@ -584,52 +541,6 @@ def get_psd_single_event_type(raw_neural_list, fs, nfft, noverlap, zscore):
         psds.append(pxx)
 
         return psds
-
-
-def __get_psd_single_event_type(raw_nerual_list, fs, nfft, noverlap, zscore):
-    psds = []
-    freqs = None
-    for raw_neural in raw_nerual_list:
-        freqs_psd, pxx = processing.calculate_power_spectral_density(raw_neural,
-                                                                     fs,
-                                                                     nperseg=nfft,
-                                                                     noverlap=noverlap,
-                                                                     scaling="spectrum")
-        if freqs is None:
-            freqs = freqs_psd
-        else:
-            sanity_check = np.array_equal(freqs, freqs_psd)
-            if not sanity_check:
-                raise ValueError("The frequencies in the PSD calculation are unequal for different events. "
-                                 "Check for consistency in the events length")
-        if zscore:
-            pxx = stats.zscore(pxx)
-        psds.append(pxx)
-
-        return psds, freqs
-
-
-# PANDIZE
-def _get_psd_single_event_type(neural_dict, fs, event_type, nfft, noverlap, zscore):
-    psds = []
-    freqs = None
-    for raw_neural in neural_dict[event_type]:
-        freqs_psd, pxx = processing.calculate_power_spectral_density(raw_neural,
-                                                                     fs,
-                                                                     nperseg=nfft,
-                                                                     noverlap=noverlap,
-                                                                     scaling="spectrum")
-        if freqs is None:
-            freqs = freqs_psd
-        else:
-            sanity_check = np.array_equal(freqs, freqs_psd)
-            if not sanity_check:
-                raise ValueError("Something wrong with the frequencies in the PSD calculation")
-        if zscore:
-            pxx = stats.zscore(pxx)
-
-        psds.append(pxx)
-    return psds, freqs
 
 
 def check_time_cutoff(t_onset, t_end, time_cutoff):
