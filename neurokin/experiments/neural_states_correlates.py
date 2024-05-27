@@ -2,6 +2,7 @@ import os
 import re
 from typing import List, Dict
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -14,6 +15,7 @@ from neurokin.utils.experiments.neural_states_helper import (get_events_per_anim
                                                              get_group_split, get_state_graph_stats,
                                                              get_runs_list)
 from neurokin.utils.helper.load_config import read_config
+from neurokin.utils.experiments.neural_correlates_plot import plot_psd_single_state
 
 
 class NeuralCorrelatesStates():
@@ -274,5 +276,15 @@ if __name__ == "__main__":
     ncs.raw_neural_correlates_dataset = pd.read_pickle(
         "../../../analysis/neural_correlates_states_clean/raw_neural.pkl")
     ncs.create_psd_dataset(NFFT, NOV, zscore=False)
-    t = get_per_animal_psds_df(ncs.psds_correlates_dataset, condense=True)
+    df = ncs.plot_prep_psds_dataset(test_sbj_list=pda, condense=True)
+
+    fig, ax = plt.subplots()
+    plot_psd_single_state(ax, df, group=True,
+                                                 condition="baseline",
+                                                 state="event_gait",
+                                                 freqs=ncs.freqs,
+                                                 color="crimson",
+                                                 idx_min=2,
+                                                 idx_max=75)
+
     print("")

@@ -25,12 +25,12 @@ def plot_psd_single_state(ax, df,  group, condition, state, freqs, color, idx_mi
     add_shades(ax, f, data, idx_min, idx_max, color, stat=stat)
 
 
-def add_shades(ax, f, data, idx_min, idx_max, color, stat="std"):
+def add_shades(ax, f, df, idx_min, idx_max, color, stat="std"):
     """
     Helper function to plot shades.
     :param ax: the ax to plot on
     :param f: frequencies to use on the x-axis
-    :param data: the data to be plot (array like of states)
+    :param df: the data to be plot (array like of states)
     :param idx_min: minimum frequency index to plot
     :param idx_max: maximum frequency index to plot
     :param color: color to plot the shade in, with 0.3 alpha factor
@@ -38,12 +38,14 @@ def add_shades(ax, f, data, idx_min, idx_max, color, stat="std"):
                 "sem" for standard error of mean, "ci" for confidence interval
     :return:
     """
+
+    data = np.array(df.values.tolist())
     if stat == "sem":
         s = data.sem(axis=0)
     elif stat == "ci":
         s = data.apply(compute_ci, axis=0)
     elif stat == "std":
-        s = data.std(axis=0) #FIXME error possibly because it's cast to series. Check if the std is on the right axis
+        s = data.std(axis=0)
     else:
         raise ValueError(f"The statistic value {stat} is unsupported, please choose between std, sem or ci")
 
