@@ -35,7 +35,7 @@ def get_first_block_df(csv_path: str, skiprows: int = 0) -> pd.DataFrame:
     :return: pandas dataframe of the first block
     """
     block_end = get_csv_first_block_len(csv_path) - skiprows
-    df = pd.read_csv(csv_path, skiprows=skiprows, nrows=block_end)
+    df = pd.read_csv(csv_path, skiprows=skiprows, nrows=block_end, low_memory=False)
 
     return df
 
@@ -430,8 +430,13 @@ def get_events_dict(event_path, skiprows, framerate):
         first_frame, last_frame = None, None
     except ParserError:
         first_frame, last_frame = None, None
-
-    df.sort_values('Time (s)', inplace=True, ignore_index=True)
+    try:
+        df.sort_values('Time (s)', inplace=True, ignore_index=True)
+    except KeyError:
+        print("No events were labelled, assuming non-locomotor movement on the whole run")
+        event_onset, event_end = [first_frame / framerate], [last_frame / framerate]
+        events_dict["nlm_rest"] = list(map(list, zip(event_onset, event_end)))
+        return events_dict
 
     events_dict["gait"] = get_event_timestamps_gait(df)
 
@@ -518,7 +523,12 @@ def get_single_neural_type(events_df, event_type, time_cutoff, fs, raw):
 
     return correlates
 
-
+def compute_psd_for_row(row, events_columns, nfft, noverlap, zscore):
+    fs = row['fs']
+    psd_results = {}
+    for event in events_columns:
+        psd_results[event] = get_psd_single_event_type(row[event], fs=fs, nfft=nfft, noverlap=noverlap, zscore=zscore)
+    return pd.Series(psd_results)
 
 def get_psd_single_event_type(raw_neural_list, fs, nfft, noverlap, zscore):
     psds = []

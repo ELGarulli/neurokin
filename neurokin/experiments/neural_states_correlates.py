@@ -5,8 +5,8 @@ from typing import List, Dict
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
-from neurokin.experiments.neural_correlates import (get_events_dict, get_neural_correlates_dict,
+import pickle as pkl
+from neurokin.experiments.neural_correlates import (get_events_dict, get_neural_correlates_dict, compute_psd_for_row,
                                                     get_psd_single_event_type)
 from neurokin.utils.experiments.neural_states_helper import (
                                                              get_per_animal_psds_df, save_data,
@@ -147,9 +147,10 @@ class NeuralCorrelatesStates():
                       raw_neural_correlate["event_fog_rest"],
                       raw_neural_correlate["event_fog_active"]]
 
-            trial_neural_data.append(trial + events)
-
-        df = pd.DataFrame(trial_neural_data, columns=self.events_dataset.columns)
+            trial_neural_data.append(trial + events + [fs])
+        columns = self.events_dataset.columns.tolist()
+        columns.append("fs")
+        df = pd.DataFrame(trial_neural_data, columns=columns)
         self.raw_neural_correlates_dataset = df
 
     def create_psd_dataset(self, nfft, nov, zscore=False):
@@ -167,12 +168,18 @@ class NeuralCorrelatesStates():
             return
         events_columns = [c for c in self.raw_neural_correlates_dataset.columns if c.startswith("event")]
         meta_columns = [c for c in self.raw_neural_correlates_dataset.columns if not c.startswith("event")]
-        psds_correlates_dataset = self.raw_neural_correlates_dataset[events_columns].applymap(
-            get_psd_single_event_type,
-            fs=self.fs,
-            nfft=nfft,
-            noverlap=nov,
-            zscore=zscore)
+        psds_correlates_dataset = self.raw_neural_correlates_dataset.apply(lambda row: compute_psd_for_row(row,
+                                                                                                           events_columns,
+                                                                                                           nfft,
+                                                                                                           nov,
+                                                                                                           zscore),
+                                                                           axis=1)
+        #psds_correlates_dataset = self.raw_neural_correlates_dataset[events_columns].applymap(
+        #    get_psd_single_event_type,
+        #    fs=self.fs,
+        #    nfft=nfft,
+        #    noverlap=nov,
+        #    zscore=zscore)
         self.psds_correlates_dataset = pd.concat((self.raw_neural_correlates_dataset[meta_columns],
                                                   psds_correlates_dataset), axis=1)
         self.freqs = np.fft.rfftfreq(n=nfft, d=1 / self.fs)
@@ -212,25 +219,49 @@ if __name__ == "__main__":
     TIME_CUTOFF = 1.5
     experiment_structure_path = "../../../analysis/neural_correlates_states_clean/experiment_structure.yaml"
     pda = ["NWE00053", "NWE00054", "NWE00130", "NWE00160", "NWE00161", "NWE00162", "NWE00163", "NWE00164"]
-    skip_animals = ["NWE00053", "NWE00054", "NWE00052"]
+    CHANNEL_DICT = {"NWE00052": 6,
+                    "NWE00053": 1,
+                    "NWE00054": 1,
+                    "NWE00089": 1,
+                    "NWE00090": 1,
+                    "NWE00092": 1,
+                    "NWE00093": 1,
+                    "NWE00130": 3,
+                    "NWE00131": 2,
+                    "NWE00158": 3,
+                    "NWE00159": 3,
+                    "NWE00166": 3,
+                    "NWE00160": 3,
+                    "NWE00161": 3,
+                    "NWE00162": 3,
+                    "NWE00163": 3,
+                    "NWE00164": 3}
+    skip_animals = [i for i in CHANNEL_DICT.keys() if not i=="NWE00130"]
 
     ncs = NeuralCorrelatesStates(timeslice=TIME_CUTOFF,
                                  experiment_structure_filepath=experiment_structure_path,
                                  skip_subjects=skip_animals)
+    ncs.events_dataset_dict = ncs.events_dataset = pd.read_pickle("../../../analysis/neural_correlates_states_clean/raw_states.pkl")
 
-    ncs.fs = 24414.1
-    ncs.raw_neural_correlates_dataset = pd.read_pickle(
-        "../../../analysis/neural_correlates_states_clean/raw_neural.pkl")
+    #ncs.fs = 24414.1
+    #ncs.raw_neural_correlates_dataset = pd.read_pickle(
+    #    "../../../analysis/neural_correlates_states_clean/raw_neural.pkl")
+    #ncs.create_events_dataset("../../../analysis/neural_correlates_states_clean/data/neural_correlates_cervical_dataset/")
+    ncs.create_raw_neural_dataset("../../../analysis/neural_correlates_states_clean/data/neural_correlates_cervical_dataset/",
+                                  stream_names=["LFP1", "NPr1", "EOG1"],
+                                  ch_of_interest=CHANNEL_DICT)
+    with open('../../../analysis/neural_correlates_states_clean/data/neural_correlates_cervical_dataset/raw_neural_fs.pkl', 'wb') as handle:
+        pkl.dump(ncs.raw_neural_correlates_dataset, handle, protocol=pkl.HIGHEST_PROTOCOL)
     ncs.create_psd_dataset(NFFT, NOV, zscore=False)
     df = ncs.plot_prep_psds_dataset(test_sbj_list=pda, condense=True)
 
     fig, ax = plt.subplots()
     plot_psd_single_state(ax, df, group=True,
-                                                 condition="baseline",
-                                                 state="event_gait",
-                                                 freqs=ncs.freqs,
-                                                 color="crimson",
-                                                 idx_min=2,
-                                                 idx_max=75)
+                                condition="baseline",
+                                state="event_gait",
+                                freqs=ncs.freqs,
+                                color="crimson",
+                                idx_min=2,
+                                idx_max=75)
 
     print("")
