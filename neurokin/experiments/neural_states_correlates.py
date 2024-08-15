@@ -62,13 +62,14 @@ class NeuralCorrelatesStates():
             save_data(self.psds_correlates_dataset, filename)
             save_data(self.freqs, "freqs")
 
-    def create_events_dataset(self, experiment_path, verbose=False):
+    def create_events_dataset(self, experiment_path, verbose=False, file_starts_with=None):
         """
         Takes the experiment structure and based on the runs listed there it looks for .csv files to import.
         Then based on the labels, creates a dataframe containing condition, date, animal, run and event.
         Each event contains the list of timestamps [start, end] for that specific run
         :param experiment_path: folder where to find the dataset
         :param verbose: if True it will print the currently processed run
+        :param file_starts_with: set if the files to fetch begin with a specific pattern
         :return: dataframe containing data of each trial  and timestamps of events
         :param experiment_path:
         """
@@ -81,8 +82,13 @@ class NeuralCorrelatesStates():
             if verbose:
                 print(f"Currently processing: {date} - {subject} - {condition} - {run}")
             try:
-                event_path = [run_path + fname for fname in os.listdir(run_path) if
-                              re.match(r"(?i)[a-z_-]+[0-9]{1,3}.csv", fname)][0]
+                if file_starts_with:
+                    event_path = [run_path + fname for fname in os.listdir(run_path)
+                                  if fname.startswith(file_starts_with) and fname.endswith(".csv")][0]
+                else:
+
+                    event_path = [run_path + fname for fname in os.listdir(run_path) if
+                                  re.match(r"(?i)[a-z_-]+[0-9]{1,3}.csv", fname)][0]
                 events_dict = get_events_dict(event_path=event_path,
                                               skiprows=self.skiprows,
                                               framerate=self.framerate)
@@ -182,7 +188,7 @@ class NeuralCorrelatesStates():
         #    zscore=zscore)
         self.psds_correlates_dataset = pd.concat((self.raw_neural_correlates_dataset[meta_columns],
                                                   psds_correlates_dataset), axis=1)
-        self.freqs = np.fft.rfftfreq(n=nfft, d=1 / self.fs)
+        #self.freqs = np.fft.rfftfreq(n=nfft, d=1 / self.fs)
 
 
     def plot_prep_psds_dataset(self, test_sbj_list, condense=True):
