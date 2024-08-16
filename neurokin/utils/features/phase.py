@@ -2,7 +2,7 @@ from typing import Tuple, List, Dict, Optional, Union, Any
 import pandas as pd
 from .core import FeatureExtraction, DefaultParams
 from neurokin.utils.kinematics.gait_params_basics import get_phase, get_angle
-from neurokin.utils.features.joint_angles_dlc2kin import Feature_joint_angles
+from neurokin.utils.features.joint_angles_dlc2kin import JointAnglesDLC
 
 
 class PhasesAngle(FeatureExtraction):
@@ -28,7 +28,7 @@ class PhasesAngle(FeatureExtraction):
         markers_and_features_df = marker_df.copy()
         joint = [key for key in source_marker_ids.keys()][0]
         if not joint in marker_df.columns.levels[1]:
-            extractor_obj = Feature_joint_angles()
+            extractor_obj = JointAnglesDLC()
             feature = extractor_obj.extract_features(
                 source_marker_ids=source_marker_ids, marker_df=marker_df, params=params
             )

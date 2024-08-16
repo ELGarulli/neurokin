@@ -23,13 +23,14 @@ to_shift = ["rshoulder_y", "rcrest_y", "rhip_y",
 step_left_marker = "lmtp_z"
 step_right_marker = "rmtp_z"
 
-c3d_files = []
-for file in os.listdir(GAIT_PATH):
-    if file.endswith(".c3d"):
-        c3d_files.append(GAIT_PATH + file)
-file = c3d_files[3]
+if __name__ == "__main__":
+    c3d_files = []
+    for file in os.listdir(GAIT_PATH):
+        if file.endswith(".c3d"):
+            c3d_files.append(GAIT_PATH + file)
+    file = c3d_files[3]
 
 
-kin_data = KinematicDataRun(file, CONFIGPATH)       # creating a single run obj
-kin_data.load_kinematics(correct_tilt=False,         # loading data and tilt-shift correcting
-                         correct_shift=False)
+    kin_data = KinematicDataRun(file, CONFIGPATH)       # creating a single run obj
+    kin_data.load_kinematics(correct_tilt=False,         # loading data and tilt-shift correcting
+                             correct_shift=False)

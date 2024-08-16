@@ -1,7 +1,6 @@
 import os
 import re
 from typing import List, Dict
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -178,8 +177,7 @@ class NeuralCorrelatesStates():
                                                                                                            events_columns,
                                                                                                            nfft,
                                                                                                            nov,
-                                                                                                           zscore),
-                                                                           axis=1)
+                                                                                                           zscore), axis=1)
         #psds_correlates_dataset = self.raw_neural_correlates_dataset[events_columns].applymap(
         #    get_psd_single_event_type,
         #    fs=self.fs,
@@ -208,8 +206,7 @@ class NeuralCorrelatesStates():
         Fixed shortcut to generate a stats dictionary of the state distribution, ready to be plotted
         :param test_sbj_list: list of subject IDs that belong to the test group
         :param condense:  bool if to condense from 5 categories to 3
-        :return: stats dictionary dataset structured as group, condition,
-                state, stats {"mean":, "upper_bound", "lower_bound}
+        :return: stats dictionary dataset structured as group, condition, state, stats {"mean":, "upper_bound", "lower_bound}
         """
         events_percentage = compute_events_percentage(self.events_dataset)
         if condense:
