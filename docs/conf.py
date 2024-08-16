@@ -9,8 +9,8 @@ import sphinx_pdj_theme
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'neurokin'
-copyright = '2024, E.L. Garulli, Ghadi El Hasbani, Michael Schellenberger, Dennis Segebarth'
-author = 'E.L. Garulli, Ghadi El Hasbani, Michael Schellenberger, Dennis Segebarth'
+copyright = '2024, E.L. Garulli, G. El Hasbani, M. Schellenberger, D. Segebarth'
+author = 'E.L. Garulli, G. El Hasbani, M. Schellenberger, D. Segebarth'
 release = '0.1'
 
 # -- General configuration ---------------------------------------------------
