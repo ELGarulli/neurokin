@@ -40,7 +40,7 @@ def get_first_block_df(csv_path: str, skiprows: int = 0) -> pd.DataFrame:
     return df
 
 
-def get_first_last_frame_from_csv(csv_path: str) -> Tuple[int]:
+def get_first_last_frame_from_csv(csv_path: str) -> Tuple[int, int]:
     """
     Given a csv from Vicon, it will return the first and last frame of the region of interest.
     This is usually encoded as the first and last row of the second block in the file
@@ -74,7 +74,7 @@ def get_first_last_frame_from_csv(csv_path: str) -> Tuple[int]:
     return first_frame, last_frame
 
 
-def get_freeze_ts_bound(df: pd.DataFrame) -> List[float]:
+def get_freeze_ts_bound(df: pd.DataFrame) -> Tuple[List[float], List[float]]:
     """
     Returns onset and end of a freezing event in timestamps
     :param df: events dataframe
@@ -349,7 +349,7 @@ def get_neural_correlate_psd(raw: np.array,
                              t_off: float,
                              nfft: int,
                              nov: int,
-                             zscore: bool = True) -> Tuple[np.array]:
+                             zscore: bool = True) -> Tuple[np.array, np.array]:
     """
     Takes the beginning and end of an event, retrieves the corresponding chunk of neural data and computes the psd
     :param raw: raw neural single channel
@@ -541,11 +541,11 @@ def get_psd_single_event_type(raw_neural_list, fs, nfft, noverlap, zscore):
                                                                      scaling="spectrum")
         if freqs is None:
             freqs = freqs_psd
-        else:
-            sanity_check = np.array_equal(freqs, freqs_psd)
-            if not sanity_check:
-                raise ValueError("The frequencies in the PSD calculation are unequal for different events. "
-                                 "Check for consistency in the events length")
+
+        sanity_check = np.array_equal(freqs, freqs_psd)
+        if not sanity_check:
+            raise ValueError("The frequencies in the PSD calculation are unequal for different events. "
+                             "Check for consistency in the events length")
         if zscore:
             pxx = stats.zscore(pxx)
         psds.append(pxx)
