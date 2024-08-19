@@ -208,7 +208,7 @@ def get_spectrogram_data(fs: float, raw: ArrayLike, nfft: int = None,
     return sxx, _f, _t
 
 #TESTME with TDT data
-def calculate_power_spectral_density(data: ArrayLike, fs: int, **kwargs) -> tuple:
+def calculate_power_spectral_density(data: ArrayLike, fs: float, **kwargs) -> tuple:
     """
     Calculate the frequencies and power spectral densities from the raw recording time series data.
 

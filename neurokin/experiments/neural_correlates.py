@@ -228,7 +228,7 @@ def transpose_start_of_gait(start_of_gait: int, first_frame: int) -> int:
     return start_of_gait - first_frame if start_of_gait - first_frame > 0 else 0
 
 
-def create_exclusion_mask(idxs_to_exclude: List[List[float]], first_frame: int, last_frame: int) -> np.array:
+def create_exclusion_mask(idxs_to_exclude: List[List[int]], first_frame: int, last_frame: int) -> np.array:
     """
     Returns an array representing the region of interest of a run with
     True values only where there are no events to exclude
@@ -251,7 +251,7 @@ def create_exclusion_mask(idxs_to_exclude: List[List[float]], first_frame: int, 
     return mask
 
 
-def get_ts_from_exclusion_mask(mask: np.array, first_frame: int, framerate: int) -> List[List[float]]:
+def get_ts_from_exclusion_mask(mask: np.array, first_frame: int, framerate: int) -> Tuple[List[float], List[float]]:
     """
     Gets bounds of the exclusion mask and converts it in timestamps
     :param mask:
@@ -506,6 +506,17 @@ def get_neural_correlates_dict(neural_path,
 
 
 def get_single_neural_type(events_df, event_type, time_cutoff, fs, raw):
+    """
+    Fetches the neural chunks corresponding to all the events of a certain type. All events
+    are cut at the time_cutoff, to ensure consistency across different lengths (this implies
+    events shorter than time_cutoff are dropped).
+    :param events_df: dataframe containing all events timestamps
+    :param event_type: type of event to fetch the neural correlates for
+    :param time_cutoff: max length of an event to consider (shorter events are dropped)
+    :param fs: sampling frequency of the neural data
+    :param raw: raw neural data, single channel
+    :return: returns a list of the neural chunks corresponding to the events, cropped to time_cutoff
+    """
     correlates = []
     states_events_list = events_df[event_type].values
     for states_events in states_events_list:
@@ -524,6 +535,15 @@ def get_single_neural_type(events_df, event_type, time_cutoff, fs, raw):
     return correlates
 
 def compute_psd_for_row(row, events_columns, nfft, noverlap, zscore):
+    """
+    Computes Power Spectra Density arrays for all the events columns.
+    :param row: a pd.Dataframe row, containing a list of neural correlates for each event type and fs
+    :param events_columns: which columns contain the lists of neural chunks
+    :param nfft: what number of fft segments to use
+    :param noverlap: the overlap of the fft segments
+    :param zscore: whether to z-score the psd or not
+    :return Returns a pd.Series containing lists of Power Spectra Density arrays for all the events columns.
+    """
     fs = row['fs']
     psd_results = {}
     for event in events_columns:
@@ -531,6 +551,15 @@ def compute_psd_for_row(row, events_columns, nfft, noverlap, zscore):
     return pd.Series(psd_results)
 
 def get_psd_single_event_type(raw_neural_list, fs, nfft, noverlap, zscore):
+    """
+    Computes the Power Spectra Density array for all element in the list (corresponding to a single type of event)
+    :param raw_neural_list: list containing neural data arrays
+    :param fs: sampling frequency of the neural data
+    :param nfft: what number of fft segments to use
+    :param noverlap: the overlap of the fft segments
+    :param zscore: whether to z-score the psd or not
+    :return list of PSDs
+    """
     psds = []
     freqs = None
     for raw_neural in raw_neural_list:
@@ -554,6 +583,14 @@ def get_psd_single_event_type(raw_neural_list, fs, nfft, noverlap, zscore):
 
 
 def check_time_cutoff(t_onset, t_end, time_cutoff):
+    """
+    Checks if the difference between t_onset and t_end is lower than the time_cutoff. If not then computes the
+    end edge as t_onset + t_end and returns it.
+    :param t_onset: start of the event
+    :param t_end: end of the event
+    :param time_cutoff: minimum length of the event
+    :return None if event is too short, t_onset + t_end otherwise
+    """
     if t_end - t_onset < time_cutoff:
         return None
     elif t_end - t_onset > time_cutoff:

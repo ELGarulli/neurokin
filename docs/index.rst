@@ -5,12 +5,17 @@
 
 Welcome to neurokin's documentation!
 ====================================
+**neurokin** is a Python package to handle multimodal dataset that include
+neural data, kinematic data and events labels.
+Check out the :doc:`usage` section for further information, including how to
+:ref:`install <installation>` the project.
 
 .. toctree::
+   usage
+   modules
    :maxdepth: 2
    :caption: Contents:
 
-   neurokin
 
 
 Indices and tables
