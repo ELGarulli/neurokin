@@ -565,7 +565,7 @@ def compute_psd_for_row(row, events_columns, nfft, noverlap, zscore):
     :param nfft: what number of fft segments to use
     :param noverlap: the overlap of the fft segments
     :param zscore: whether to z-score the psd or not
-    :return Returns a pd.Series containing lists of Power Spectra Density arrays for all the events columns.
+    :return: Returns a pd.Series containing lists of Power Spectra Density arrays for all the events columns.
     """
     fs = row['fs']
     psd_results = {}
@@ -583,7 +583,7 @@ def get_psd_single_event_type(raw_neural_list, fs, nfft, noverlap, zscore):
     :param nfft: what number of fft segments to use
     :param noverlap: the overlap of the fft segments
     :param zscore: whether to z-score the psd or not
-    :return list of PSDs
+    :return: list of PSDs
     """
     psds = []
     freqs = None
@@ -615,7 +615,7 @@ def check_time_cutoff(t_onset, t_end, time_cutoff):
     :param t_onset: start of the event
     :param t_end: end of the event
     :param time_cutoff: minimum length of the event
-    :return None if event is too short, t_onset + t_end otherwise
+    :return: None if event is too short, t_onset + t_end otherwise
     """
     if t_end - t_onset < time_cutoff:
         return None
