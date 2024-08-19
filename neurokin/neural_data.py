@@ -1,4 +1,3 @@
-import neurokin.utils.commons
 from neurokin.utils.neural import importing
 from numpy.typing import ArrayLike
 
