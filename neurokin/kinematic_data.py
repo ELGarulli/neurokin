@@ -295,8 +295,8 @@ class KinematicDataRun:
 
         :param left_side:  target side name, left
         :param right_side: target side name, right
-        :param name_starts_with: if all columns of a side start with, specify here. E.g. 'l_' or 'r_'
-        :param name_ends_with: if all columns of a side end with, specify here. E.g. 'l_' or 'r_'
+        :param name_starts_with: if all columns of a side start with, specify here. E.g. 'l-' or 'r-'
+        :param name_ends_with: if all columns of a side end with, specify here. E.g. 'l-' or 'r-'
         :param expected_columns_number: expected number of columns, used as a sanity check
         :param left_columns: optional full list of names of left columns
         :param right_columns: optional full list of names of right columns
