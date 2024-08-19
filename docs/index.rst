@@ -13,14 +13,14 @@ Check out the :doc:`usage` section for further information, including how to
 
 .. image:: https://github.com/ELGarulli/neurokin/assets/85746126/e682d1b4-4e22-4422-8913-df8606be475f
     :alt: neurokin_workflow
-    :width: 600px
+    :width: 700px
     :align: center
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
-
+   :caption: HOWTO:
    usage
+   :caption: Contents:
    modules
 
 
