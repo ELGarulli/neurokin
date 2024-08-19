@@ -1,14 +1,6 @@
 neurokin.utils.neural package
 =============================
 
-.. autosummary::
-    :toctree: _autosummary
-
-    neurokin.utils.neural.exporting
-    neurokin.utils.neural.importing
-    neurokin.utils.neural.neural_plot
-    neurokin.utils.neural.processing
-
 Submodules
 ----------
 
