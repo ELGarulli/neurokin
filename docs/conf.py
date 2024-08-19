@@ -6,7 +6,7 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath('../'))
+sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -33,4 +33,4 @@ html_permalinks_icon = '<span>#</span>'
 html_theme = 'sphinxawesome_theme'
 html_logo = "./neurokin_logo_200.png"
 html_static_path = ['_static']
-
+html_favicon = './favicon.png'
