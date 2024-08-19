@@ -147,7 +147,7 @@ def import_binary_to_float32(filename, channel_number, sample_number):
     :param filename: file to import from
     :param sample_number: number of sample in each channel
     :param channel_number: number of channels
-    :return the array with shape channel_number*sample_number
+    :return: the array with shape channel_number*sample_number
     """
     dt = np.dtype('f4')
     test = np.fromfile(filename, dtype=dt)
