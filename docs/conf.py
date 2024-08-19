@@ -5,8 +5,13 @@
 
 import os
 import sys
+from sphinx.highlighting import lexers
+from pygments.lexers import PythonLexer
 
 sys.path.insert(0, os.path.abspath('..'))
+
+
+lexers['ipython3'] = PythonLexer()
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
