@@ -23,7 +23,7 @@ extensions = ['sphinx.ext.napoleon', 'sphinx.ext.viewcode', 'sphinx.ext.autodoc'
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
-autodoc_mock_imports = ["pandas", "numpy", "scipy", "tdt", "dlc2kinematics", "c3d"]
+autodoc_mock_imports = ["pandas", "numpy", "scipy", "tdt", "dlc2kinematics", "c3d", "yaml", "fooof", "matplotlib"]
 
 
 # -- Options for HTML output -------------------------------------------------
