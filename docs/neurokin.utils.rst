@@ -1,5 +1,13 @@
-neurokin.utils package
+neurokin.utils Subpackage
 ======================
+
+Module contents
+---------------
+
+.. automodule:: neurokin.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Subpackages
 -----------
@@ -13,10 +21,4 @@ Subpackages
    neurokin.utils.neural
 
 
-Module contents
----------------
 
-.. automodule:: neurokin.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:

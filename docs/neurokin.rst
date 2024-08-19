@@ -9,14 +9,6 @@ Module contents
    :undoc-members:
    :show-inheritance:
 
-Subpackages
------------
-
-.. toctree::
-   :maxdepth: 4
-
-   neurokin.utils
-
 Submodules
 ----------
 
@@ -44,4 +36,10 @@ neurokin.neural\_data module
    :undoc-members:
    :show-inheritance:
 
+Subpackages
+-----------
 
+.. toctree::
+   :maxdepth: 4
+
+   neurokin.utils
