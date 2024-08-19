@@ -1,5 +1,5 @@
 neurokin.utils Subpackage
-======================
+=========================
 
 Module contents
 ---------------
