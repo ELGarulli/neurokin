@@ -21,6 +21,7 @@ Check out the :doc:`usage` section for further information, including how to
    :caption: HOWTO:
 
    usage
+   notebooks/DEMO_states_analysis.ipynb
 
 .. toctree::
    :maxdepth: 2
