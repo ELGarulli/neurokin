@@ -5,5 +5,4 @@ neurokin
    :maxdepth: 2
 
    neurokin
-   neurokin.experiments
    neurokin.utils
