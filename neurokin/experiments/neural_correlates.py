@@ -14,6 +14,7 @@ from neurokin.utils.neural import (processing, importing)
 def get_csv_first_block_len(csv_path: str) -> int:
     """
     Reads in a csv and returns the len of the first block. This is until a row is empty.
+
     :param csv_path: path of the file
     :return: len of block
     """
@@ -30,6 +31,7 @@ def get_csv_first_block_len(csv_path: str) -> int:
 def get_first_block_df(csv_path: str, skiprows: int = 0) -> pd.DataFrame:
     """
     Gets the first block from a csv path. That is until the first empty line.
+
     :param csv_path: path of the file
     :param skiprows: how many rows to skip at the beginning
     :return: pandas dataframe of the first block
@@ -44,6 +46,7 @@ def get_first_last_frame_from_csv(csv_path: str) -> Tuple[int, int]:
     """
     Given a csv from Vicon, it will return the first and last frame of the region of interest.
     This is usually encoded as the first and last row of the second block in the file
+
     :param csv_path: path of the file
     :return:
     """
@@ -77,6 +80,7 @@ def get_first_last_frame_from_csv(csv_path: str) -> Tuple[int, int]:
 def get_freeze_ts_bound(df: pd.DataFrame) -> Tuple[List[float], List[float]]:
     """
     Returns onset and end of a freezing event in timestamps
+
     :param df: events dataframe
     :return: onset and end
     """
@@ -94,6 +98,7 @@ def get_event_timestamps_freezing_active(df: pd.DataFrame,
                                          timestamp_gait: List[List[float]]) -> List[List[float]]:
     """
     Returns freezing events after gait happened
+
     :param df: events dataframe
     :param timestamp_gait: list of gait timestamps
     :return: list of timestamps of freezing after gait events
@@ -120,6 +125,7 @@ def get_event_timestamps_freezing_rest(df: pd.DataFrame,
                                        timestamp_gait: List[List[float]]) -> List[List[float]]:
     """
     Returns freezing events before gait happened
+
     :param df: events dataframe
     :param timestamp_gait: list of gait timestamps
     :return: list of timestamps of freezing before gait events
@@ -144,6 +150,7 @@ def get_event_timestamps_freezing_rest(df: pd.DataFrame,
 def get_event_timestamps_gait(df: pd.DataFrame) -> List[List[float]]:
     """
     Returns gait events timestamps
+
     :param df:
     :return: list of timestamps of gait
     """
@@ -172,6 +179,7 @@ def get_idxs_events_to_exclude(framerate: int,
                                ts_to_exclude_gait: List[List[float]]) -> List[List[int]]:
     """
     Returns the indexes corresponding to the timestamps to exclude. It merges freezing events and gait events
+
     :param framerate: recording framerate
     :param last_frame: last frame of the region of interest
     :param ts_to_exclude_fog: timestamps of freezing
@@ -191,6 +199,7 @@ def get_idxs_events_to_exclude(framerate: int,
 def get_start_of_gait(framerate: int, ts_gait: List[List[float]]) -> int:
     """
     Returns the first frame of gait
+
     :param framerate: recording framerate
     :param ts_gait: timestamps of gait
     :return: first frame index of gait
@@ -204,6 +213,7 @@ def traspose_idxs(idxs_to_exclude: List[List[int]], first_frame: int) -> List[Li
     """
     Transposes the indexes to an array where first_frame is 0. Moreover it takes care of small idiosyncrasies when
     an event appears to start at frame -1
+
     :param idxs_to_exclude: list of indexes to be set to false
     :param first_frame: first frame of the region of interest
     :return: indexes transposed, same shape as inut
@@ -221,6 +231,7 @@ def transpose_start_of_gait(start_of_gait: int, first_frame: int) -> int:
     """
     Transposes the index of the start of gait where first_frame is 0.
     Moreover it takes care of small idiosyncrasies when an event appears to start at frame -1
+
     :param start_of_gait: start of the first gait event
     :param first_frame: first frame of the region of interest
     :return:
@@ -232,6 +243,7 @@ def create_exclusion_mask(idxs_to_exclude: List[List[int]], first_frame: int, la
     """
     Returns an array representing the region of interest of a run with
     True values only where there are no events to exclude
+
     :param idxs_to_exclude: list of the pairs of indexes to exclude [start, end]
     :param first_frame: first frame of the region of interest
     :param last_frame: last frame of the region of interest
@@ -254,6 +266,7 @@ def create_exclusion_mask(idxs_to_exclude: List[List[int]], first_frame: int, la
 def get_ts_from_exclusion_mask(mask: np.array, first_frame: int, framerate: int) -> Tuple[List[float], List[float]]:
     """
     Gets bounds of the exclusion mask and converts it in timestamps
+
     :param mask:
     :param first_frame: first frame of the region of interest
     :param framerate: recording framerate
@@ -277,6 +290,7 @@ def get_event_timestamps_nlm_active(framerate: int,
     """
     Creates a mask representing the region of interest excluding all the passed events,
     and any event before the first gait frame
+
     :param framerate: recording framerate
     :param first_frame: first frame of the region of interest
     :param last_frame: last frame of the region of interest
@@ -314,6 +328,7 @@ def get_event_timestamps_nlm_rest(framerate: int,
     """
     Creates a mask representing the region of interest excluding all the passed events,
     and any event after the first gait frame
+
     :param framerate: recording framerate
     :param first_frame: first frame of the region of interest
     :param last_frame: last frame of the region of interest
@@ -352,6 +367,7 @@ def get_neural_correlate_psd(raw: np.array,
                              zscore: bool = True) -> Tuple[np.array, np.array]:
     """
     Takes the beginning and end of an event, retrieves the corresponding chunk of neural data and computes the psd
+
     :param raw: raw neural single channel
     :param fs: sampling frequency
     :param t_on: beginning of event in seconds
@@ -378,6 +394,7 @@ def get_neural_correlate_psd(raw: np.array,
 def get_neural_ch(neural_path: str, ch: int, stream_name: str) -> Tuple[np.array, float]:
     """
     Retireves the raw neural signal and the sampling frequency
+
     :param neural_path: folder path to TDT recording
     :param ch: channel number 0 based
     :param stream_name: name  of the Stored listing
@@ -392,6 +409,7 @@ def get_neural_ch(neural_path: str, ch: int, stream_name: str) -> Tuple[np.array
 def time_to_frame_in_roi(timestamp: float, fs: float, first_frame: int) -> int:
     """
     Converts the time to frames in the region of interest (i.e. with an offset of the first frame)
+
     :param timestamp: time in seconds
     :param fs: sampling frequency
     :param first_frame: first frame of the region of interest
@@ -410,6 +428,7 @@ def get_events_dict(event_path, skiprows, framerate):
     """
     Runs trough all the .csv files in the experiment_path and returns a dictionary with the timestamps of each
     event, sorted by the type.
+
     :param event_path: path to the run to be analyzed
     :param skiprows: how many rows to skip as a header of the .csv
     :param framerate: frame rate of the acquisition system
@@ -471,6 +490,7 @@ def get_neural_correlates_dict(neural_path,
     """
     Returns a dictionary with the raw neural data corresponding to each event in the input events dictionary, from the
     selected channel of interest. Events duration is capped at time_cutoff to ensure homogeneity in the duration.
+
     :param neural_path: path to the folder with neural data
     :param channel_of_interest: channel to extract the raw data from
     :param stream_names: list of possible stream_names where the neural data is stored
@@ -510,6 +530,7 @@ def get_single_neural_type(events_df, event_type, time_cutoff, fs, raw):
     Fetches the neural chunks corresponding to all the events of a certain type. All events
     are cut at the time_cutoff, to ensure consistency across different lengths (this implies
     events shorter than time_cutoff are dropped).
+
     :param events_df: dataframe containing all events timestamps
     :param event_type: type of event to fetch the neural correlates for
     :param time_cutoff: max length of an event to consider (shorter events are dropped)
@@ -537,6 +558,7 @@ def get_single_neural_type(events_df, event_type, time_cutoff, fs, raw):
 def compute_psd_for_row(row, events_columns, nfft, noverlap, zscore):
     """
     Computes Power Spectra Density arrays for all the events columns.
+
     :param row: a pd.Dataframe row, containing a list of neural correlates for each event type and fs
     :param events_columns: which columns contain the lists of neural chunks
     :param nfft: what number of fft segments to use
@@ -553,6 +575,7 @@ def compute_psd_for_row(row, events_columns, nfft, noverlap, zscore):
 def get_psd_single_event_type(raw_neural_list, fs, nfft, noverlap, zscore):
     """
     Computes the Power Spectra Density array for all element in the list (corresponding to a single type of event)
+
     :param raw_neural_list: list containing neural data arrays
     :param fs: sampling frequency of the neural data
     :param nfft: what number of fft segments to use
@@ -586,6 +609,7 @@ def check_time_cutoff(t_onset, t_end, time_cutoff):
     """
     Checks if the difference between t_onset and t_end is lower than the time_cutoff. If not then computes the
     end edge as t_onset + t_end and returns it.
+
     :param t_onset: start of the event
     :param t_end: end of the event
     :param time_cutoff: minimum length of the event
