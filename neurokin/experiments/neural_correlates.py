@@ -555,6 +555,7 @@ def get_single_neural_type(events_df, event_type, time_cutoff, fs, raw):
 
     return correlates
 
+
 def compute_psd_for_row(row, events_columns, nfft, noverlap, zscore):
     """
     Computes Power Spectra Density arrays for all the events columns.
@@ -571,6 +572,7 @@ def compute_psd_for_row(row, events_columns, nfft, noverlap, zscore):
     for event in events_columns:
         psd_results[event] = get_psd_single_event_type(row[event], fs=fs, nfft=nfft, noverlap=noverlap, zscore=zscore)
     return pd.Series(psd_results)
+
 
 def get_psd_single_event_type(raw_neural_list, fs, nfft, noverlap, zscore):
     """
@@ -607,8 +609,8 @@ def get_psd_single_event_type(raw_neural_list, fs, nfft, noverlap, zscore):
 
 def check_time_cutoff(t_onset, t_end, time_cutoff):
     """
-    Checks if the difference between t_onset and t_end is lower than the time_cutoff. If not then computes the
-    end edge as t_onset + t_end and returns it.
+    Checks if the difference between t_onset and t_end is lower than the time_cutoff.
+    If not then computes the end edge as t_onset + t_end and returns it.
 
     :param t_onset: start of the event
     :param t_end: end of the event
