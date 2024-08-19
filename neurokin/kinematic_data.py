@@ -45,6 +45,7 @@ class KinematicDataRun:
                         tilt_reference_marker: str = ""):
         """
         Loads the kinematics from a c3d file into a dataframe with timeframes as rows and markers as columns
+
         :param correct_shift: bool should there be a correction in the shift of one of the axis?
         :param correct_tilt: bool should there be a correction in the tilt (linear trend) of one of the axis?
         :param to_shift: which columns to perform the shift on if correct_shift is true
@@ -89,6 +90,15 @@ class KinematicDataRun:
         return
 
     def get_c3d_compliance(self, smooth=False, filter_window=3, order=1):
+        """
+        Converts a DeepLabCut-like dataframe (MultiIndex) to a simple pandas dataframe. Saves the scorer identity and
+        the bodyparts in the corresponding class attributes.
+
+        :param smooth: whether to smooth the coordinates or not
+        :param filter_window: how big should the filter be
+        :param order: order of the polynomial to fit the data
+        :return:
+        """
         df_ = self.markers_df
         bodyparts = df_.columns.get_level_values("bodyparts").unique().to_list()
         scorer = df_.columns.get_level_values(0)[0]
@@ -113,6 +123,7 @@ class KinematicDataRun:
         """
         Computes the lifting and landing frames of both feet using a left and a right marker, respectively.
         To increase robustness of the cycle estimation it first low-passes the signal.
+
         :param left_marker: reference marker for the left foot, typically the left mtp
         :param right_marker: reference marker for the right foot, typically the right mtp
         :param recording_fs: sample frequency of the recording, used for low-passing.
@@ -138,6 +149,16 @@ class KinematicDataRun:
         return
 
     def plot_step_partition(self, step_left, step_right, ax_l, ax_r):
+        """
+        Plots the step partition of a gait trace (ideally toe or foot trace). Fetches the class attributes so the
+        steps computation has to happen before
+
+        :param step_left: name of the left trace body part
+        :param step_right: name of the right trace body part
+        :param ax_l: ax to plot the left trace on
+        :param ax_r: ax to plot the right trace on
+        :return: axes
+        """
         step_trace_l = self.markers_df[self.scorer][step_left]["z"]
         ax_l.plot(step_trace_l)
         ax_l.vlines(self.left_mtp_lift, min(step_trace_l), max(step_trace_l), colors="green")
@@ -156,24 +177,27 @@ class KinematicDataRun:
         return ax_l, ax_r
 
     def print_step_partition(self, step_left, step_right, output_folder="./"):
+        """
+        Creates and saves the step partition plot. See plot_step_partition method for details.
+
+        :param step_left: name of the left trace body part
+        :param step_right: name of the right trace body part
+        :param output_folder: where to save the figure
+        :return:
+        """
         fig, axs = plt.subplots(2, 1)
         fig.tight_layout(pad=2.0)
         filename = output_folder + self.path.split("/")[-1] + "_steps_partition.png"
-        step_trace_l = self.markers_df[self.scorer][step_left]
-        axs[0].plot(step_trace_l)
-        axs[0].vlines(self.left_mtp_lift, min(step_trace_l), max(step_trace_l), colors="green")
-        axs[0].vlines(self.left_mtp_land, min(step_trace_l), max(step_trace_l), colors="red")
-        axs[0].set_title("Left side")
-
-        step_trace_r = self.markers_df[self.scorer][step_right]
-        axs[1].plot(step_trace_r)
-        axs[1].vlines(self.right_mtp_lift, min(step_trace_r), max(step_trace_r), colors="green")
-        axs[1].vlines(self.right_mtp_land, min(step_trace_r), max(step_trace_r), colors="red")
-        axs[1].set_title("Right side")
+        axs[0], axs[1] = self.plot_step_partition(step_left, step_right, axs[0], axs[1])
         plt.savefig(filename, facecolor="white")
         plt.close()
 
     def extract_features(self):
+        """
+        Computes features on the markers dataframe based on the config file
+
+        :return:
+        """
         features = self.config["features"]
         skeleton = self.config["skeleton"]
 
@@ -188,11 +212,27 @@ class KinematicDataRun:
             self.features_df = new_features
 
     def get_binned_features(self, window=50, overlap=25):
+        """
+        Bins features based on the passed windows and overlap
+
+        :param window: window to compute the binning on
+        :param overlap: how much should 2 subsequent windows overlab by
+        :return: binned dataframe
+        """
         reformat_df = binning.parse_df_features_for_binning(self.markers_df, self.features_df)
         test = binning.get_easy_metrics_on_bins(reformat_df, window=window, overlap=overlap)
         return test
 
     def get_trace_height(self, marker, axis="z", window=50, overlap=25):
+        """
+        Computes height traces of a given marker
+
+        :param marker: which marker to consider
+        :param axis: x,y, or z, default z
+        :param window: window to compute the binning on
+        :param overlap: how much should 2 subsequent windows overlab by
+        :return:
+        """
         test = binning.get_step_height_on_bins(self.markers_df,
                                                window=window,
                                                overlap=overlap,
@@ -201,6 +241,15 @@ class KinematicDataRun:
         return test
 
     def get_step_fwd_movement_on_bins(self, marker, axis="y", window=50, overlap=25):
+        """
+        Computes forward movement traces of a given marker
+
+        :param marker: which marker to consider
+        :param axis: x,y, or z, default z
+        :param window: window to compute the binning on
+        :param overlap: how much should 2 subsequent windows overlab by
+        :return:
+        """
         test = binning.get_step_fwd_movement_on_bins(self.markers_df,
                                                window=window,
                                                overlap=overlap,
@@ -211,6 +260,7 @@ class KinematicDataRun:
     def gait_param_to_csv(self, output_folder="./"):
         """
         Writes the gait_param dataframe to a csv file with the name [INPUT_FILENAME]+_gait_param.csv
+
         :return:
         """
         self.gait_param.to_csv(output_folder + self.path.split("/")[-1].replace(".c3d", "_gait_param.csv"))
@@ -219,6 +269,7 @@ class KinematicDataRun:
     def stepwise_gait_features_to_csv(self, output_folder="./"):
         """
         Writes the gait_param dataframe to a csv file with the name [INPUT_FILENAME]+_gait_param.csv
+
         :return:
         """
         self.stepwise_gait_features.to_csv(
@@ -239,6 +290,18 @@ class KinematicDataRun:
                                name_starts_with=False, name_ends_with=False,
                                expected_columns_number=None,
                                left_columns=None, right_columns=None):
+        """
+        Returns dataframes split by the side, left or right.
+
+        :param left_side:  target side name, left
+        :param right_side: target side name, right
+        :param name_starts_with: if all columns of a side start with, specify here. E.g. "l_" or "r_"
+        :param name_ends_with: if all columns of a side end with, specify here. E.g. "l_" or "r_"
+        :param expected_columns_number: expected number of columns, used as a sanity check
+        :param left_columns: optional full list of names of left columns
+        :param right_columns: optional full list of names of right columns
+        :return:
+        """
         # self.stepwise_gait_features = 0
         left_df = pd.DataFrame()
         right_df = pd.DataFrame()

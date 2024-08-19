@@ -11,6 +11,7 @@ def simply_mean_data_binarize(sync_ch: np.ndarray):
     """
     Return a simply binarized array by setting anything below the mean to 0 and everything above to 1.
     Use only in very clear cut cases
+
     :param sync_ch: input sync channel
     :return: binarized array
     """
@@ -24,6 +25,7 @@ def get_stim_timestamps(sync_ch: np.ndarray, expected_pulses: int = None) -> np.
     Get indexes of only threshold crossing up from 0, i.e. edge detection.
     Sometimes there are spurious signals on the stimulation channel, when the stimulator turns off;
     if expected_pulses is given this function trims to the expected number of pulses.
+
     :param sync_ch: the stimulation sync channel data
     :param expected_pulses: number of expected pulses
     :return: trimmed indexes
@@ -43,6 +45,7 @@ def get_timestamps_stim_blocks(neudata, n_amp_tested, pulses, time_stim):
     """
     Given a DBS recording with multiple stimulation amplitudes tested it gives the time stamps of the onset and end
     of each block of stimulation.
+
     :param neudata: NeuralData object, containing sync_data
     :param n_amp_tested:
     :param pulses:
@@ -64,6 +67,7 @@ def get_timestamps_stim_blocks(neudata, n_amp_tested, pulses, time_stim):
 def get_median_distance(a: ArrayLike) -> float:
     """
     Gets median distance between points
+
     :param a: array-like data
     :return: median
     """
@@ -76,6 +80,7 @@ def get_median_distance(a: ArrayLike) -> float:
 def running_mean(x: ArrayLike, n: int) -> ArrayLike:
     """
     Returns the running mean with window n
+
     :param x: data
     :param n: window size
     :return: smoothed data
@@ -87,6 +92,7 @@ def running_mean(x: ArrayLike, n: int) -> ArrayLike:
 def trim_equal_len(raw: List[ArrayLike]) -> List[float]:
     """
     Trims a list of arrays to all have the same length.
+
     :param raw: raw data
     :return: list with trimmed data
     """
@@ -99,6 +105,7 @@ def parse_raw(raw: np.ndarray, stimulation_idxs: np.ndarray, samples_before_stim
               skip_one: bool = False, min_len_chunk: int = 1) -> np.ndarray:
     """
     Parses the signal given the timestamps of the stimulation.
+
     :param raw: raw data of one channel
     :param stimulation_idxs: indexes of the stimulation onset
     :param samples_before_stim: how much before the stimulation onset to parse
@@ -148,6 +155,7 @@ def get_average_amplitudes(parsed_raw, tested_amplitudes, pulses_number=None):
 def average_block(array: ArrayLike, start: int, stop: int) -> np.ndarray:
     """
     Averages a subset of elements
+
     :param array: input array
     :param start: start idx for parsing
     :param stop: stop idx for parsing
@@ -164,6 +172,7 @@ def find_closest_index(data: ArrayLike, datapoint: float) -> int:
     """
     Given an array of data and a datapoint it returns the index of the element that has
     the minimum difference to the datapoint
+
     :param data: data array-like
     :param datapoint: datapoint to find a close value to
     :return: index of the closest element
@@ -179,6 +188,7 @@ def find_closest_smaller_index(data: ArrayLike, datapoint: float) -> int:
     """
     Given an array of data and a datapoint it returns the index of the element that is the closest but lower than
     the datapoint
+
     :param data: data array-like
     :param datapoint: datapoint to find a close value to
     :return: index of the closest element, lower than the datapoint
@@ -197,6 +207,7 @@ def get_spectrogram_data(fs: float, raw: ArrayLike, nfft: int = None,
                          noverlap: int = None) -> Tuple[ArrayLike]:
     """
     Gets the data used to plot a spectrogram
+
     :param fs: sampling frequency
     :param raw: raw data
     :param nfft: nfft to compute the fft
@@ -223,6 +234,7 @@ def calculate_power_spectral_density(data: ArrayLike, fs: float, **kwargs) -> tu
 def get_fooofed_psd(freqs: ArrayLike, psd: ArrayLike, frange: List[int] = None) -> (ArrayLike, ArrayLike):
     """
     Computes the difference from the power spectrum and the aperiodic ie the periodic component
+
     :param freqs: frequencies corresponding to the y axis
     :param psd: power points corresponding to the x axis
     :param frange: range of frequencies where to compute the PSD
@@ -238,6 +250,7 @@ def get_fooofed_psd(freqs: ArrayLike, psd: ArrayLike, frange: List[int] = None) 
 def get_aperiodic(freqs: ArrayLike, psd: ArrayLike, frange: List[int] = None) -> (ArrayLike, ArrayLike):
     """
     Computes aperiodic component of the psd
+
     :param freqs:
     :param psd:
     :param frange:
@@ -253,6 +266,7 @@ def get_fast_foofed_specgram(raw: ArrayLike, fs: float, nperseg: int,
     """
     Returns a matrix corresponding to a periodgram where from each column the aperiodic component has been subtracted.
     Because of computational intensity only the overall aperiodic component is computed.
+
     :param raw: raw signal
     :param fs: sampling frequency
     :param nperseg: number of points per segment

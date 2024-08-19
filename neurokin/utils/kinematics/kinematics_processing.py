@@ -8,6 +8,7 @@ def get_marker_coordinates_names(df_columns_names, markers):
     """
     Returns the names of the columns that contain the name of the marker, to retrieve the 2 or 3 coordinates.
     E.g. lknee, will could return lknee_x, lknee_y, lknee_z.
+
     :param df_columns_names: dataframe column names with all the markers
     :param markers: markers of interest
     :return:
@@ -24,6 +25,7 @@ def get_marker_coordinate_values(df, marker_column_names, frame):
     """
     Given a dataframe, a list of column names referring to x, y (and z) of the same marker, and a frame number,
     it returns the corresponding values.
+
     :param df: dataframe
     :param marker_column_names: sets of markers names
     :param frame: frame number
@@ -38,6 +40,7 @@ def get_marker_coordinate_values(df, marker_column_names, frame):
 def compute_angle(coordinates):
     """
     Computes the angle in degrees given a set of (3,2) or (3, 3) coordinates.
+
     :param coordinates:
     :return:
     """

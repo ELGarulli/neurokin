@@ -5,6 +5,10 @@ import yaml
 def read_config(path, converts_keys_to_string=False):
     """
     Reads structured config file defining a project.
+
+    :param path: path to config
+    :param converts_keys_to_string:
+    :return: dict from a yaml file
     """
 
     try:
@@ -23,9 +27,10 @@ def read_config(path, converts_keys_to_string=False):
 def keys2string(d):
     """
     Convert all keys in strings (helpful if dates are keys).
+
     Reference: https://stackoverflow.com/questions/62198378/numeric-keys-in-yaml-files
-    :param d:
-    :return:
+    :param d: dictionary to convert the keys of
+    :return: converted dictionary
     """
     if isinstance(d, dict):
         for idx, k in enumerate(list(d.keys())):

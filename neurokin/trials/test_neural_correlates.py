@@ -1,19 +1,11 @@
 import pandas as pd
 import numpy as np
 
-from matplotlib import pyplot as plt
-from sklearn.decomposition import PCA
-from sklearn import preprocessing
-from sklearn.preprocessing import StandardScaler
-from sklearn.neighbors import LocalOutlierFactor
-import os
-import sys
 from neurokin.kinematic_data import KinematicDataRun
-from neurokin.utils.neural import processing
-from neurokin.experiments.neural_correlates import (get_first_block_df,
-                                                    get_event_timestamps_gait,
-                                                    get_event_timestamps_fog,
-                                                    time_to_frame_in_roi)
+from neurokin.utils.experiments.neural_correlates import (get_first_block_df,
+                                                          get_event_timestamps_gait,
+                                                          get_event_timestamps_fog,
+                                                          time_to_frame_in_roi)
 
 folder = "C:/Users/Elisa/Documents/GitHub/temp_data/c3d/"
 output_folder = "C:/Users/Elisa/Documents/GitHub/analysis/output_misc/"

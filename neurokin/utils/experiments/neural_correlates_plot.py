@@ -1,25 +1,26 @@
 import numpy as np
-from scipy import stats
 from neurokin.utils.experiments.neural_states_helper import compute_ci
 
-def plot_psd_single_state(ax, df,  group, condition, state, freqs, color, idx_min, idx_max, stat="std", linewidth=3):
-    """
 
-    :param ax:
-    :param group:
-    :param condition:
-    :param state:
-    :param freqs:
-    :param idx_min:
-    :param idx_max:
-    :param color:
-    :param stat:
-    :param linewidth:
+def plot_psd_single_state(ax, df, group, condition, state, freqs, color, idx_min, idx_max, stat="std", linewidth=3):
+    """
+    Plots the Power Spectral Denisty trace of a single state, on a given ax.
+
+    :param ax: axis to plot on
+    :param group: which subject group to plot
+    :param condition: which experimental condition to plot
+    :param state: which state to plot
+    :param freqs: frequencies corresponding to the full array of PSD values
+    :param idx_min: index of the minimum frequency to plot
+    :param idx_max: index of the maximum frequency to plot
+    :param color: color of the trace
+    :param stat: which stat to use to compute the shading, default standard deviation
+    :param linewidth: how thick to draw the mean line.
     :return:
     """
 
     f = freqs[idx_min:idx_max]
-    data = df[(df["group"] == group) & (df["condition"]==condition)][state]
+    data = df[(df["group"] == group) & (df["condition"] == condition)][state]
     data_mean = data.mean(axis=0)[idx_min:idx_max]
     ax.plot(f, data_mean, color=color, linewidth=linewidth)
     add_shades(ax, f, data, idx_min, idx_max, color, stat=stat)
@@ -28,6 +29,7 @@ def plot_psd_single_state(ax, df,  group, condition, state, freqs, color, idx_mi
 def add_shades(ax, f, df, idx_min, idx_max, color, stat="std"):
     """
     Helper function to plot shades.
+
     :param ax: the ax to plot on
     :param f: frequencies to use on the x-axis
     :param df: the data to be plot (array like of states)

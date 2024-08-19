@@ -40,11 +40,12 @@ def get_toe_lift_landing(y, recording_fs):
 # TESTME with pickled steps data
 def get_peak_boundaries_scipy(y: ndarray, px: float, left_crop: int) -> Tuple[int, int]:
     """
-    Computes the boundaries of a step by getting
-    :param y:
-    :param px:
-    :param left_crop:
-    :return:
+    Computes the boundaries of a step by getting the peaks boundaries
+
+    :param y: y values
+    :param px: peaks indexes
+    :param left_crop: how many samples to use to crop on the left side
+    :return: returns boundaries of steps
     """
     peaks = np.asarray([px - left_crop])
     peak_pro = signal.peak_prominences(y, peaks)
@@ -67,6 +68,7 @@ def get_peak_boundaries_scipy(y: ndarray, px: float, left_crop: int) -> Tuple[in
 def lowpass_array(array, critical_freq, fs):
     """
     Low passes the array for a given frequency using a 2nd order butterworth filter and filtfilt to avoid phase shift.
+
     :param array: input array
     :param critical_freq: critical filter frequency
     :param fs: sampling frequency
@@ -81,6 +83,7 @@ def lowpass_array(array, critical_freq, fs):
 def median_distance(a: ndarray) -> ndarray:
     """
     Gets median distance between peaks
+
     :param a:
     :return: median
     """

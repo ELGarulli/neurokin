@@ -8,6 +8,7 @@ def plot_spectrogram(ax: ax, fs: float, raw: ArrayLike, ylim: List[int], title: 
                      nfft: int = None, noverlap: int = None, vmin=None, vmax=None, **kwargs) -> ax:
     """
     Wrapper for matplotlib spectrogram to add some style elements.
+
     :param ax: axes where to plot
     :param fs: sampling frequency
     :param raw: raw data
@@ -30,6 +31,7 @@ def plot_welch(ax: ax, freqs: ArrayLike, pxx_den: ArrayLike, title: str = "PSD",
                tick_spacing: int = 10) -> ax:
     """
     Returns a plot of psd with some style elements
+
     :param ax: axes where to plot
     :param freqs: array like of frequencies corresponding to the x axis
     :param pxx_den: array like of powers corresponding to the y axis

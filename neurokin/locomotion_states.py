@@ -5,8 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pickle as pkl
-from neurokin.experiments.neural_correlates import (get_events_dict, get_neural_correlates_dict, compute_psd_for_row,
-                                                    get_psd_single_event_type)
+from neurokin.utils.experiments.neural_correlates import (get_events_dict, get_neural_correlates_dict, compute_psd_for_row)
 from neurokin.utils.experiments.neural_states_helper import (
                                                              get_per_animal_psds_df, save_data,
                                                              compute_events_percentage,
@@ -18,7 +17,9 @@ from neurokin.utils.experiments.neural_correlates_plot import plot_psd_single_st
 
 
 class NeuralCorrelatesStates():
-
+    """
+    This class allows to deal with unimodal and multimodal retrieval of sata based on states timestamps.
+    """
     def __init__(self,
                  timeslice: float,
                  experiment_structure_filepath: str,
@@ -44,6 +45,7 @@ class NeuralCorrelatesStates():
     def save_dataset(self, dataset, filename):
         """
         Saves dataset dictionary to pickle file
+
         :param dataset: str name of which dataset to save
         :param filename: filename without extension
         :return:
@@ -66,6 +68,7 @@ class NeuralCorrelatesStates():
         Takes the experiment structure and based on the runs listed there it looks for .csv files to import.
         Then based on the labels, creates a dataframe containing condition, date, animal, run and event.
         Each event contains the list of timestamps [start, end] for that specific run
+
         :param experiment_path: folder where to find the dataset
         :param verbose: if True it will print the currently processed run
         :param file_starts_with: set if the files to fetch begin with a specific pattern
@@ -116,6 +119,15 @@ class NeuralCorrelatesStates():
 
     def create_raw_neural_dataset(self, experiment_path, stream_names: List[str], ch_of_interest: Dict[str, int],
                                   verbose=False):
+        """
+        Creates a pandas dataframe containing neural chunks corresponding to locomotor events in each run.
+
+        :param experiment_path: path to the dataset
+        :param stream_names: names of streams where the data is saved (TDT specific)
+        :param ch_of_interest: channel of interest. Neural chunks are for only one channel
+        :param verbose: whether to print info on the run currently processed
+        :return:
+        """
 
         if self.events_dataset is None:
             print("Please create or load an events dictionary first, "
@@ -161,6 +173,7 @@ class NeuralCorrelatesStates():
     def create_psd_dataset(self, nfft, nov, zscore=False):
         """
         Computes the Power Spectra Density of the neural correlates.
+
         :param nfft: NFFT parameter to use for the Fourier Transform
         :param nov: Overlap parameter to use for the Fourier Transform
         :param verbose: if True it will print the currently processed run
@@ -191,9 +204,10 @@ class NeuralCorrelatesStates():
 
     def plot_prep_psds_dataset(self, test_sbj_list, condense=True):
         """
+        Creates a reduced dataframe of PSD ready to be plotted
 
-        :param test_sbj_list:
-        :param condense:
+        :param test_sbj_list: list of subjects that belong in the experimental condition
+        :param condense: whether to retain the 5 states format or condense to the 3 format.
         :return:
         """
         per_animal_avg = get_per_animal_psds_df(self.psds_correlates_dataset, condense=condense)
@@ -204,6 +218,7 @@ class NeuralCorrelatesStates():
     def plot_prep_states_distribution(self, test_sbj_list, condense=True, stat="std"):
         """
         Fixed shortcut to generate a stats dictionary of the state distribution, ready to be plotted
+
         :param test_sbj_list: list of subject IDs that belong to the test group
         :param condense:  bool if to condense from 5 categories to 3
         :return: stats dictionary dataset structured as group, condition, state, stats {"mean":, "upper_bound", "lower_bound}

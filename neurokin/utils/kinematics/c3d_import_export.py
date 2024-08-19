@@ -4,6 +4,12 @@ import pandas as pd
 
 #TESTME
 def c3d2csv(filename):
+    """
+    Converts a c3d file to a csv file
+
+    :param filename: name of the file to convert
+    :return:
+    """
     with open(filename, "rb") as f:
         labels = get_c3d_labels(f)
         labels.insert(0, "frame_n")
@@ -24,6 +30,7 @@ def c3d2csv(filename):
 def import_c3d(path):
     """
     Fills df from c3d file
+
     :param path: path to .c3d
     :return: first_frame, last_frame, sample_rate, df
     """
@@ -58,6 +65,7 @@ def import_c3d(path):
 def create_empty_df(scorer, bodyparts, frames_no):
     """
     Creates empty dataframe to receive 3d data frm c3d file
+
     :param scorer: mock data scorer
     :param bodyparts: list of bodyparts that will be in the dataframe
     :param frames_no: number of frames 
@@ -79,6 +87,7 @@ def create_empty_df(scorer, bodyparts, frames_no):
 def get_c3d_labels(handle):
     """
     Reads in the labels from a .c3d handle
+
     :param handle: 
     :return: labels
     """
@@ -92,6 +101,7 @@ def get_c3d_labels(handle):
 def import_c3d_events(path):
     """
     Gets labels and timing of events, together with first, last frame and sample rate
+
     :param path: path to .c3d
     :return: first_frame, last_frame, sample_rate, df
     """

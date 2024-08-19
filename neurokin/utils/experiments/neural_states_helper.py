@@ -7,6 +7,7 @@ import pandas as pd
 def load_dataset(dataset_path):
     """
     Load existing dataset dictionary, avoiding waiting time for processing
+
     :param dataset_path: path including filename to the dataset. Expects pickle files
     :return:
     """
@@ -26,12 +27,12 @@ def save_data(data, filename):
         pkl.dump(data, handle)
 
 
-
 def condense_distribution_event_types(percentage_states_df):
     """
     Condenses from the dataset five categories analysis
     ["fog_active", "fog_rest", "nlm_active", "nlm_rest", gait] to only
     three categories ["fog", "nlm", "gait"]
+
     :param cond_animal_event_dict: states dictionary structured as condition, animal, events.
     :return:  same dictionary with 3 conditions instead of 5
     """
@@ -43,10 +44,24 @@ def condense_distribution_event_types(percentage_states_df):
 
 
 def mean_psds(psds_list):
+    """
+    Returns mean psds if the list is full
+
+    :param psds_list: list of power spectral density arrays
+    :return: mean on axis 0
+    """
     if psds_list:
         return np.mean(psds_list, axis=0)
 
+
 def get_per_animal_psds_df(psds_dataset, condense=False):
+    """
+    Given the overall psds dataset, computes the average values, per state, per animal
+
+    :param psds_dataset: overall dataset
+    :param condense: wheter to condense to the 3 states format or keep the 5 format
+    :return: grouped-by-animal dataset
+    """
     psds_means = psds_dataset.copy()
     events_col = [c for c in psds_means.columns if c.startswith("event")]
     psds_means.drop(["date", "run"], inplace=True, axis=1)
@@ -67,6 +82,7 @@ def get_per_animal_psds_df(psds_dataset, condense=False):
 def get_group_split(test_sbj_list, df):
     """
     Splits the dataset in two groups depending on which subjects are in the test group and which not (control)
+
     :param test_sbj_list: list of subject IDs that belong to teh test group
     :param animals_avg_dataset: dictionary containing the psds organized by condition, animal and event
     :return: split dictionary between test_group and sham_group
@@ -91,6 +107,7 @@ def compute_events_percentage(events_dataset):
     """
     Computes the average percentage of time spent in each state for each animal. It normalizes every state duration to
     the total length of the run, then takes the average across all the runs available for that condition.
+
     :param events_dataset: dataset with event timestamps
     :return: dataframe containing condition, animal and event containing the average time spent in each state
     """
@@ -103,6 +120,12 @@ def compute_events_percentage(events_dataset):
 
 
 def compute_ci(array):
+    """
+    Computes the confidence interval given hardcoded value of 1.96.
+
+    :param array: array to compute the confidence interval on
+    :return: confidence interval value
+    """
     ci = 1.96 * np.std(array) / np.sqrt(len(array))
     return ci
 
@@ -110,6 +133,7 @@ def compute_ci(array):
 def get_state_graph_stats(group_cond_df, stat="std"):
     """
     Takes the group dataset and returns a dataframe with mean, upper bound and lower bound to be used to graph.
+
     :param group_cond_df:
     :param stat: which statistic to use to compute the upper and lowe bounds. Takes "std" for standard deviation,
                  "sem" for standard error of mean and "ci" for confidence interval.
@@ -127,7 +151,7 @@ def get_state_graph_stats(group_cond_df, stat="std"):
         raise ValueError(f"The statistic value {stat} is unsupported, please choose between std, sem or ci")
 
     mean_df = pd.melt(mean_df, id_vars=['group', 'condition'], value_vars=['event_gait', 'event_fog', 'event_nlm'],
-            var_name='event_type', value_name='mean')
+                      var_name='event_type', value_name='mean')
 
     dist_df = pd.melt(dist_df, id_vars=['group', 'condition'], value_vars=['event_gait', 'event_fog', 'event_nlm'],
                       var_name='event_type', value_name='distribution')
@@ -138,8 +162,15 @@ def get_state_graph_stats(group_cond_df, stat="std"):
     return stats
 
 
-
 def get_runs_list(experiment_structure, skip_subjects, skip_conditions):
+    """
+    Retrieves all the runs unique strings identifying day, subject, condition and run number
+
+    :param experiment_structure: dictionary containing the experiment structure
+    :param skip_subjects: which subjects to skip
+    :param skip_conditions: which condition to skip
+    :return: flat list with all the unique strings identifying runs
+    """
     experiment_combos = []
     dates = [date for date in experiment_structure.keys()]
     for date in dates:

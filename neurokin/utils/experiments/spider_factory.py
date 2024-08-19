@@ -99,6 +99,14 @@ def spider_factory(num_vars, frame='circle'):
 
 
 def get_polygon_corners(theta, bottom, top):
+    """
+    Retrieves the corners of a polygon encompassed by the shades borders to allow for proper shading
+
+    :param theta: radius reference
+    :param bottom: lower border of the shading. y values
+    :param top: upper border of the shading. y values
+    :return: x and y values of the polygon encompassed by the borders
+    """
     x = []
     y = []
     for i in theta:
@@ -111,17 +119,27 @@ def get_polygon_corners(theta, bottom, top):
 
 
 def plot_spider_single_trace(ax, data, color, theta, zorder=0):
+    """
+    Plots a single trace on a spider plot (radar plot)
+
+    :param ax: axis to plot on
+    :param data: dataset to plot
+    :param color: color to use to plot
+    :param theta: radius reference
+    :param zorder: z-order for stacking
+    :return:
+    """
     count_avg = data["mean"].values
-    n_std = data["lower_bound"].values
-    n_std[n_std < 0] = 0
-    p_std = data["upper_bound"].values
+    n_stat = data["lower_bound"].values
+    n_stat[n_stat < 0] = 0
+    p_stat = data["upper_bound"].values
 
     ax.plot(theta, count_avg, color=color, linewidth=3, zorder=zorder + 10)
 
     ax.scatter(theta, count_avg, color=color, s=50, zorder=zorder + 20)
 
-    ax.fill_between(theta, n_std, p_std,
+    ax.fill_between(theta, n_stat, p_stat,
                     facecolor=color, alpha=0.4, zorder=zorder)
 
-    ax.fill([theta[0], theta[0], theta[-1], theta[-1]], [p_std[0], n_std[0], n_std[-1], p_std[-1]],
+    ax.fill([theta[0], theta[0], theta[-1], theta[-1]], [p_stat[0], n_stat[0], n_stat[-1], p_stat[-1]],
             facecolor=color, alpha=0.4, zorder=zorder)

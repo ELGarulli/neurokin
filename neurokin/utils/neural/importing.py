@@ -39,6 +39,7 @@ def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1", s
     Wrapper for the import function of tdt, to be more user friendly.
     Warning: tdt function allows to specify for channels, however it's 1-based and if ch==0
     it returns all channels. Use the indexing carefully.
+
     :param folderpath: folderpath of the subject experiment
     :param ch:
     :param stream_name:
@@ -142,6 +143,7 @@ def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: 
 def import_binary_to_float32(filename, channel_number, sample_number):
     """
     Imports binary data stored in C major to a float32 array
+
     :param filename: file to import from
     :param sample_number: number of sample in each channel
     :param channel_number: number of channels

@@ -6,6 +6,7 @@ from matplotlib import pyplot as plt
 def get_angle(coordinates):
     """
     Get angle between 3 points in a 3d or 2d space
+
     :param coordinates: array with coordinates of 3 points
     :return: angle in degree
     """
@@ -24,6 +25,7 @@ def get_phase_at_max_amplitude(input_signal):
     Computes the phase of a signal at frequency that has the maximum amplitude.
     First computes the fft, then gets the index of maximum value from the real component, then the phase from the
     complex element at that index.
+
     :param input_signal:
     :return: phase
     """
@@ -40,6 +42,7 @@ def get_phase(input_signal):
     Computes the phase of a signal at frequency that has the maximum amplitude.
     First computes the fft, then gets the index of maximum value from the real component, then the phase from the
     complex element at that index.
+
     :param input_signal:
     :return: phase
     """
