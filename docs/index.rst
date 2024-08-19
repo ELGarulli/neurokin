@@ -10,6 +10,12 @@ neural data, kinematic data and events labels.
 Check out the :doc:`usage` section for further information, including how to
 :ref:`install <installation>` the project.
 
+
+.. image:: https://github.com/ELGarulli/neurokin/assets/85746126/e682d1b4-4e22-4422-8913-df8606be475f
+    :alt: neurokin_workflow
+    :width: 400px
+    :align: center
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
