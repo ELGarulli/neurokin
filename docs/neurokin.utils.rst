@@ -12,16 +12,6 @@ Subpackages
    neurokin.utils.kinematics
    neurokin.utils.neural
 
-Submodules
-----------
-
-neurokin.utils.commons module
------------------------------
-
-.. automodule:: neurokin.utils.commons
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 Module contents
 ---------------
