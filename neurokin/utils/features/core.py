@@ -12,10 +12,8 @@ class DefaultParams:
         self.values = values
         self.types = types
 
-    def assert_input_params_and_fill_with_defaults(
-        self, input_params: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        if input_params == None:
+    def assert_input_params_and_fill_with_defaults(self, input_params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        if input_params is None:
             input_params = self.values
         else:
             assert (
