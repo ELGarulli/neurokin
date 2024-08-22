@@ -1,7 +1,6 @@
 from neurokin.kinematic_data import KinematicDataRun
 import pandas as pd
-from neurokin.neural_data import NeuralData
-from neurokin.utils.neural import processing, neural_plot
+
 
 GAIT_PATH = "./neurokin/test_data/"
 NEURAL_PATH = "./temp_data/neural/220915/ENWE_00052-220915-153059/"
@@ -25,27 +24,25 @@ step_right_marker = "rmtp"
 
 #file = "../test_data/runway03.c3d"
 file = "C:/Users/Elisa/Documents/GitHub/temp_data/c3d_fog/92/runway04.c3d"
+dlc_file = "C:/Users/Elisa/Documents/GitHub/temp_data/CollectedData_Rafa.csv"
 
-kin_data = KinematicDataRun(file, CONFIGPATH)  # creating a single run obj
-kin_data.load_kinematics()
+if __name__=="__main__":
+    kin_data = KinematicDataRun(file, CONFIGPATH)  # creating a single run obj
+    #kin_data.markers_df = pd.MultiIndex.from_frame(pd.read_csv(dlc_file, header=[0, 1, 2], index_col=[0]))
+    kin_data.markers_df = pd.read_csv(dlc_file, header=[0, 1, 2], index_col=[0])
 
-kin_data.compute_gait_cycles_bounds(left_marker=step_left_marker,  # computing left right bounds of steps
-                                    right_marker=step_right_marker)
-kin_data.print_step_partition(step_left_marker, step_right_marker,
-                              output_folder)  # print step partition for inspection only
+    kin_data.convert_DLC_like_to_df()
 
-kin_data.get_c3d_compliance()
+    bodyparts_to_drop = [i[1] for i in kin_data.markers_df.columns.to_list()[::3] if i[1].startswith("*")]
+    kin_data.markers_df = kin_data.markers_df.drop(bodyparts_to_drop, axis=1, level=1, inplace=False)
+    #kin_data.markers_df.columns.names = ["scorer", "bodyparts", "coords"]
+    kin_data.bodyparts = [bp for bp in kin_data.bodyparts if bp not in bodyparts_to_drop]
+    kin_data.extract_features()
 
-bodyparts_to_drop = [i[1] for i in kin_data.markers_df.columns.to_list()[::3] if i[1].startswith("*")]
-kin_data.markers_df = kin_data.markers_df.drop(bodyparts_to_drop, axis=1, level=1, inplace=False)
-#kin_data.markers_df.columns.names = ["scorer", "bodyparts", "coords"]
-kin_data.bodyparts = [bp for bp in kin_data.bodyparts if bp not in bodyparts_to_drop]
-kin_data.extract_features()
+    test = kin_data.get_binned_features()
+    step_height = kin_data.get_trace_height(marker="lmtp", axis="z")
+    step_length = kin_data.get_step_fwd_movement_on_bins(marker="lmtp", axis="y")
 
-test = kin_data.get_binned_features()
-step_height = kin_data.get_trace_height(marker="lmtp", axis="z")
-step_length = kin_data.get_step_fwd_movement_on_bins(marker="lmtp", axis="y")
+    #kin_data.features_df = pd.concat((kin_data.features_df, step_height, step_length), axis=1)
 
-#kin_data.features_df = pd.concat((kin_data.features_df, step_height, step_length), axis=1)
-
-print(kin_data.features_df.head(10))
+    print(kin_data.features_df.head(10))

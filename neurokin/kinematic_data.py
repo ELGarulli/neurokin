@@ -89,6 +89,16 @@ class KinematicDataRun:
 
         return
 
+    def convert_DLC_like_to_df(self, multiindex_df=None):
+        if not multiindex_df:
+            multiindex_df = self.markers_df
+        self.scorer = multiindex_df.columns.get_level_values("bodyparts").unique().to_list()
+        self.bodyparts = multiindex_df.columns.get_level_values(0)[0]
+        df = multiindex_df.copy()
+        df.columns = ["_".join(a) for a in df.columns.to_flat_index()]
+        self.markers_df = df
+        return
+
     def get_c3d_compliance(self, smooth=False, filter_window=3, order=1):
         """
         Converts a DeepLabCut-like dataframe (MultiIndex) to a simple pandas dataframe. Saves the scorer identity and
