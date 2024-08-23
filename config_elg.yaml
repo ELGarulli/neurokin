@@ -1,0 +1,17 @@
+skeleton:
+    angles:
+        joints:
+            left_ear: [nose, ear left, shoulder left]
+            right_ear: [nose, ear right, shoulder right]
+    distances:
+        lef_shoulder_to_toe: [nose, tail base]
+    elevations:
+        left_hip: hip left
+        right_hip: hip right
+    
+    
+features:
+    aggregation.Aggregation:
+        window_size: 1
+        aggregation_method: sum
+

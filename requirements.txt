@@ -1,4 +1,4 @@
-c3d==0.5.1
+c3d~=0.5.2
 dlc2kinematics~=0.0.4
 fooof==1.0.0
 mock==4.0.3
@@ -13,3 +13,8 @@ matplotlib~=3.5.1
 pandas~=1.5.0
 scikit-learn~=1.1.3
 setuptools~=61.2.0
+
+sphinx~=7.1.2
+pygments~=2.13.0
+pytest~=7.4.4
+typeguard~=4.3.0

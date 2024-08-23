@@ -3,21 +3,27 @@ from typing import List, Union
 
 from typeguard import typechecked
 
+from neurokin.constants.features_extraction import VALID_EXTRACTION_TARGETS
+
 
 class FeatureExtraction(ABC):
 
     def __new__(cls, *args, **kwargs):
-        instance = super().__new__(cls)
         if not isinstance(cls.extraction_target, str):
             raise TypeError(f"Extraction target type not valid, expected str got {type(cls.extraction_target)}")
-        return instance
+
+        if cls.extraction_target not in VALID_EXTRACTION_TARGETS:
+            raise ValueError(
+                f"{cls.extraction_target} in not a valid target. Valid targets are "
+                f"{', '.join(str(i) for i in VALID_EXTRACTION_TARGETS)}")
+        return super().__new__(cls)
 
     @abstractmethod
     def compute_feature(self):
         pass
 
-    def run_feat_extraction(self):
-        self.compute_feature()
+    def run_feat_extraction(self, *args, **kwargs):
+        self.compute_feature(*args, **kwargs)
         return
 
 

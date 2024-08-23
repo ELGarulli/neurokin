@@ -10,6 +10,7 @@ def get_extractor_obj(feature_name):
     module_ = FEATURES_EXTRACTION_MODULE + module_
     m = import_module(module_)
     feature_extract_class = getattr(m, feature_class)
+    #TODO note here it is already initializing the class throws
     return feature_extract_class()
 
 
@@ -30,8 +31,8 @@ def extract_features(features, bodyparts, skeleton, markers_df):
         elif extraction_target == "multiple_markers":
             target_bodyparts = params.get("marker_ids", bodyparts)
 
-        for bodypart in target_bodyparts:
-            feature = extractor_obj.run_feat_extraction(bodypart=bodypart, markers_df=markers_df, params=params)
-            extracted_features.append(feature)
+        #for bodypart in target_bodyparts:
+        feature = extractor_obj.run_feat_extraction(df=markers_df, **params)
+        extracted_features.append(feature)
 
     return pd.DataFrame(extracted_features)

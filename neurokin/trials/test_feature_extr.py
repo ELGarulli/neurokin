@@ -4,7 +4,7 @@ import pandas as pd
 
 GAIT_PATH = "./neurokin/test_data/"
 NEURAL_PATH = "./temp_data/neural/220915/ENWE_00052-220915-153059/"
-CONFIGPATH = "../../config.yaml"
+CONFIGPATH = "../../config_elg.yaml"
 GAIT_RECORDING_FS = 200
 output_folder = "./"
 
@@ -33,8 +33,9 @@ if __name__=="__main__":
 
     kin_data.convert_DLC_like_to_df()
 
-    bodyparts_to_drop = [i[1] for i in kin_data.markers_df.columns.to_list()[::3] if i[1].startswith("*")]
-    kin_data.markers_df = kin_data.markers_df.drop(bodyparts_to_drop, axis=1, level=1, inplace=False)
+    #bodyparts_to_drop = [i[1] for i in kin_data.markers_df.columns.to_list()[::3] if i[1].startswith("*")]
+    bodyparts_to_drop = ['Unnamed: 1_level_0_Unnamed: 1_level_1_Unnamed: 1_level_2', 'Unnamed: 2_level_0_Unnamed: 2_level_1_Unnamed: 2_level_2']
+    kin_data.markers_df = kin_data.markers_df.drop(bodyparts_to_drop, axis=1, inplace=False)
     #kin_data.markers_df.columns.names = ["scorer", "bodyparts", "coords"]
     kin_data.bodyparts = [bp for bp in kin_data.bodyparts if bp not in bodyparts_to_drop]
     kin_data.extract_features()
