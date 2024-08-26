@@ -33,6 +33,7 @@ def extract_features(features, bodyparts, skeleton, markers_df):
 
         #for bodypart in target_bodyparts:
         feature = extractor_obj.run_feat_extraction(df=markers_df, **params)
-        extracted_features.append(feature)
+        extracted_features.append(pd.DataFrame(feature))
+    feats_df = pd.concat(extracted_features, axis=1)
 
-    return pd.DataFrame(extracted_features)
+    return feats_df

@@ -23,8 +23,8 @@ class FeatureExtraction(ABC):
         pass
 
     def run_feat_extraction(self, *args, **kwargs):
-        self.compute_feature(*args, **kwargs)
-        return
+        feat = self.compute_feature(*args, **kwargs)
+        return feat
 
 
 class MyFeat(FeatureExtraction):

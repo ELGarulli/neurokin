@@ -12,6 +12,7 @@ skeleton:
     
 features:
     aggregation.Aggregation:
-        window_size: 1
+        window_size: 3
+        step: 2
         aggregation_method: sum
 
