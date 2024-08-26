@@ -2,29 +2,6 @@ import c3d
 import numpy as np
 import pandas as pd
 
-#TESTME
-def c3d2csv(filename):
-    """
-    Converts a c3d file to a csv file
-
-    :param filename: name of the file to convert
-    :return:
-    """
-    with open(filename, "rb") as f:
-        labels = get_c3d_labels(f)
-        labels.insert(0, "frame_n")
-
-        run = []
-        for frame_no, points, analog in c3d.Reader(f).read_frames(copy=False):
-            fields = [frame_no]
-            for x, y, z, err, cam in points:
-                fields.append(str(x))
-                fields.append(str(y))
-                fields.append(str(z))
-            run.append(fields)
-
-    markers_df = pd.DataFrame(run, columns=labels)
-    markers_df.to_csv(filename.replace('.c3d', '.csv'), sep="\t")
 
 #TESTME
 def import_c3d(path):
@@ -61,6 +38,7 @@ def import_c3d(path):
 
     return first_frame, last_frame, sample_rate, df
 
+
 #TESTME
 def create_empty_df(scorer, bodyparts, frames_no):
     """
@@ -83,12 +61,13 @@ def create_empty_df(scorer, bodyparts, frames_no):
         dataFrame = pd.concat([frame, dataFrame], axis=1)
     return dataFrame
 
+
 #TESTME
 def get_c3d_labels(handle):
     """
     Reads in the labels from a .c3d handle
 
-    :param handle: 
+    :param handle:
     :return: labels
     """
     reader = c3d.Reader(handle)
@@ -96,21 +75,3 @@ def get_c3d_labels(handle):
     C, R = a.dimensions
     labels = [a.bytes[r * C: (r + 1) * C].strip().decode().lower() for r in range(R)]
     return labels
-
-#TESTME
-def import_c3d_events(path):
-    """
-    Gets labels and timing of events, together with first, last frame and sample rate
-
-    :param path: path to .c3d
-    :return: first_frame, last_frame, sample_rate, df
-    """
-    with open(path, "rb") as f:
-        c3d_reader = c3d.Reader(f)
-        first_frame = c3d_reader._header.first_frame
-        last_frame = c3d_reader._header.last_frame
-        sample_rate = c3d_reader._header.frame_rate
-        labels = c3d_reader._header.event_labels
-        event_timings = c3d_reader._header.event_timings
-
-    return first_frame, last_frame, sample_rate, labels, event_timings
