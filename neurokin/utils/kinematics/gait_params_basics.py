@@ -10,6 +10,12 @@ def get_angle(coordinates):
     :param coordinates: array with coordinates of 3 points
     :return: angle in degree
     """
+    if coordinates.shape != (3, 3) and coordinates.shape != (3, 2):
+        raise ValueError(
+            "The coordinates set have different length, it can only compute an angle in 3d space or 2d not mixed. "
+            "\nThis could happen if a marker has xy coordinate and another one xyz."
+            "\n Or if your markers are named ambiguously and multiple ones have the same name.")
+
     a = coordinates[0]
     b = coordinates[1]
     c = coordinates[2]
@@ -39,12 +45,10 @@ def get_phase_at_max_amplitude(input_signal):
 #TESTME
 def get_phase(input_signal):
     """
-    Computes the phase of a signal at frequency that has the maximum amplitude.
-    First computes the fft, then gets the index of maximum value from the real component, then the phase from the
-    complex element at that index.
-
+    Computes the phase of a signal.
+    First computes the fft, then the phase from the complex element at each index.
     :param input_signal:
-    :return: phase
+    :return: phases
     """
     spectrum = np.fft.fft(input_signal)
     phase = np.angle(spectrum)
