@@ -1,0 +1,29 @@
+Experiment: Vicon_Runway_Neural
+Subject: NWE00159
+User: TDTVR
+Date: 04/28/2023
+Time: 10:53:50am
+
+Object ID : RZ2(1) - RZn Processor
+ Rate     : 24414.1 Hz
+ Store ID : Note
+
+Object ID : NPro1 - Neural Stream Processor
+ Store ID : LFP1
+  Format  : Float-32
+  Scale   : Unity
+  Rate    : 24414.1 Hz
+
+Object ID : Wave1 - Stream Data Storage
+ Store ID : Wav1
+  Format  : Float-32
+  Scale   : Unity
+  Rate    : 24414.1 Hz
+
+
+Flat Listing:
+StoreID  Gizmo/Hal
+LFP1     NPro1
+Note     RZn(1)
+Wav1     Wave1
+

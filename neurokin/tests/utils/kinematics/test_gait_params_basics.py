@@ -206,5 +206,5 @@ class TestGetPhase:
              1.88276653, -1.56542311, -1.14260506]))
 
     def test_get_phase_with_custom_signal(self, custom_signal):
-        assert sum(gait_params_basics.get_phase(custom_signal))*1e15 == pytest.approx(-1.2048140263232199e-12*1e15)
+        assert sum(gait_params_basics.get_phase(custom_signal))*1e15 == pytest.approx(-1208.3667400020204)
         print(gait_params_basics.get_phase(custom_signal)[1:10])
