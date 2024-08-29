@@ -9,5 +9,5 @@ See the [documentation](https://neurokin.readthedocs.io/en/latest/) for example 
 
 
 <p align="center">
-  <img src="https://github.com/ELGarulli/neurokin/assets/85746126/e682d1b4-4e22-4422-8913-df8606be475f" />
+  <img src="https://github.com/user-attachments/assets/0ac3c436-f3f8-4c6a-a689-e359dbbbe4cb" />
 </p>
