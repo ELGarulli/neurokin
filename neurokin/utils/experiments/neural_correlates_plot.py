@@ -40,12 +40,13 @@ def add_shades(ax, f, df, idx_min, idx_max, color, stat="std"):
                 "sem" for standard error of mean, "ci" for confidence interval
     :return:
     """
-
-    data = np.array(df.values.tolist())
+    data = df.dropna().values
     if stat == "sem":
         s = data.sem(axis=0)
+        s = data.std(axis=0, ddof=1) / np.sqrt(np.size(data))
     elif stat == "ci":
         s = data.apply(compute_ci, axis=0)
+        s = compute_ci(data)
     elif stat == "std":
         s = data.std(axis=0)
     else:
