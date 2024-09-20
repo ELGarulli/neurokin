@@ -15,9 +15,11 @@ def simply_mean_data_binarize(sync_ch: np.ndarray):
     :param sync_ch: input sync channel
     :return: binarized array
     """
+    if np.any(np.isnan(sync_ch)):
+        raise ValueError("ValueError: nan detected in input array")
+
     mean = np.mean(sync_ch)
-    x_bin = [0 if i < mean else 1 for i in sync_ch]
-    return np.asarray(x_bin)
+    return np.where(sync_ch < mean, 0, 1)
 
 #TESTME
 def get_stim_timestamps(sync_ch: np.ndarray, expected_pulses: int = None) -> np.ndarray:
@@ -30,11 +32,27 @@ def get_stim_timestamps(sync_ch: np.ndarray, expected_pulses: int = None) -> np.
     :param expected_pulses: number of expected pulses
     :return: trimmed indexes
     """
+    if np.any(np.isnan(sync_ch)):
+        raise ValueError("ValueError: nan detected in input array")
+
+    if len(sync_ch.shape) > 1:
+        raise ValueError("ValueError: input shape " + str(sync_ch.shape) + " is not 1-D")
+
+    if not expected_pulses is None and expected_pulses <= 0:
+        raise ValueError(
+            "ValueError: expected_pulses should be > 0. expected pulses (" + str(expected_pulses) + ") is <= 0")
+
     threshold_crossing = np.diff(sync_ch > 0, prepend=False)
     idxs_edges = np.where(threshold_crossing)[0]
     stim_starts = idxs_edges[::2]
-    if expected_pulses:
-        stim_starts_trimmed = stim_starts[:expected_pulses]
+
+    if not expected_pulses is None:
+        if expected_pulses > len(stim_starts):
+            print("WARNING: expected pulses (" + str(expected_pulses) + ") is greater than detected pulses (" + str(
+                len(stim_starts)) + ").")
+
+        stim_starts_trimmed = stim_starts[
+                              :expected_pulses]
     else:
         stim_starts_trimmed = stim_starts
 
@@ -71,6 +89,9 @@ def get_median_distance(a: ArrayLike) -> float:
     :param a: array-like data
     :return: median
     """
+    if not np.issubdtype(a.dtype, np.number):
+        raise TypeError("TypeError: unsupported operand type(s) for -:" + str(a.dtype))
+
     distances = []
     for i in range(len(a) - 1):
         distances.append(a[i] - a[i + 1])
@@ -85,8 +106,18 @@ def running_mean(x: ArrayLike, n: int) -> ArrayLike:
     :param n: window size
     :return: smoothed data
     """
-    cumsum = np.cumsum(np.insert(x, 0, 0))
-    return (cumsum[n:] - cumsum[:-n]) / float(n)
+    if isinstance(x, list) or isinstance(x, tuple):
+        x = np.array(x)
+
+    if len(x.shape) > 1:
+        raise ValueError("ValueError: input shape " + str(x.shape) + " is not 1-D")
+    elif n <= 0 or n > len(x):
+        raise ValueError(
+            "ValueError: input `n` of `running_mean` should be a positive integer smaller or equal to length of input array 'x' (" + str(
+                len(x)) + "), provided value: " + str(n))
+    else:
+        cumsum = np.cumsum(np.insert(x, 0, 0))
+        return (cumsum[n:] - cumsum[:-n]) / float(n)
 
 #TESTME
 def trim_equal_len(raw: List[ArrayLike]) -> List[float]:
@@ -96,9 +127,9 @@ def trim_equal_len(raw: List[ArrayLike]) -> List[float]:
     :param raw: raw data
     :return: list with trimmed data
     """
-    lens = [len(r) for r in raw]
-    equaled = [r[:min(lens)] for r in raw]
-    return equaled
+    min_len = min([len(r) for r in raw])
+    trimmed = [r[:min_len] for r in raw]
+    return trimmed
 
 #TESTME
 def parse_raw(raw: np.ndarray, stimulation_idxs: np.ndarray, samples_before_stim: int,
@@ -113,6 +144,12 @@ def parse_raw(raw: np.ndarray, stimulation_idxs: np.ndarray, samples_before_stim
     :param min_len_chunk: filters the chunks to have a minimal len between pulses
     :return: parsed raw signal into an array of equally sized chunks
     """
+    if isinstance(stimulation_idxs, list) or isinstance(stimulation_idxs, tuple):
+        stimulation_idxs = np.array(stimulation_idxs)
+
+    if len(stimulation_idxs) == 0:
+        raise ValueError("Stimulation index is empty")
+
     stimulation_idxs = stimulation_idxs - samples_before_stim
     if stimulation_idxs[0] < 0:
         stimulation_idxs[0] = 0
@@ -161,6 +198,8 @@ def average_block(array: ArrayLike, start: int, stop: int) -> np.ndarray:
     :param stop: stop idx for parsing
     :return: average of the subset
     """
+    if start > stop or start < 0 or stop < 0 or start > len(array) or stop > len(array):
+        raise ValueError(f"ValueError: start and stop must be between 0 and len(array) ({len(array)})")
     parsed = array[start:stop]
     averaged = np.mean(parsed, axis=0)
     return averaged

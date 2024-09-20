@@ -18,16 +18,31 @@ def time_to_sample(timestamp: float, fs: float, is_t1: bool = False, is_t2: bool
     :return:
     """
     sample = timestamp * fs
+
+    if timestamp <= 0:
+        raise ValueError("ValueError: timestamp can be > 0, timestamp <= 0 detected (" + str(
+            timestamp) + ") as input to time_to_sample.")
+
+    if fs <= 0:
+        raise ValueError("ValueError: sampling frequency fs can be > 0, fs <= 0 detected (" + str(
+            fs) + ") as input to time_to_sample.")
+
     if is_t2:
+        if is_t1:
+            print("WARNING: both is_t1 and is_t2 are set to `True` in time_to_sample. Defaulting to is_t2.")
+
         exact = np.round(sample * 1e9) / 1e9
         sample = np.floor(sample)
+
         if exact == sample:
             sample -= 1
+
+    elif is_t1:
+        sample = np.ceil(sample)
+
     else:
-        if is_t1:
-            sample = np.ceil(sample)
-        else:
-            sample = np.round(sample)
+        sample = np.round(sample)
+
     sample = int(sample)
     return sample
 

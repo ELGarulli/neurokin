@@ -10,11 +10,13 @@ def get_angle(coordinates):
     :param coordinates: array with coordinates of 3 points
     :return: angle in degree
     """
+    if not np.issubdtype(coordinates.dtype, np.number):
+        raise TypeError("TypeError: unsupported operand type(s) for -:" + str(coordinates.dtype))
+
     if coordinates.shape != (3, 3) and coordinates.shape != (3, 2):
         raise ValueError(
-            "The coordinates set have different length, it can only compute an angle in 3d space or 2d not mixed. "
-            "\nThis could happen if a marker has xy coordinate and another one xyz."
-            "\n Or if your markers are named ambiguously and multiple ones have the same name.")
+            "ValueError: function needs 3 points in 2-D or 3-D space. Expected shapes (3, 2) or (3, 3). Shape provided: " + str(
+                coordinates.shape))
 
     a = coordinates[0]
     b = coordinates[1]
