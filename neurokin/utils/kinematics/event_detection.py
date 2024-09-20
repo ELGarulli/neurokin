@@ -22,18 +22,12 @@ def get_toe_lift_landing(y, recording_fs):
     max_x, _ = signal.find_peaks(y, prominence=PROMINENCE)
     avg_distance = abs(int(median_distance(max_x) / 2))
 
-    lb = []
-    rb = []
+    lb = np.where(max_x - avg_distance > 0, max_x - avg_distance, 0)
+    rb = np.where(max_x + avg_distance < len(y), max_x + avg_distance, len(y))
 
-    for p in max_x:
-        left = p - avg_distance if p - avg_distance > 0 else 0
-        right = p + avg_distance if p + avg_distance < len(y) else len(y)
-        bounds = get_peak_boundaries_scipy(y=y[left:right], px=p, left_crop=left)
-        lb.append(bounds[0])
-        rb.append(bounds[1])
+    for i, p in enumerate(max_x):
+        bounds = get_peak_boundaries_scipy(y=y[lb[i]:rb[i]], px=p, left_crop=lb[i])
 
-    lb = np.asarray(lb)
-    rb = np.asarray(rb)
     return lb, rb, max_x
 
 
@@ -87,7 +81,7 @@ def median_distance(a: ndarray) -> ndarray:
     :param a:
     :return: median
     """
-    distances = []
-    for i in range(len(a) - 1):
-        distances.append(a[i] - a[i + 1])
-    return np.median(distances)
+    if np.issubdtype(a.dtype, np.number):
+        return np.median(-np.diff(a))
+    else:
+        raise TypeError("TypeError: unsupported operand type(s) for -:" + str(a.dtype))
