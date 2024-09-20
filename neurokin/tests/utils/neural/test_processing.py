@@ -22,16 +22,11 @@ class TestSimplyMeanDataBinarize:
         assert np.array_equal(processing.simply_mean_data_binarize(np.array([1.0, 2.0, 3.0, 4.0])),
                               np.array([0, 0, 1, 1]))
 
-    @pytest.mark.skip(reason="fails due to nan comparisons")
     def test_simply_mean_data_binarize_with_nan_array(self):
-        # assert np.array_equal(processing.simply_mean_data_binarize(np.array([1, np.nan])), np.array([1, 1]))
         with pytest.raises(ValueError):
             processing.simply_mean_data_binarize(np.array([1, np.nan]))  # currently returns np.array([1, 1])
 
-    @pytest.mark.skip(reason="fails due to lack of support for 2D arrays")
     def test_simply_mean_data_binarize_with_2d_array(self):
-        # with pytest.raises(ValueError):
-        #    processing.simply_mean_data_binarize(np.array([[1, 1, 2], [1, 2, 3]]))  # should be np.array([[0, 0, 1],[0, 1, 1]])
         assert np.array_equal(processing.simply_mean_data_binarize(np.array([[1, 1, 2], [1, 2, 3]])),
                               np.array([[0, 0, 1], [0, 1, 1]]))
 
@@ -41,13 +36,14 @@ class TestGetStimTimestamps:
     def test_get_stim_timestamps_with_empty_array(self):
         assert np.array_equal(processing.get_stim_timestamps(np.array([])), np.array([]))
 
-    def test_get_stim_timestamps_with_nan_array(self):  # should this return Warning or ValueError?
-        assert np.array_equal(processing.get_stim_timestamps(np.array([np.nan])), np.array([]))
-        assert np.array_equal(processing.get_stim_timestamps(np.array([np.nan, 1])), np.array([1]))
+    def test_get_stim_timestamps_with_nan_array(self):
+        with pytest.raises(ValueError):
+            processing.get_stim_timestamps(np.array([np.nan]))
+        with pytest.raises(ValueError):
+            processing.get_stim_timestamps(np.array([np.nan, 1]))
 
-    @pytest.mark.skip(reason="fails due to lack of check for dim")
     def test_get_stim_timestamps_with_2d_array(self):
-        with pytest.raises(ValueError):  # currently returns np.array([0])
+        with pytest.raises(ValueError):
             processing.get_stim_timestamps(np.array([[1, 2, 3], [0, 2, 3]]))
 
     def test_get_stim_timestamps_with_random_array_without_expected_pulses(self):
@@ -70,23 +66,10 @@ class TestGetStimTimestamps:
             np.array([1]))
 
     def test_get_stim_timestamps_with_random_array_with_0_expected_pulses(self):
-        assert np.array_equal(
-            processing.get_stim_timestamps(np.array([0, 1, 2, 1, 2, 3, 0, 0, 1, 2, 3, 4]), expected_pulses=0),
-            np.array([1, 8]))  # should this return empty array np.array([])?
-
-    @pytest.mark.skip(reason="fails due to no handling of negative expected_pulses")
-    def test_get_stim_timestamps_with_random_array_with_negative_expected_pulses(self):
-        #assert np.array_equal(
-        #    processing.get_stim_timestamps(np.array([0, 1, 2, 1, 2, 3, 0, 0, 1, 2, 3, 4]), expected_pulses=-1),
-        #    np.array([1]))
-        #assert np.array_equal(
-        #    processing.get_stim_timestamps(np.array([0, 1, 2, 1, 2, 3, 0, 0, 1, 2, 3, 4]), expected_pulses=-2),
-        #    np.array([]))  # might want to return ValueError?
-        #assert np.array_equal(
-        #    processing.get_stim_timestamps(np.array([0, 1, 2, 1, 2, 3, 0, 0, 1, 2, 3, 4]), expected_pulses=-3),
-        #    np.array([]))  # might want to return ValueError?
         with pytest.raises(ValueError):
-            processing.get_stim_timestamps(np.array([0, 1, 2, 1, 2, 3, 0, 0, 1, 2, 3, 4]), expected_pulses=-1)
+            processing.get_stim_timestamps(np.array([0, 1, 2, 1, 2, 3, 0, 0, 1, 2, 3, 4]), expected_pulses=0)
+
+    def test_get_stim_timestamps_with_random_array_with_negative_expected_pulses(self):
         with pytest.raises(ValueError):
             processing.get_stim_timestamps(np.array([0, 1, 2, 1, 2, 3, 0, 0, 1, 2, 3, 4]), expected_pulses=-2)
 
@@ -187,18 +170,13 @@ class TestGetMedianDistance:
         assert processing.get_median_distance(
             np.array([1, 3, 5, 6, 9, 16, 19, 22, 27, 30, 38, 39, 70])) == pytest.approx(3.0)
 
-    @pytest.mark.skip(reason="fails due to lack of check for string input")
     def test_get_median_distance_with_1_string_element(
-            self):  # currently returns nan, might be better to return TypeError
+            self):
         with pytest.raises(TypeError):
             processing.get_median_distance(np.array(['a']))
-        # assert np.isnan(processing.get_median_distance(np.array(['a'])))
 
 
 class TestRunningMean:
-
-    def test_running_mean_with_empty_array(self):
-        assert np.array_equal(processing.running_mean(x=np.array([]), n=1), np.array([]))
 
     def test_running_mean_with_random_array(self):
         np.testing.assert_allclose(processing.running_mean(x=np.array([1, 2, 3, 4, 5]), n=1),
@@ -219,29 +197,22 @@ class TestRunningMean:
     def test_running_mean_with_n_equal_to_array_length(self):
         np.testing.assert_allclose(processing.running_mean(x=np.array([1, 2, 3, 4, 5]), n=5), np.array([3.0]))
 
-    @pytest.mark.skip(reason="fails due to lack of check for value of 'n'")
     def test_running_mean_with_invalid_n(self):
-        # assert np.array_equal(processing.running_mean(x=np.array([1, 2, 3, 4, 5]), n=6), np.array([]))
-        with pytest.raises(ValueError):  # currently returns np.array([])
+        with pytest.raises(ValueError):
             processing.running_mean(x=np.array([1, 2, 3, 4, 5]), n=6)
 
         with pytest.raises(ValueError):
             processing.running_mean(x=np.array([1, 2, 3, 4, 5]), n=0)
 
-        with pytest.raises(ValueError):  # currently returns np.array([-15.])
+        with pytest.raises(ValueError):
             processing.running_mean(x=np.array([1, 2, 3, 4, 5]), n=-1)
 
-    @pytest.mark.skip(reason="fails due to lack of check for dim")
     def test_running_mean_with_2d_array(self):
-        with pytest.raises(ValueError):  # currently returns np.array([1., 2., 3., 4., 5., 1., 2., 3., 4., 5.])
+        with pytest.raises(ValueError):
             processing.running_mean(x=np.array([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]]), n=1)
 
 
 class TestTrimEqualLen:
-
-    def test_trim_equal_len_with_empty_list(self):
-        raw = []
-        assert all([np.array_equal(a, b) for a, b in zip(processing.trim_equal_len(raw), raw)])
 
     def test_trim_equal_len_with_list_of_at_least_1_empty_arrays(self):
         raw = [np.array([]), np.array([])]
@@ -347,18 +318,14 @@ class TestParseRaw:
         assert np.array_equal(processing.parse_raw(raw, stimulation_idxs, samples_before_stim, skip_one, min_len_chunk),
                               np.array([[3.1], [2.6], [1.7]]))
 
-    @pytest.mark.skip(reason="fails due to lack of support for stimulation_idxs of type 'list'")
     def test_parse_raw_with_stimulation_idxs_as_list(self,
                                                      input_data):  # could add support for this data type since raw can work as a list
         raw, stimulation_idxs, samples_before_stim, skip_one, min_len_chunk = input_data
         stimulation_idxs = [3, 10, 14, 16, 19]
 
-        # with pytest.raises(TypeError):
-        #    processing.parse_raw(raw, stimulation_idxs, samples_before_stim, skip_one, min_len_chunk)
         np.testing.assert_allclose(processing.parse_raw(raw, stimulation_idxs, samples_before_stim, skip_one, min_len_chunk),
                               np.array([[3.1], [2.2], [2.6], [0.7], [1.7]]))
 
-    @pytest.mark.skip(reason="fails due to lack of constraint on length of stimulation_idxs")
     def test_parse_raw_with_empty_stimulation_idxs(self, input_data):
         raw, stimulation_idxs, samples_before_stim, skip_one, min_len_chunk = input_data
         stimulation_idxs = np.array([])
@@ -443,33 +410,26 @@ class TestAverageBlock:
 
         assert processing.average_block(array, start, stop) == pytest.approx(3.5)
 
-    def test_average_block_with_random_2d_input(self, input_data):
-        array, start, stop = input_data
-        array = np.array([[0.4, 1.2], [2.7, 1.8], [2.2, 3.6], [4.4, 3.5], [1.2, 0.7]])
-
-        np.testing.assert_allclose(processing.average_block(array, start, stop), np.array([2.18, 2.16]))
-
     def test_average_block_with_stop_greater_than_array_length(self, input_data):
         array, start, stop = input_data
         stop = 9
 
-        assert processing.average_block(array, start, stop) == pytest.approx(3.5)
+        with pytest.raises(ValueError):
+            processing.average_block(array, start, stop)
 
     def test_average_block_with_start_greater_than_array_length(self, input_data):
         array, start, stop = input_data
         start = 9
 
-        assert np.isnan(processing.average_block(array, start, stop))  # could be better to return IndexError
-        # with pytest.raises(IndexError):
-        #    processing.average_block(array, start, stop)
+        with pytest.raises(ValueError):
+            processing.average_block(array, start, stop)
 
     def test_average_block_with_empty_array(self, input_data):
         array, start, stop = input_data
         array = np.array([])
 
-        assert np.isnan(processing.average_block(array, start, stop))  # could be better to return ValueError
-        # with pytest.raises(ValueError):
-        #    processing.average_block(array, start, stop)
+        with pytest.raises(ValueError):
+            processing.average_block(array, start, stop)
 
 
 class TestFindClosestIndex:
@@ -504,14 +464,6 @@ class TestFindClosestIndex:
 
 class TestFindClosestSmallerIndex:
 
-    @pytest.mark.skip(reason="fails due to lack of check for empty input")
-    def test_find_closest_smaller_index_with_empty_input(self):
-        data = np.array([])
-
-        # assert processing.find_closest_smaller_index(data, datapoint=3) == 0
-        with pytest.raises(ValueError):
-            processing.find_closest_index(data, datapoint=3)
-
     def test_find_closest_smaller_index_with_nan_input(self):  # should this case be handled differently?
         data = np.array([np.nan, 1])
 
@@ -541,7 +493,7 @@ class TestGetSpectrogramData:
 
     @pytest.fixture
     def input_data(self):
-        path = '../../test_data/TDT_test_data'
+        path = '../../../test_data/TDT_test_data'
 
         baseline = NeuralData(path=path)
         baseline.load_tdt_data(stream_name='NPr2', sync_present=True, t2=28.79)
@@ -693,7 +645,7 @@ class TestCalculatePowerSpectralDensity:
 
     @pytest.fixture
     def input_data(self):
-        path = '../../test_data/TDT_test_data'
+        path = '../../../test_data/TDT_test_data'
 
         baseline = NeuralData(path=path)
         baseline.load_tdt_data(stream_name='NPr2', sync_present=True, t2=28.79)

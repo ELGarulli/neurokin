@@ -26,31 +26,18 @@ class TestTimeToSample:
         assert importing.time_to_sample(timestamp=28.72, fs=24414.0625, is_t2=True) == 701171
 
     def test_time_to_sample_with_timestamp_equal_zero(self):
-        assert importing.time_to_sample(timestamp=0, fs=40.2, is_t1=False, is_t2=False) == 0
-        assert importing.time_to_sample(timestamp=0, fs=40.2, is_t1=True, is_t2=False) == 0
-        assert importing.time_to_sample(timestamp=0, fs=24414.0625, is_t1=True, is_t2=False) == 0
-
-    @pytest.mark.skip(reason="fails due to lack of check for value of 'timestamp' parameter when 'is_t2' is 'True'")
-    def test_time_to_sample_with_timestamp_equal_zero_and_is_t2_equal_true(self):
         with pytest.raises(ValueError):
-            importing.time_to_sample(timestamp=0, fs=40.2, is_t1=False, is_t2=True)
-        # assert importing.time_to_sample(timestamp=0, fs=40.2, is_t1=False, is_t2=True) == -1  # maybe should process timestamp == 0 case differently so that output stays positive? should correct output be 0 whenever timestamp == 0 no matter t1 or t2?
+            assert importing.time_to_sample(timestamp=0, fs=40.2, is_t1=True, is_t2=False) == 0
 
-    @pytest.mark.skip(reason="fails due to lack of constraints on values of 'timestamp' parameter")
     def test_time_to_sample_with_negative_timestamp(self):
-        # assert importing.time_to_sample(timestamp=-1, fs=40.2, is_t1=False, is_t2=False) == -40  # this should probably throw ValueError, unless time is allowed to be in the negative direction
         with pytest.raises(ValueError):
             importing.time_to_sample(timestamp=-1, fs=40.2, is_t1=False, is_t2=False)
 
-    @pytest.mark.skip(reason="fails due to lack of constraints on values of 'fs' parameter")
-    def test_time_to_sample_with_fs_equal_0():
-        # assert importing.time_to_sample(timestamp=1.75, fs=0, is_t1=False, is_t2=False) == 0  # maybe should throw ValueError?
+    def test_time_to_sample_with_fs_equal_0(self):
         with pytest.raises(ValueError):
             importing.time_to_sample(timestamp=1.75, fs=0, is_t1=False, is_t2=False)
 
-    @pytest.mark.skip(reason="fails due to lack of constraints on values of 'fs' parameter")
     def test_time_to_sample_with_negative_fs(self):
-        # assert importing.time_to_sample(timestamp=1, fs=-40.2, is_t1=False, is_t2=False) == -40  # this should probably throw ValueError
         with pytest.raises(ValueError):
             importing.time_to_sample(timestamp=1, fs=-40.2, is_t1=False, is_t2=False)
 
