@@ -12,7 +12,7 @@ def get_key(input_value):
 
 @pytest.fixture
 def custom_signal():
-    with open('../../test_data/steps_test_data/steps_y.pkl', 'rb') as f:
+    with open('../../../test_data/steps_test_data/steps_y.pkl', 'rb') as f:
         custom_signal = pickle.load(f).to_numpy()
     yield custom_signal
 
@@ -65,7 +65,7 @@ class TestComparePhase:
         def raise_exception():
             raise TypeError(f"Invalid input: {input_signal}")
 
-        with open('../../test_data/steps_test_data/steps_y.pkl', 'rb') as f:
+        with open('../../../test_data/steps_test_data/steps_y.pkl', 'rb') as f:
             custom_signal = pickle.load(f).to_numpy()
         mid = int(len(custom_signal)/2)
 

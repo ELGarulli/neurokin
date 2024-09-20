@@ -3,8 +3,8 @@ import numpy as np
 import pandas as pd
 from neurokin.utils.kinematics import c3d_import_export
 
-C3D_PATH_1 = '../../test_data/neural_correlates_test_data/230428/NWE00159/15/runway15.c3d'
-C3D_PATH_2 = '../../test_data/neural_correlates_test_data/230619/NWE00163/13/runway_13.c3d'
+C3D_PATH_1 = '../../../test_data/neural_correlates_test_data/230428/NWE00159/15/runway15.c3d'
+C3D_PATH_2 = '../../../test_data/neural_correlates_test_data/230619/NWE00163/13/runway_13.c3d'
 
 
 def get_key(input_value):

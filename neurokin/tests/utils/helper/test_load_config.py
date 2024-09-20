@@ -26,7 +26,7 @@ class TestReadConfig:
         assert config is None
 
     def test_read_config_with_custom_file(self):
-        config_file_path = "../../test_data/config_test/config.yaml"
+        config_file_path = "../../../test_data/config_test/config.yaml"
         config = load_config.read_config(config_file_path)
         assert config == {'skeleton':
                               {'angles':
