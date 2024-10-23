@@ -603,8 +603,7 @@ def get_psd_single_event_type(raw_neural_list, fs, nfft, noverlap, zscore):
         if zscore:
             pxx = stats.zscore(pxx)
         psds.append(pxx)
-
-        return psds
+    return psds
 
 
 def check_time_cutoff(t_onset, t_end, time_cutoff):
