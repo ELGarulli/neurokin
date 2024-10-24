@@ -2,7 +2,7 @@ from typing import Tuple, List, Dict, Optional, Union, Any
 import pandas as pd
 from .core import FeatureExtraction, DefaultParams
 from neurokin.utils.kinematics.gait_params_basics import get_phase, get_angle
-from neurokin.utils.features.joint_angles_dlc2kin import JointAnglesDLC
+from neurokin.utils.features_extraction.joint_angles_dlc2kin import JointAnglesDLC
 
 
 class PhasesAngle(FeatureExtraction):

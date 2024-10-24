@@ -1,7 +1,7 @@
 import dlc2kinematics
 import pandas as pd
 from typing import List, Dict, Any
-from neurokin.utils.features.core import FeatureExtraction, DefaultParams
+from neurokin.utils.features_extraction.core import FeatureExtraction, DefaultParams
 
 
 class VelocityDLC(FeatureExtraction):

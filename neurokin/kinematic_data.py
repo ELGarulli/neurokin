@@ -1,7 +1,7 @@
 from numpy.typing import ArrayLike
 from neurokin.utils.kinematics import kinematics_processing, c3d_import_export, event_detection
 from neurokin.utils.helper import load_config
-from neurokin.utils.features import feature_extraction_elg, binning
+from neurokin.utils.features_extraction import feature_extraction_elg, binning
 import pandas as pd
 from matplotlib import pyplot as plt
 from dlc2kinematics.preprocess import smooth_trajectory
