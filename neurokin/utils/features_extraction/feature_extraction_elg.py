@@ -11,6 +11,7 @@ def get_extractor_obj(feature_name):
     m = import_module(module_)
     feature_extract_class = getattr(m, feature_class)
     #TODO note here it is already initializing the class throws
+    ## IDEA: pass the string only and call getattr later in the main loop
     return feature_extract_class()
 
 

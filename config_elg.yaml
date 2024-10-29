@@ -1,18 +1,25 @@
 skeleton:
     angles:
         joints:
-            left_ear: [nose, ear left, shoulder left]
-            right_ear: [nose, ear right, shoulder right]
+            left_crest: [lshoulder, lcrest, lhip]
+            left_hip: [lcrest, lhip, lknee]
+            left_knee: [lhip, lknee, lankle]
+            left_ankle: [lknee, lankle, lmtp]
+            right_crest: [rshoulder, rcrest, rhip]
+            right_hip: [rcrest, rhip, rknee]
+            right_knee: [rhip, rknee, rankle]
+            right_ankle: [rknee, rankle, rmtp]
+            trunk_cross_l: [lshoulder, rcrest, lhip]
+            trunk_cross_r: [rshoulder, lcrest, rhip]
     distances:
-        lef_shoulder_to_toe: [nose, tail base]
+        lef_shoulder_to_toe: [lshoulder, lmtp]
     elevations:
-        left_hip: hip left
-        right_hip: hip right
-    
-    
+        left_hip: lhip
+        right_hip: rhip
+
+
 features:
-    aggregation.Aggregation:
-        window_size: 3
-        step: 2
-        aggregation_method: sum
+    features.marker_features.LinearSpeed:
+        window_size: 1
+        marker_id: [rknee]
 
