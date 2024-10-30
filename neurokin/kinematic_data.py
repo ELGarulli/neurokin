@@ -93,7 +93,7 @@ class KinematicDataRun:
         if not multiindex_df:
             multiindex_df = self.markers_df
         self.scorer = multiindex_df.columns.get_level_values("bodyparts").unique().to_list()
-        self.bodyparts = multiindex_df.columns.get_level_values(0)[0]
+        self.bodyparts = multiindex_df.columns.get_level_values(1).unique().to_list()
         df = multiindex_df.copy()
         df.columns = ["_".join(a) for a in df.columns.to_flat_index()]
         self.markers_df = df

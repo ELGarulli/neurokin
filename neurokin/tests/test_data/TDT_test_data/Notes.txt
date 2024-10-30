@@ -1,0 +1,7 @@
+Experiment: ees_precomp_stream
+Subject: NWE00158
+User: TDTVR
+Start: 10:12:39am 05/30/2023
+
+
+Stop: 10:12:54am 05/30/2023

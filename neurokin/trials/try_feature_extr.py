@@ -1,5 +1,6 @@
 from neurokin.kinematic_data import KinematicDataRun
 import pandas as pd
+from neurokin.utils.kinematics import c3d_import_export
 
 
 GAIT_PATH = "./neurokin/test_data/"
@@ -23,19 +24,20 @@ step_left_marker = "lmtp"
 step_right_marker = "rmtp"
 
 #file = "../test_data/runway03.c3d"
-file = "C:/Users/Elisa/Documents/GitHub/temp_data/c3d_fog/92/runway04.c3d"
+file = "../tests/test_data/neural_correlates_test_data/230428/NWE00159/15/runway15.c3d"
 dlc_file = "C:/Users/Elisa/Documents/GitHub/temp_data/CollectedData_Rafa.csv"
 
 if __name__=="__main__":
     kin_data = KinematicDataRun(file, CONFIGPATH)  # creating a single run obj
     #kin_data.markers_df = pd.MultiIndex.from_frame(pd.read_csv(dlc_file, header=[0, 1, 2], index_col=[0]))
-    kin_data.markers_df = pd.read_csv(dlc_file, header=[0, 1, 2], index_col=[0])
+    #kin_data.markers_df = pd.read_csv(file, header=[0, 1, 2], index_col=[0])
+    kin_data.load_kinematics()
 
     kin_data.convert_DLC_like_to_df()
 
     #bodyparts_to_drop = [i[1] for i in kin_data.markers_df.columns.to_list()[::3] if i[1].startswith("*")]
     bodyparts_to_drop = ['Unnamed: 1_level_0_Unnamed: 1_level_1_Unnamed: 1_level_2', 'Unnamed: 2_level_0_Unnamed: 2_level_1_Unnamed: 2_level_2']
-    kin_data.markers_df = kin_data.markers_df.drop(bodyparts_to_drop, axis=1, inplace=False)
+    kin_data.markers_df = kin_data.markers_df.drop(bodyparts_to_drop, axis=1, inplace=False, errors="ignore")
     #kin_data.markers_df.columns.names = ["scorer", "bodyparts", "coords"]
     kin_data.bodyparts = [bp for bp in kin_data.bodyparts if bp not in bodyparts_to_drop]
     kin_data.extract_features()
