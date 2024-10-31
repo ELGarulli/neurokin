@@ -26,8 +26,8 @@ def extract_features(features, bodyparts, skeleton, markers_df):
             target_bodyparts = params.get("marker_ids", bodyparts)
 
         elif extraction_target == "joints":
-            target_joints = params.get("markers_ids", skeleton["angles"][extraction_target])
-            target_bodyparts = [{joint: skeleton["angles"][extraction_target][joint]} for joint in target_joints]
+            target_joints = params.get("joint_ids", skeleton[extraction_target].keys())
+            target_bodyparts = {joint: skeleton[extraction_target][joint] for joint in target_joints}
 
         elif extraction_target == "multiple_markers":
             target_bodyparts = params.get("marker_ids", bodyparts)

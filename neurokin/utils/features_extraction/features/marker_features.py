@@ -9,9 +9,8 @@ class LinearSpeed(FeatureExtraction):
     extraction_target = "markers"
 
     @typechecked
-    def compute_feature(self, df: pd.DataFrame, target_bodyparts: List, window_size: int, markers_id: List):
-        target = markers_id if markers_id else target_bodyparts
+    def compute_feature(self, df: pd.DataFrame, target_bodyparts: List, window_size: int, **kwargs):
         bodyparts_coordinates = df.columns.tolist()
-        target_markers_coords = [coord for marker in target for coord in bodyparts_coordinates if marker in coord]
+        target_markers_coords = [coord for marker in target_bodyparts for coord in bodyparts_coordinates if marker in coord]
         df_feat = df[target_markers_coords].apply(np.diff).apply(abs)
         return df_feat
