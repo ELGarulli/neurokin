@@ -28,10 +28,10 @@ file = "../tests/test_data/neural_correlates_test_data/230428/NWE00159/15/runway
 dlc_file = "C:/Users/Elisa/Documents/GitHub/temp_data/CollectedData_Rafa.csv"
 
 if __name__=="__main__":
-    kin_data = KinematicDataRun(file, CONFIGPATH)  # creating a single run obj
+    kin_data = KinematicDataRun(dlc_file, CONFIGPATH)  # creating a single run obj
     #kin_data.markers_df = pd.MultiIndex.from_frame(pd.read_csv(dlc_file, header=[0, 1, 2], index_col=[0]))
     #kin_data.markers_df = pd.read_csv(file, header=[0, 1, 2], index_col=[0])
-    kin_data.load_kinematics()
+    kin_data.load_kinematics(source="dlc")
 
     kin_data.convert_DLC_like_to_df()
 

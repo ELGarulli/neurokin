@@ -1,7 +1,7 @@
 import pandas as pd
 from typeguard import typechecked
 
-from neurokin.utils.features_extraction.core_elg import FeatureExtraction
+from neurokin.utils.features_extraction.core import FeatureExtraction
 
 
 class Aggregation(FeatureExtraction):

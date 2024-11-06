@@ -1,5 +1,5 @@
 import numpy as np
-from neurokin.utils.features_extraction.core_elg import FeatureExtraction
+from neurokin.utils.features_extraction.core import FeatureExtraction
 from typeguard import typechecked
 import pandas as pd
 from typing import List

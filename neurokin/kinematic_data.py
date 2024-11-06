@@ -1,10 +1,11 @@
-from numpy.typing import ArrayLike
-from neurokin.utils.kinematics import kinematics_processing, c3d_import_export, event_detection
-from neurokin.utils.helper import load_config
-from neurokin.utils.features_extraction import feature_extraction_elg, binning
 import pandas as pd
-from matplotlib import pyplot as plt
 from dlc2kinematics.preprocess import smooth_trajectory
+from matplotlib import pyplot as plt
+from numpy.typing import ArrayLike
+
+from neurokin.utils.features_extraction import feature_extraction, binning
+from neurokin.utils.helper import load_config
+from neurokin.utils.kinematics import kinematics_processing, c3d_import_export, event_detection
 
 
 class KinematicDataRun:
@@ -42,7 +43,8 @@ class KinematicDataRun:
                         to_shift: ArrayLike = None,
                         to_tilt: ArrayLike = None,
                         shift_reference_marker: str = "",
-                        tilt_reference_marker: str = ""):
+                        tilt_reference_marker: str = "",
+                        source: str = "c3d"):
         """
         Loads the kinematics from a c3d file into a dataframe with timeframes as rows and markers as columns
 
@@ -52,10 +54,19 @@ class KinematicDataRun:
         :param to_tilt: which columns to perform the tilt on if correct_shift is true
         :param shift_reference_marker: which marker to use as a reference trajectory to compute the shift
         :param tilt_reference_marker: which marker to use as a reference trajectory to compute the tilt
+        :param source: defines which source of kinematics data to load from, either c3d or dlc
         :return:
         """
 
-        self.trial_roi_start, self.trial_roi_end, self.fs, self.markers_df = c3d_import_export.import_c3d(self.path)
+        if source.lower() == "c3d":
+            self.trial_roi_start, self.trial_roi_end, self.fs, self.markers_df = c3d_import_export.import_c3d(self.path)
+        elif source == "dlc":
+            self.markers_df = pd.read_csv(self.path, header=[0, 1, 2], skipinitialspace=False, index_col=[0])
+            #self.convert_DLC_like_to_df()
+            self.get_c3d_compliance()
+        else:
+            raise ValueError(f"The source value {source} is not yet implemented. Currently supported sources are 'c3d' "
+                             f"and 'dlc' (DeepLabCut)")
 
         if correct_shift:
 
@@ -112,6 +123,7 @@ class KinematicDataRun:
         df_ = self.markers_df
         bodyparts = df_.columns.get_level_values("bodyparts").unique().to_list()
         scorer = df_.columns.get_level_values(0)[0]
+        df_.columns = ["_".join(a[1:]) for a in df_.columns.to_flat_index()]
         if smooth:
             df_ = smooth_trajectory(
                 df_,
@@ -211,10 +223,10 @@ class KinematicDataRun:
         features = self.config["features"]
         skeleton = self.config["skeleton"]
 
-        new_features = feature_extraction_elg.extract_features(features=features,
-                                                            bodyparts=self.bodyparts,
-                                                            skeleton=skeleton,
-                                                            markers_df=self.markers_df)
+        new_features = feature_extraction.extract_features(features=features,
+                                                           bodyparts=self.bodyparts,
+                                                           skeleton=skeleton,
+                                                           markers_df=self.markers_df)
 
         if self.features_df is not None:
             self.features_df = pd.concat((self.features_df, new_features), axis=1)
@@ -261,10 +273,10 @@ class KinematicDataRun:
         :return:
         """
         test = binning.get_step_fwd_movement_on_bins(self.markers_df,
-                                               window=window,
-                                               overlap=overlap,
-                                               marker=marker,
-                                               axis=axis)
+                                                     window=window,
+                                                     overlap=overlap,
+                                                     marker=marker,
+                                                     axis=axis)
         return test
 
     def gait_param_to_csv(self, output_folder="./"):
