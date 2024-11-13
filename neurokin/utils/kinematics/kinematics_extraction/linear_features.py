@@ -4,8 +4,15 @@ from scipy.signal import savgol_filter
 from typing import List
 
 
-# neurokin.utils.features.momentum_dlc2kin.py
-# mimics functions from dlc2kinematics.mainfxns.py
+def compute_speed(df: NDArray, filter_window: int = 3, order: int = 1) -> NDArray:
+
+    traj = df.apply(np.diff).apply(abs)
+
+    speed = np.apply_along_axis(np.linalg.norm, 1, traj, None, 0) #What is the expected shape?
+    #speed = np.linalg.norm(traj)
+
+    return speed
+
 def compute_velocity(df: NDArray, bodyparts: List[int], filter_window: int = 3, order: int = 1) -> NDArray:
     """
     Computes the velocity of bodyparts in the input dataframe.
@@ -39,7 +46,7 @@ def compute_velocity(df: NDArray, bodyparts: List[int], filter_window: int = 3, 
     return smooth_trajectory(df, bodyparts, filter_window, order, deriv=1)
 
 
-def compute_speed(df: NDArray, bodyparts: List[int], filter_window: int = 3, order: int = 1) -> NDArray:
+def _compute_speed(df: NDArray, bodyparts: List[int], filter_window: int = 3, order: int = 1) -> NDArray:
     """
     Computes the speed of bodyparts in the input dataframe.
 
