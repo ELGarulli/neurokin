@@ -24,11 +24,24 @@ features:
 
     features.marker_features.LinearSpeed:
         window_size: 1
-        marker_ids: [rknee]
+        marker_ids: [ rknee ]
+
+    features.marker_features.LinearAcceleration:
+        window_size: 1
+        marker_ids: [ rknee ]
+
+    features.marker_features.TangentialAcceleration:
+        window_size: 1
+        marker_ids: [ rknee ]
 
     features.joint_features.Angle:
         joint_ids: [left_crest, right_hip, trunk_cross_r]
 
     features.misc_features.Height:
-        misc_ids: [lmtp_z, rmtp_z]
+        misc_ids: [lmtp, rmtp]
+        coord: "z"
+
+    features.misc_features.FwdMovement:
+        misc_ids: [lmtp, rmtp]
+        coord: "y"
 

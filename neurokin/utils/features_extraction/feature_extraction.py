@@ -13,7 +13,7 @@ def get_extractor_obj(feature_name):
     return feature_extract_class()
 
 
-def extract_features(features, bodyparts, skeleton, markers_df):
+def extract_features(features, bodyparts, skeleton, markers_df, fs):
     extracted_features = []
     for feature_name, params in features.items():
         params = params if params else {}
@@ -34,7 +34,7 @@ def extract_features(features, bodyparts, skeleton, markers_df):
             raise ValueError(f"{extraction_target} is not a valid extraction target."
                              f"Please use: markers, joints or multiple_markers")
 
-        feature = extractor_obj.run_feat_extraction(df=markers_df, target_bodyparts=target_bodyparts, **params)
+        feature = extractor_obj.run_feat_extraction(df=markers_df, target_bodyparts=target_bodyparts, fs=fs, **params)
         extracted_features.append(pd.DataFrame(feature))
     feats_df = pd.concat(extracted_features, axis=1)
 

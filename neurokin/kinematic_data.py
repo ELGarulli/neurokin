@@ -226,7 +226,8 @@ class KinematicDataRun:
         new_features = feature_extraction.extract_features(features=features,
                                                            bodyparts=self.bodyparts,
                                                            skeleton=skeleton,
-                                                           markers_df=self.markers_df)
+                                                           markers_df=self.markers_df,
+                                                           fs=self.fs)
 
         if self.features_df is not None:
             self.features_df = pd.concat((self.features_df, new_features), axis=1)
