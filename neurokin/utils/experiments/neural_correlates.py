@@ -72,8 +72,8 @@ def get_first_last_frame_from_csv(csv_path: str) -> Tuple[int, int]:
             count += 1
 
     df = pd.read_csv(csv_path, skiprows=first_block_end, nrows=count)
-    first_frame = int(df.iloc[0][0])
-    last_frame = int(df.iloc[-1][0])
+    first_frame = int(df.iloc[0, 0])
+    last_frame = int(df.iloc[-1, 0])
     return first_frame, last_frame
 
 
