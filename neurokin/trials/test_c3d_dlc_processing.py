@@ -19,7 +19,7 @@ kin_data = KinematicDataRun(file, CONFIGPATH)  # creating a single run obj
 kin_data.load_kinematics(correct_tilt=False,  # loading data and tilt-shift correcting
                          correct_shift=False)
 
-kin_data.get_c3d_compliance(smooth=True)
+kin_data.convert_DLC_like_to_df(smooth=True)
 
 kin_data.compute_gait_cycles_bounds(left_marker=step_left_marker,  # computing left right bounds of steps
                                     right_marker=step_right_marker)

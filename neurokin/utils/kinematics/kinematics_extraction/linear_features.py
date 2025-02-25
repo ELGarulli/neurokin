@@ -6,7 +6,7 @@ from numpy.typing import NDArray
 from scipy.signal import savgol_filter
 
 
-def compute_speed(df: pd.DataFrame, fs: float, filter_window: int = 3, order: int = 1) -> NDArray:
+def compute_speed(df: pd.DataFrame, fs: float) -> NDArray:
     traj = df.apply(compute_velocity, args=(fs, ))
     speed = np.apply_along_axis(np.linalg.norm, 1, traj, None, 0)
     return speed

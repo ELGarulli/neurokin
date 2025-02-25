@@ -46,7 +46,7 @@ for animal, days in experiment_structure.items():
             print(animal, run)
             kin_data = KinematicDataRun(run, CONFIGPATH)
             kin_data.load_kinematics()
-            kin_data.get_c3d_compliance()
+            kin_data.convert_DLC_like_to_df()
             bodyparts_to_drop = [i[1] for i in kin_data.markers_df.columns.to_list()[::3] if i[1].startswith("*")]
             kin_data.markers_df = kin_data.markers_df.drop(bodyparts_to_drop, axis=1, level=1, inplace=False)
             kin_data.markers_df = shift_df(kin_data.markers_df, to_shift, "y")

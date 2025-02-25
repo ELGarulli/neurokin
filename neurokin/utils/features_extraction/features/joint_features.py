@@ -1,9 +1,10 @@
 from typing import Dict
-from neurokin.utils.features_extraction.commons import angle
+
 import numpy as np
 import pandas as pd
 from typeguard import typechecked
 
+from neurokin.utils.features_extraction.commons import angle
 from neurokin.utils.features_extraction.core import FeatureExtraction
 
 
@@ -45,6 +46,7 @@ class AngleVelocity(FeatureExtraction):
         angle_velocity = np.gradient(angles, 1 / fs)
         return angle_velocity
 
+
 class AngleAcceleration(FeatureExtraction):
     extraction_target = "joints"
 
@@ -63,8 +65,8 @@ class AngleAcceleration(FeatureExtraction):
 
     def angle_acceleration(self, vectors, fs):
         angles = angle(vectors)
-        angle_velocity = np.gradient(angles, 1/fs)
-        angle_acceleration = np.gradient(angle_velocity, 1/fs)
+        angle_velocity = np.gradient(angles, 1 / fs)
+        angle_acceleration = np.gradient(angle_velocity, 1 / fs)
 
         return angle_acceleration
 

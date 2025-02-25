@@ -32,15 +32,15 @@ if __name__=="__main__":
     #kin_data.markers_df = pd.MultiIndex.from_frame(pd.read_csv(dlc_file, header=[0, 1, 2], index_col=[0]))
     #kin_data.markers_df = pd.read_csv(file, header=[0, 1, 2], index_col=[0])
     #kin_data.load_kinematics(source="dlc")
-    kin_data.load_kinematics()
-
-    kin_data.convert_DLC_like_to_df()
+    kin_data.load_kinematics(source="c3d")
 
     #bodyparts_to_drop = [i[1] for i in kin_data.markers_df.columns.to_list()[::3] if i[1].startswith("*")]
     bodyparts_to_drop = ['Unnamed: 1_level_0_Unnamed: 1_level_1_Unnamed: 1_level_2', 'Unnamed: 2_level_0_Unnamed: 2_level_1_Unnamed: 2_level_2']
     #kin_data.markers_df = kin_data.markers_df.drop(bodyparts_to_drop, axis=1, inplace=False, errors="ignore")
     #kin_data.markers_df.columns.names = ["scorer", "bodyparts", "coords"]
     #kin_data.bodyparts = [bp for bp in kin_data.bodyparts if bp not in bodyparts_to_drop]
+    test_df = kin_data.markers_df
+    kin_data.filter_marker_df()
     kin_data.extract_features()
 
     #test = kin_data.get_binned_features()

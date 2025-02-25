@@ -19,23 +19,28 @@ skeleton:
 
 features:
     features.marker_features.LinearVelocity:
-        window_size: 1
         marker_ids: [rknee]
+        binning_strategy: ["sum", "max"]
 
     features.marker_features.LinearSpeed:
-        window_size: 1
         marker_ids: [ rknee ]
+        binning_strategy: ["mean"]
 
     features.marker_features.LinearAcceleration:
-        window_size: 1
         marker_ids: [ rknee ]
+        binning_strategy: ["mean"]
 
     features.marker_features.TangentialAcceleration:
-        window_size: 1
         marker_ids: [ rknee ]
 
     features.joint_features.Angle:
         joint_ids: [left_crest, right_hip, trunk_cross_r]
+
+    features.joint_features.AngleVelocity:
+        joint_ids: [ left_crest, right_hip, trunk_cross_r ]
+
+    features.joint_features.AngleAcceleration:
+        joint_ids: [ left_crest, right_hip, trunk_cross_r ]
 
     features.misc_features.Height:
         misc_ids: [lmtp, rmtp]
@@ -44,4 +49,8 @@ features:
     features.misc_features.FwdMovement:
         misc_ids: [lmtp, rmtp]
         coord: "y"
+        binning_strategy: ["sum"]
 
+binning:
+    window_size: 15
+    overlap: 5

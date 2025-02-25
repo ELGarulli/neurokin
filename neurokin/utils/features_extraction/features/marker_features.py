@@ -11,7 +11,7 @@ class LinearVelocity(FeatureExtraction):
     extraction_target = "markers"
 
     @typechecked
-    def compute_feature(self, df: pd.DataFrame, target_bodyparts: List, window_size: int, fs: float, **kwargs):
+    def compute_feature(self, df: pd.DataFrame, target_bodyparts: List, fs: float, **kwargs):
 
         bodyparts_coordinates = df.columns.tolist()
         target_markers_coords = [coord for marker in target_bodyparts for coord in bodyparts_coordinates if marker in coord]
@@ -26,7 +26,7 @@ class LinearAcceleration(FeatureExtraction):
     extraction_target = "markers"
 
     @typechecked
-    def compute_feature(self, df: pd.DataFrame, target_bodyparts: List, window_size: int, fs: float, **kwargs):
+    def compute_feature(self, df: pd.DataFrame, target_bodyparts: List, fs: float, **kwargs):
 
         bodyparts_coordinates = df.columns.tolist()
         target_markers_coords = [coord for marker in target_bodyparts for coord in bodyparts_coordinates if marker in coord]
@@ -42,7 +42,7 @@ class LinearSpeed(FeatureExtraction):
     extraction_target = "markers"
 
     @typechecked
-    def compute_feature(self, df: pd.DataFrame, target_bodyparts: List, window_size: int, fs: float, **kwargs):
+    def compute_feature(self, df: pd.DataFrame, target_bodyparts: List, fs: float, **kwargs):
         bodyparts_coordinates = df.columns.tolist()
         feature_df_list = []
         for marker in target_bodyparts:
@@ -59,7 +59,7 @@ class TangentialAcceleration(FeatureExtraction):
     extraction_target = "markers"
 
     @typechecked
-    def compute_feature(self, df: pd.DataFrame, target_bodyparts: List, window_size: int, fs: float, **kwargs):
+    def compute_feature(self, df: pd.DataFrame, target_bodyparts: List, fs: float, **kwargs):
         bodyparts_coordinates = df.columns.tolist()
         feature_df_list = []
         for marker in target_bodyparts:
