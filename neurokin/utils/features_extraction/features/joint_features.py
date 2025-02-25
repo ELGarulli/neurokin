@@ -1,5 +1,5 @@
 from typing import Dict
-
+from neurokin.utils.features_extraction.commons import angle
 import numpy as np
 import pandas as pd
 from typeguard import typechecked
@@ -17,23 +17,75 @@ class Angle(FeatureExtraction):
         for joint, bodyparts in target_bodyparts.items():
             target_markers_coords = [coord for marker in bodyparts for coord in bodyparts_coordinates if
                                      marker in coord]
-            feat = self.angle(df[target_markers_coords].values)
+            feat = angle(df[target_markers_coords].values)
             df_feat_list.append(pd.DataFrame(feat, columns=[f"{joint}_angle"]))
 
         df_feat = pd.concat(df_feat_list, axis=1)
         return df_feat
 
-    def angle(self, vectors):
-        if vectors.shape[1] == 9:
-            a, b, c = vectors[:, :3], vectors[:, 3:6], vectors[:, 6:9]
-        elif vectors.shape[1] == 6:
-            a, b, c = vectors[:, 2], vectors[:, 2:4], vectors[:, 4:6]
 
-        bas = a - b
-        bcs = c - b
-        angles = []
-        for ba, bc in zip(bas, bcs):
-            cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
-            angle = np.arccos(cosine_angle)
-            angles.append(angle)
-        return np.array(angles)
+class AngleVelocity(FeatureExtraction):
+    extraction_target = "joints"
+
+    @typechecked
+    def compute_feature(self, df: pd.DataFrame, target_bodyparts: Dict, fs: float, **kwargs):
+        bodyparts_coordinates = df.columns.tolist()
+        df_feat_list = []
+        for joint, bodyparts in target_bodyparts.items():
+            target_markers_coords = [coord for marker in bodyparts for coord in bodyparts_coordinates if
+                                     marker in coord]
+            feat = self.angle_velocity(df[target_markers_coords].values, fs)
+            df_feat_list.append(pd.DataFrame(feat, columns=[f"{joint}_angle_velocity"]))
+
+        df_feat = pd.concat(df_feat_list, axis=1)
+        return df_feat
+
+    def angle_velocity(self, vectors, fs):
+        angles = angle(vectors)
+        angle_velocity = np.gradient(angles, 1 / fs)
+        return angle_velocity
+
+class AngleAcceleration(FeatureExtraction):
+    extraction_target = "joints"
+
+    @typechecked
+    def compute_feature(self, df: pd.DataFrame, target_bodyparts: Dict, fs: float, **kwargs):
+        bodyparts_coordinates = df.columns.tolist()
+        df_feat_list = []
+        for joint, bodyparts in target_bodyparts.items():
+            target_markers_coords = [coord for marker in bodyparts for coord in bodyparts_coordinates if
+                                     marker in coord]
+            feat = self.angle_acceleration(df[target_markers_coords].values, fs)
+            df_feat_list.append(pd.DataFrame(feat, columns=[f"{joint}_angle_acceleration"]))
+
+        df_feat = pd.concat(df_feat_list, axis=1)
+        return df_feat
+
+    def angle_acceleration(self, vectors, fs):
+        angles = angle(vectors)
+        angle_velocity = np.gradient(angles, 1/fs)
+        angle_acceleration = np.gradient(angle_velocity, 1/fs)
+
+        return angle_acceleration
+
+
+class AngleCorrelation(FeatureExtraction):
+    extraction_target = "joints"
+
+    @typechecked
+    def compute_feature(self, df: pd.DataFrame, target_bodyparts: Dict, **kwargs):
+        bodyparts_coordinates = df.columns.tolist()
+        df_feat_list = []
+        for joint, bodyparts in target_bodyparts.items():
+            target_markers_coords = [coord for marker in bodyparts for coord in bodyparts_coordinates if
+                                     marker in coord]
+            feat = self.angle_correlation(df[target_markers_coords].values)
+            df_feat_list.append(pd.DataFrame(feat, columns=[f"{joint}_angle_correlation"]))
+
+        df_feat = pd.concat(df_feat_list, axis=1)
+        return df_feat
+
+    def angle_correlation(self, vectors):
+        angles = angle(vectors)
+        angle_correlation = np.corrcoef(angles)
+        return angle_correlation

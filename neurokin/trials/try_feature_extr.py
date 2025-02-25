@@ -43,9 +43,9 @@ if __name__=="__main__":
     #kin_data.bodyparts = [bp for bp in kin_data.bodyparts if bp not in bodyparts_to_drop]
     kin_data.extract_features()
 
-    test = kin_data.get_binned_features()
-    step_height = kin_data.get_trace_height(marker="lmtp", axis="z")
-    step_length = kin_data.get_step_fwd_movement_on_bins(marker="lmtp", axis="y")
+    #test = kin_data.get_binned_features()
+    #step_height = kin_data.get_trace_height(marker="lmtp", axis="z")
+    #step_length = kin_data.get_step_fwd_movement_on_bins(marker="lmtp", axis="y")
 
     #kin_data.features_df = pd.concat((kin_data.features_df, step_height, step_length), axis=1)
 
