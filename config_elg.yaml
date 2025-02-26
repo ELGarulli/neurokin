@@ -51,6 +51,10 @@ features:
         coord: "y"
         binning_strategy: ["sum"]
 
+    features.joint_features.CustomJointFeature:
+        joint_ids: [left_crest, right_hip, trunk_cross_r]
+        name: cumsum_angle
+
 binning:
     window_size: 15
     overlap: 5

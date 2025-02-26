@@ -13,11 +13,12 @@ def get_extractor_obj(feature_name):
     return feature_extract_class()
 
 
-def extract_features(features, bodyparts, skeleton, markers_df, fs, get_binned, bin_params):
+def extract_features(features, bodyparts, skeleton, markers_df, fs, get_binned, bin_params, custom_feats):
     extracted_features = []
     binned_features = []
     for feature_name, params in features.items():
         params = params if params else {}
+        params["custom_features"] = custom_feats
         extractor_obj = get_extractor_obj(feature_name)
         extraction_target = extractor_obj.extraction_target
 

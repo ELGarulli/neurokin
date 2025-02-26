@@ -5,7 +5,8 @@ from matplotlib import pyplot as plt
 from numpy.typing import ArrayLike
 from scipy.signal import savgol_filter
 
-from neurokin.utils.features_extraction import feature_extraction, binning
+from neurokin.utils.features_extraction import feature_extraction
+from utils.kinematics import binning
 from neurokin.utils.helper import load_config
 from neurokin.utils.kinematics import kinematics_processing, c3d_import_export, event_detection
 
@@ -214,9 +215,10 @@ class KinematicDataRun:
         plt.savefig(filename, facecolor="white")
         plt.close()
 
-    def extract_features(self, get_binned=True):
+    def extract_features(self, get_binned=True, custom_feats=None):
         """
-        Computes features on the markers dataframe based on the config file
+        Computes features on the markers dataframe based on the config file. If get_binned is True, it also computes
+        the binned features as defined in the config file.
 
         :return:
         """
@@ -229,7 +231,8 @@ class KinematicDataRun:
                                                                                 markers_df=self.markers_df,
                                                                                 fs=self.fs,
                                                                                 get_binned=get_binned,
-                                                                                bin_params=binning)
+                                                                                bin_params=binning,
+                                                                                custom_feats=custom_feats)
 
         if self.features_df is not None:
             self.features_df = pd.concat((self.features_df, new_features), axis=1)

@@ -91,3 +91,23 @@ class AngleCorrelation(FeatureExtraction):
         angles = angle(vectors)
         angle_correlation = np.corrcoef(angles)
         return angle_correlation
+
+
+
+class CustomJointFeature(FeatureExtraction):
+    extraction_target = "joints"
+
+    @typechecked
+    def compute_feature(self, df: pd.DataFrame, target_bodyparts: Dict, **kwargs):
+        name = kwargs.get("name")
+        func = kwargs.get("custom_features")[name]
+        bodyparts_coordinates = df.columns.tolist()
+        df_feat_list = []
+        for joint, bodyparts in target_bodyparts.items():
+            target_markers_coords = [coord for marker in bodyparts for coord in bodyparts_coordinates if
+                                     marker in coord]
+            feat = func(df[target_markers_coords].values)
+            df_feat_list.append(pd.DataFrame(feat, columns=[f"{joint}_{name}"]))
+
+        df_feat = pd.concat(df_feat_list, axis=1)
+        return df_feat

@@ -39,8 +39,6 @@ def get_step_fwd_movement_on_bins(df_markers, marker, window, overlap, axis):
     pd_metric = metric.to_frame(name=marker+"_fwd_move")
     return pd_metric
 
-#def get_com(df_markers, marker_set):
-
 
 def get_step_height(trace):
     trace = trace + np.min(trace)
