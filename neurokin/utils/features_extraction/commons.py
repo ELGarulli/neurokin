@@ -8,7 +8,7 @@ def angle(vectors):
     if vectors.shape[1] == 9:
         a, b, c = vectors[:, :3], vectors[:, 3:6], vectors[:, 6:9]
     elif vectors.shape[1] == 6:
-        a, b, c = vectors[:, 2], vectors[:, 2:4], vectors[:, 4:6]
+        a, b, c = vectors[:, :2], vectors[:, 2:4], vectors[:, 4:6]
 
     bas = a - b
     bcs = c - b

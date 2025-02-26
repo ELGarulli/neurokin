@@ -15,13 +15,15 @@ class Angle(FeatureExtraction):
     def compute_feature(self, df: pd.DataFrame, target_bodyparts: Dict, **kwargs):
         bodyparts_coordinates = df.columns.tolist()
         df_feat_list = []
+        df_feat = pd.DataFrame()
         for joint, bodyparts in target_bodyparts.items():
             target_markers_coords = [coord for marker in bodyparts for coord in bodyparts_coordinates if
                                      marker in coord]
             feat = angle(df[target_markers_coords].values)
             df_feat_list.append(pd.DataFrame(feat, columns=[f"{joint}_angle"]))
 
-        df_feat = pd.concat(df_feat_list, axis=1)
+        if df_feat_list:
+            df_feat = pd.concat(df_feat_list, axis=1)
         return df_feat
 
 
@@ -32,13 +34,15 @@ class AngleVelocity(FeatureExtraction):
     def compute_feature(self, df: pd.DataFrame, target_bodyparts: Dict, fs: float, **kwargs):
         bodyparts_coordinates = df.columns.tolist()
         df_feat_list = []
+        df_feat = pd.DataFrame()
         for joint, bodyparts in target_bodyparts.items():
             target_markers_coords = [coord for marker in bodyparts for coord in bodyparts_coordinates if
                                      marker in coord]
             feat = self.angle_velocity(df[target_markers_coords].values, fs)
             df_feat_list.append(pd.DataFrame(feat, columns=[f"{joint}_angle_velocity"]))
 
-        df_feat = pd.concat(df_feat_list, axis=1)
+        if df_feat_list:
+            df_feat = pd.concat(df_feat_list, axis=1)
         return df_feat
 
     def angle_velocity(self, vectors, fs):
@@ -54,13 +58,15 @@ class AngleAcceleration(FeatureExtraction):
     def compute_feature(self, df: pd.DataFrame, target_bodyparts: Dict, fs: float, **kwargs):
         bodyparts_coordinates = df.columns.tolist()
         df_feat_list = []
+        df_feat = pd.DataFrame()
         for joint, bodyparts in target_bodyparts.items():
             target_markers_coords = [coord for marker in bodyparts for coord in bodyparts_coordinates if
                                      marker in coord]
             feat = self.angle_acceleration(df[target_markers_coords].values, fs)
             df_feat_list.append(pd.DataFrame(feat, columns=[f"{joint}_angle_acceleration"]))
 
-        df_feat = pd.concat(df_feat_list, axis=1)
+        if df_feat_list:
+            df_feat = pd.concat(df_feat_list, axis=1)
         return df_feat
 
     def angle_acceleration(self, vectors, fs):
@@ -78,13 +84,15 @@ class AngleCorrelation(FeatureExtraction):
     def compute_feature(self, df: pd.DataFrame, target_bodyparts: Dict, **kwargs):
         bodyparts_coordinates = df.columns.tolist()
         df_feat_list = []
+        df_feat = pd.DataFrame()
         for joint, bodyparts in target_bodyparts.items():
             target_markers_coords = [coord for marker in bodyparts for coord in bodyparts_coordinates if
                                      marker in coord]
             feat = self.angle_correlation(df[target_markers_coords].values)
             df_feat_list.append(pd.DataFrame(feat, columns=[f"{joint}_angle_correlation"]))
 
-        df_feat = pd.concat(df_feat_list, axis=1)
+        if df_feat_list:
+            df_feat = pd.concat(df_feat_list, axis=1)
         return df_feat
 
     def angle_correlation(self, vectors):
@@ -93,21 +101,31 @@ class AngleCorrelation(FeatureExtraction):
         return angle_correlation
 
 
-
-class CustomJointFeature(FeatureExtraction):
+class CustomJointFeatures(FeatureExtraction):
     extraction_target = "joints"
 
     @typechecked
     def compute_feature(self, df: pd.DataFrame, target_bodyparts: Dict, **kwargs):
-        name = kwargs.get("name")
-        func = kwargs.get("custom_features")[name]
         bodyparts_coordinates = df.columns.tolist()
         df_feat_list = []
-        for joint, bodyparts in target_bodyparts.items():
-            target_markers_coords = [coord for marker in bodyparts for coord in bodyparts_coordinates if
-                                     marker in coord]
-            feat = func(df[target_markers_coords].values)
-            df_feat_list.append(pd.DataFrame(feat, columns=[f"{joint}_{name}"]))
+        df_feat = pd.DataFrame()
+        try:
+            feature_names = kwargs.get("feature_names")
+        except KeyError:
+            raise KeyError(f"No name found for the Custom Join Function. "
+                           f"Please add valid feature_names in the config file.")
+        for name in feature_names:
+            try:
+                func = kwargs.get("custom_features")[name]
+            except KeyError:
+                raise KeyError(f"No function found with name: {name}, please provide a valid name and function "
+                               f"name when calling extract_features")
+            for joint, bodyparts in target_bodyparts.items():
+                target_markers_coords = [coord for marker in bodyparts for coord in bodyparts_coordinates if
+                                         marker in coord]
+                feat = func(df[target_markers_coords].values)
+                df_feat_list.append(pd.DataFrame(feat, columns=[f"{joint}_{name}"]))
 
-        df_feat = pd.concat(df_feat_list, axis=1)
+        if df_feat_list:
+            df_feat = pd.concat(df_feat_list, axis=1)
         return df_feat

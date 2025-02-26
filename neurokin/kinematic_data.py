@@ -1,6 +1,6 @@
 from functools import partial
-
 import pandas as pd
+import numpy as np
 from matplotlib import pyplot as plt
 from numpy.typing import ArrayLike
 from scipy.signal import savgol_filter
@@ -8,8 +8,7 @@ from scipy.signal import savgol_filter
 from neurokin.utils.features_extraction import feature_extraction
 from utils.kinematics import binning
 from neurokin.utils.helper import load_config
-from neurokin.utils.kinematics import kinematics_processing, c3d_import_export, event_detection
-
+from neurokin.utils.kinematics import kinematics_processing, import_export, event_detection
 
 class KinematicDataRun:
     """
@@ -48,7 +47,8 @@ class KinematicDataRun:
                         to_tilt: ArrayLike = None,
                         shift_reference_marker: str = "",
                         tilt_reference_marker: str = "",
-                        source: str = None):
+                        source: str = None,
+                        fs: float = None):
         """
         Loads the kinematics from a c3d file into a dataframe with timeframes as rows and markers as columns
 
@@ -63,10 +63,11 @@ class KinematicDataRun:
         """
 
         if source.lower() == "c3d":
-            self.trial_roi_start, self.trial_roi_end, self.fs, self.markers_df = c3d_import_export.import_c3d(self.path)
+            self.trial_roi_start, self.trial_roi_end, self.fs, self.markers_df = import_export.import_c3d(self.path)
         elif source.lower() == "dlc":
-            self.markers_df = pd.read_csv(self.path, header=[0, 1, 2], skipinitialspace=False, index_col=[0])
+            self.markers_df = import_export.import_dlc_df(self.path)
             self.convert_DLC_like_to_df()
+            self.fs = fs
         else:
             raise ValueError(f"The source value {source} is not yet implemented. Currently supported sources are 'c3d' "
                              f"and 'dlc' (DeepLabCut)")
@@ -134,10 +135,12 @@ class KinematicDataRun:
         if not multiindex_df:
             multiindex_df = self.markers_df
         bodyparts = multiindex_df.columns.get_level_values("bodyparts").unique().to_list()
-        scorer = multiindex_df.columns.get_level_values(0)[0]
-        multiindex_df.columns = ["_".join(a[1:]) for a in multiindex_df.columns.to_flat_index()]
-
-        self.markers_df = multiindex_df
+        scorers = np.unique(multiindex_df.columns.get_level_values(0))
+        scorer = [i for i in scorers if "Unnamed" not in i][0]
+        selected_df = multiindex_df.loc[:, multiindex_df.columns.get_level_values("scorer") == scorer]
+        selected_df.columns = ["_".join(a[1:]) for a in selected_df.columns.to_flat_index()]
+        selected_df.reset_index(inplace=True, drop=True)
+        self.markers_df = selected_df
         self.bodyparts = bodyparts
         self.scorer = scorer
         return

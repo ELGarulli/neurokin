@@ -1,0 +1,51 @@
+skeleton:
+    joints:
+        right_crest: [shoulder right, hip right, tail base]
+        left_face: [nose, ear left, shoulder left]
+    elevations:
+        left_hip: lhip
+        right_hip: rhip
+
+
+features:
+    features.marker_features.LinearVelocity:
+        marker_ids: [tail base]
+        binning_strategy: ["sum", "max"]
+
+    features.marker_features.LinearSpeed:
+        marker_ids: [ tail base ]
+        binning_strategy: ["mean"]
+
+    features.marker_features.LinearAcceleration:
+        marker_ids: [ tail base ]
+        binning_strategy: ["mean"]
+
+    features.marker_features.TangentialAcceleration:
+        marker_ids: [ tail base ]
+
+    features.joint_features.Angle:
+        joint_ids: [right_crest, left_face]
+
+    features.joint_features.AngleVelocity:
+        joint_ids: [right_crest, left_face]
+
+    features.joint_features.AngleAcceleration:
+        joint_ids: [right_crest, left_face]
+
+    features.misc_features.Height:
+        misc_ids: [nose]
+        coord: "y"
+
+    features.misc_features.FwdMovement:
+        misc_ids: [nose]
+        coord: "y"
+        binning_strategy: ["sum"]
+
+    features.joint_features.CustomJointFeatures:
+        joint_ids: [right_crest, left_face]
+        feature_names: [cumsum_angle, diff_angle]
+
+
+binning:
+    window_size: 15
+    overlap: 5

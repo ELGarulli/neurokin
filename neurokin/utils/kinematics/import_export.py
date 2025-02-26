@@ -1,3 +1,4 @@
+import itertools
 import c3d
 import numpy as np
 import pandas as pd
@@ -16,7 +17,6 @@ def import_c3d(path):
         first_frame = c3d_reader._header.first_frame
         last_frame = c3d_reader._header.last_frame
         sample_rate = c3d_reader._header.frame_rate
-        scorer = "scorer"
         bodyparts = get_c3d_labels(f)
         axis = ["x", "y", "z"]
         run = []
@@ -28,13 +28,8 @@ def import_c3d(path):
                 fields.append(z)
             run.append(fields)
         run = np.asarray(run)
-
-        df = create_empty_df(scorer, bodyparts, np.shape(run)[0])
-        count = 0
-        for bodypart in bodyparts:
-            for a in axis:
-                df[scorer, bodypart, a] = run[:, count]
-                count += 1
+        columns = [ f"{b}_{a}" for b, a in itertools.product(bodyparts, axis)]
+        df = pd.DataFrame(run, columns=columns)
 
     return first_frame, last_frame, sample_rate, df
 
@@ -75,3 +70,13 @@ def get_c3d_labels(handle):
     C, R = a.dimensions
     labels = [a.bytes[r * C: (r + 1) * C].strip().decode().lower() for r in range(R)]
     return labels
+
+
+def import_dlc_df(filename):
+    if filename.endswith(".csv"):
+        df = pd.read_csv(filename, header=[0, 1, 2], skipinitialspace=False, index_col=[0])
+    elif filename.endswith(".hd5"):
+        df = pd.read_hdf(filename)
+    else:
+        raise ValueError("File format not supported, please provide .csv or .hd5 files for DLC datasets")
+    return df

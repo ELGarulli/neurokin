@@ -45,13 +45,15 @@ class LinearSpeed(FeatureExtraction):
     def compute_feature(self, df: pd.DataFrame, target_bodyparts: List, fs: float, **kwargs):
         bodyparts_coordinates = df.columns.tolist()
         feature_df_list = []
+        df_feat = pd.DataFrame()
         for marker in target_bodyparts:
             coords = [coord for coord in bodyparts_coordinates if marker in coord]
             feat = commons.compute_speed(df[coords], fs=fs)
             df_feat = pd.DataFrame(feat, columns=[f"{marker}_linear_speed"])
             feature_df_list.append(df_feat)
 
-        df_feat = pd.concat(feature_df_list, axis=1)
+        if feature_df_list:
+            df_feat = pd.concat(feature_df_list, axis=1)
         return df_feat
 
 
@@ -62,11 +64,13 @@ class TangentialAcceleration(FeatureExtraction):
     def compute_feature(self, df: pd.DataFrame, target_bodyparts: List, fs: float, **kwargs):
         bodyparts_coordinates = df.columns.tolist()
         feature_df_list = []
+        df_feat = pd.DataFrame()
         for marker in target_bodyparts:
             coords = [coord for coord in bodyparts_coordinates if marker in coord]
             feat = commons.compute_tang_acceleration(df[coords], fs=fs)
             df_feat = pd.DataFrame(feat, columns=[f"{marker}_tang_acceleration"])
             feature_df_list.append(df_feat)
 
-        df_feat = pd.concat(feature_df_list, axis=1)
+        if feature_df_list:
+            df_feat = pd.concat(feature_df_list, axis=1)
         return df_feat

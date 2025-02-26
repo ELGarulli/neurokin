@@ -17,6 +17,7 @@ class Height(FeatureExtraction):
     def compute_feature(self, df: pd.DataFrame, target_bodyparts: List, coord: str, normalize_min: bool = True, **kwargs):
         bodyparts_coordinates = df.columns.tolist()
         df_feat_list = []
+        df_feat = pd.DataFrame()
         target_markers = [coord for marker in target_bodyparts for coord in bodyparts_coordinates if
                                  marker in coord]
         target_markers_coords = [marker for marker in target_markers if coord in marker]
@@ -24,10 +25,10 @@ class Height(FeatureExtraction):
         for bodypart in target_markers_coords:
             feat = df[bodypart].values
             if normalize_min:
-                feat = feat - min(feat)
+                feat = feat - np.nanmin(feat)
             df_feat_list.append(pd.DataFrame(feat, columns=[f"{bodypart}_height"]))
-
-        df_feat = pd.concat(df_feat_list, axis=1)
+        if df_feat_list:
+            df_feat = pd.concat(df_feat_list, axis=1)
         return df_feat
 
 
@@ -43,6 +44,7 @@ class FwdMovement(FeatureExtraction):
     def compute_feature(self, df: pd.DataFrame, target_bodyparts: List, coord: str, normalize_min: bool = True, **kwargs):
         bodyparts_coordinates = df.columns.tolist()
         df_feat_list = []
+        df_feat = pd.DataFrame()
         target_markers = [coord for marker in target_bodyparts for coord in bodyparts_coordinates if
                                  marker in coord]
         target_markers_coords = [marker for marker in target_markers if coord in marker]
@@ -50,9 +52,10 @@ class FwdMovement(FeatureExtraction):
         for bodypart in target_markers_coords:
             feat = df[bodypart].values
             if normalize_min:
-                feat = feat - min(feat)
+                feat = feat - np.nanmin(feat)
             feat = np.diff(feat)
             df_feat_list.append(pd.DataFrame(feat, columns=[f"{bodypart}_fwd_movement"]))
 
-        df_feat = pd.concat(df_feat_list, axis=1)
+        if df_feat_list:
+            df_feat = pd.concat(df_feat_list, axis=1)
         return df_feat

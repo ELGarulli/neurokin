@@ -2,12 +2,11 @@ from neurokin.kinematic_data import KinematicDataRun
 from neurokin.utils.features_extraction.commons import angle
 import numpy as np
 import pandas as pd
-from neurokin.utils.kinematics import c3d_import_export
+from neurokin.utils.kinematics import import_export
 
 
 GAIT_PATH = "./neurokin/test_data/"
 NEURAL_PATH = "./temp_data/neural/220915/ENWE_00052-220915-153059/"
-CONFIGPATH = "../../config_elg.yaml"
 GAIT_RECORDING_FS = 200
 output_folder = "./"
 
@@ -25,9 +24,10 @@ to_shift = ["rshoulder_y", "rcrest_y", "rhip_y",
 step_left_marker = "lmtp"
 step_right_marker = "rmtp"
 
-# file = "../test_data/runway03.c3d"
-file = "../tests/test_data/neural_correlates_test_data/230428/NWE00159/15/runway15.c3d"
-dlc_file = "C:/Users/Elisa/Documents/GitHub/temp_data/CollectedData_Rafa.csv"
+# CONFIGPATH = "../../config_c3d.yaml"
+# file = "../tests/test_data/neural_correlates_test_data/230428/NWE00159/15/runway15.c3d"
+CONFIGPATH = "../../config_dlc.yaml"
+file = "../tests/test_data/neural_correlates_test_data/dlc_data/dlc_data.csv"
 
 
 def cumsum_angle(vectors):
@@ -35,11 +35,16 @@ def cumsum_angle(vectors):
     cumsum_angle = np.cumsum(angles)
     return cumsum_angle
 
+def diff_angle(vectors):
+    angles = angle(vectors)
+    diff_angle = np.diff(angles)
+    return diff_angle
+
 
 if __name__ == "__main__":
     kin_data = KinematicDataRun(file, CONFIGPATH)  # creating a single run obj
-    # kin_data.load_kinematics(source="dlc")
-    kin_data.load_kinematics(source="c3d")
+    kin_data.load_kinematics(source="dlc", fs=10)
+    # kin_data.load_kinematics(source="c3d")
 
     # bodyparts_to_drop = [i[1] for i in kin_data.markers_df.columns.to_list()[::3] if i[1].startswith("*")]
     bodyparts_to_drop = ['Unnamed: 1_level_0_Unnamed: 1_level_1_Unnamed: 1_level_2',
@@ -48,8 +53,8 @@ if __name__ == "__main__":
     # kin_data.markers_df.columns.names = ["scorer", "bodyparts", "coords"]
     # kin_data.bodyparts = [bp for bp in kin_data.bodyparts if bp not in bodyparts_to_drop]
     test_df = kin_data.markers_df
-    kin_data.filter_marker_df()
-    kin_data.extract_features(custom_feats={"cumsum_angle": cumsum_angle})
+    #kin_data.filter_marker_df(window_length=2, polyorder=1)
+    kin_data.extract_features(custom_feats={"cumsum_angle": cumsum_angle, "diff_angle": diff_angle})
 
     # test = kin_data.get_binned_features()
     # step_height = kin_data.get_trace_height(marker="lmtp", axis="z")
