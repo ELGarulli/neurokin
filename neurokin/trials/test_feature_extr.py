@@ -24,8 +24,8 @@ step_left_marker = "lmtp"
 step_right_marker = "rmtp"
 
 #file = "../test_data/runway03.c3d"
-file = "C:/Users/Elisa/Documents/GitHub/temp_data/c3d_fog/92/runway04.c3d"
-
+#file = "C:/Users/Elisa/Documents/GitHub/temp_data/c3d_fog/92/runway04.c3d"
+file = "../tests/test_data/neural_correlates_test_data/230428/NWE00159/15/runway15.c3d"
 kin_data = KinematicDataRun(file, CONFIGPATH)  # creating a single run obj
 kin_data.load_kinematics()
 
@@ -46,6 +46,7 @@ test = kin_data.get_binned_features()
 step_height = kin_data.get_trace_height(marker="lmtp", axis="z")
 step_length = kin_data.get_step_fwd_movement_on_bins(marker="lmtp", axis="y")
 
-#kin_data.features_df = pd.concat((kin_data.features_df, step_height, step_length), axis=1)
+kin_data.features_df = pd.concat((kin_data.features_df, step_height, step_length), axis=1)
+kin_data.features_df.to_csv("features_old.csv")
 
 print(kin_data.features_df.head(10))
