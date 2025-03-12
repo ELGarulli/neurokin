@@ -24,10 +24,10 @@ to_shift = ["rshoulder_y", "rcrest_y", "rhip_y",
 step_left_marker = "lmtp"
 step_right_marker = "rmtp"
 
-# CONFIGPATH = "../../config_c3d.yaml"
-# file = "../tests/test_data/neural_correlates_test_data/230428/NWE00159/15/runway15.c3d"
-CONFIGPATH = "../../config_dlc.yaml"
-file = "../tests/test_data/neural_correlates_test_data/dlc_data/dlc_data.csv"
+CONFIGPATH = "../../config_c3d.yaml"
+file = "../tests/test_data/neural_correlates_test_data/230428/NWE00159/15/runway15.c3d"
+#CONFIGPATH = "../../config_dlc.yaml"
+#file = "../tests/test_data/neural_correlates_test_data/dlc_data/dlc_data.csv"
 
 
 def cumsum_angle(vectors):
@@ -43,8 +43,8 @@ def diff_angle(vectors):
 
 if __name__ == "__main__":
     kin_data = KinematicDataRun(file, CONFIGPATH)  # creating a single run obj
-    kin_data.load_kinematics(source="dlc", fs=10)
-    # kin_data.load_kinematics(source="c3d")
+    #kin_data.load_kinematics(source="dlc", fs=10)
+    kin_data.load_kinematics(source="c3d")
 
     # bodyparts_to_drop = [i[1] for i in kin_data.markers_df.columns.to_list()[::3] if i[1].startswith("*")]
     bodyparts_to_drop = ['Unnamed: 1_level_0_Unnamed: 1_level_1_Unnamed: 1_level_2',
