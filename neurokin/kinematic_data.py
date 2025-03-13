@@ -232,7 +232,6 @@ class KinematicDataRun:
                                                                                 bodyparts=self.bodyparts,
                                                                                 skeleton=skeleton,
                                                                                 markers_df=self.markers_df,
-                                                                                fs=self.fs,
                                                                                 get_binned=get_binned,
                                                                                 bin_params=binning,
                                                                                 custom_feats=custom_feats)
