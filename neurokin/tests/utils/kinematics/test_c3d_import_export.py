@@ -37,12 +37,10 @@ class TestImportC3D:
                 df[(scorer, bodypart, coord)] = np.empty((frames_no))
         return pd.DataFrame(df)
 
-    def test_import_c3d_with_path_1(self, mocker):
-        mocker.patch('neurokin.utils.kinematics.c3d_import_export.create_empty_df',
-                     side_effect=self.create_empty_df)
-        mocker.patch('neurokin.utils.kinematics.c3d_import_export.get_c3d_labels',
-                     side_effect=self.get_c3d_labels)
-        result = c3d_import_export.import_c3d(C3D_PATH_1)
+    def test_import_c3d_with_path_1(self, monkeypatch):
+        monkeypatch.setattr(import_export, 'create_empty_df', self.create_empty_df)
+        monkeypatch.setattr(import_export, 'get_c3d_labels', self.get_c3d_labels)
+        result = import_export.import_c3d(C3D_PATH_1)
         assert result[0] == 823 and result[1] == 1316 and result[2] == pytest.approx(200.0)
         assert result[3].to_numpy().sum() == pytest.approx(1524390.6)
         np.testing.assert_allclose(result[3].to_numpy()[0],
@@ -56,12 +54,10 @@ class TestImportC3D:
                                              -482.21115, 8.363125]))
         assert result[3].to_numpy()[10][25] == pytest.approx(-501.5426)
 
-    def test_import_c3d_with_path_2(self, mocker):
-        mocker.patch('neurokin.utils.kinematics.c3d_import_export.create_empty_df',
-                     side_effect=self.create_empty_df)
-        mocker.patch('neurokin.utils.kinematics.c3d_import_export.get_c3d_labels',
-                     side_effect=self.get_c3d_labels)
-        result = c3d_import_export.import_c3d(C3D_PATH_2)
+    def test_import_c3d_with_path_2(self, monkeypatch):
+        monkeypatch.setattr(import_export, 'create_empty_df', self.create_empty_df)
+        monkeypatch.setattr(import_export, 'get_c3d_labels', self.get_c3d_labels)
+        result = import_export.import_c3d(C3D_PATH_2)
         assert result[0] == 3903 and result[1] == 5771 and result[2] == pytest.approx(200.0)
         assert result[3].to_numpy().sum() == pytest.approx(-2189393.8)
         np.testing.assert_allclose(result[3].to_numpy()[0], np.array([68.69498, -501.1288, 57.40453, 86.684166,
@@ -90,7 +86,7 @@ def test_create_empty_df():
             df_expected_dict[('scorer', bodypart, coord)] = np.full(frames_no, np.nan)
     df_expected = pd.DataFrame(df_expected_dict)
 
-    df_actual = c3d_import_export.create_empty_df('scorer', bodyparts, frames_no)
+    df_actual = import_export.create_empty_df('scorer', bodyparts, frames_no)
 
     pd.testing.assert_frame_equal(df_actual, df_expected, check_names=False, check_like=True)
 
@@ -99,12 +95,12 @@ class TestGetC3DLabels:
 
     def test_get_c3d_labels_with_path_1(self):
         with open(C3D_PATH_1, "rb") as handle_1:
-            assert c3d_import_export.get_c3d_labels(handle_1) == ['rshoulder', 'rcrest', 'rhip', 'rknee', 'rankle',
+            assert import_export.get_c3d_labels(handle_1) == ['rshoulder', 'rcrest', 'rhip', 'rknee', 'rankle',
                                                                   'rmtp', 'lshoulder', 'lcrest', 'lhip', 'lknee',
                                                                   'lankle', 'lmtp']
 
     def test_get_c3d_labels_with_path_2(self):
         with open(C3D_PATH_2, "rb") as handle_2:
-            assert c3d_import_export.get_c3d_labels(handle_2) == ['rshoulder', 'rcrest', 'rhip', 'rknee', 'rankle',
+            assert import_export.get_c3d_labels(handle_2) == ['rshoulder', 'rcrest', 'rhip', 'rknee', 'rankle',
                                                                   'rmtp', 'lshoulder', 'lcrest', 'lhip', 'lknee',
                                                                   'lankle', 'lmtp', '*12', '*13', '*14', '*15', '*16']

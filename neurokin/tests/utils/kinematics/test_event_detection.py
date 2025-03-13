@@ -18,7 +18,8 @@ def custom_signal():
     yield custom_signal
 
 
-class TestGetToeLiftLanding: # no mock for lowpass_array because output using steps_y.pkl too large to hardcode. lowpass_array output mostly dependent on scipy.signal
+class TestGetToeLiftLanding: # no mock for lowpass_array because output using steps_y.pkl too large to hardcode.
+    # lowpass_array output mostly dependent on scipy.signal
 
     def median_distance(self, a: np.ndarray) -> np.ndarray:
         key = get_key(a.tolist())
@@ -44,12 +45,9 @@ class TestGetToeLiftLanding: # no mock for lowpass_array because output using st
         result = return_values.get(key, "default_output")
         return result
 
-    def test_get_toe_lift_landing_with_custom_signal(self, custom_signal, mocker):
-        mocker.patch('neurokin.utils.kinematics.event_detection.get_peak_boundaries_scipy',
-                     side_effect=self.get_peak_boundaries_scipy)
-
-        mocker.patch('neurokin.utils.kinematics.event_detection.median_distance',
-                     side_effect=self.median_distance)
+    def test_get_toe_lift_landing_with_custom_signal(self, custom_signal, monkeypatch):
+        monkeypatch.setattr(event_detection, 'get_peak_boundaries_scipy', self.get_peak_boundaries_scipy)
+        monkeypatch.setattr(event_detection, 'median_distance', self.median_distance)
 
         left_bounds, right_bounds, max_x = event_detection.get_toe_lift_landing(custom_signal, recording_fs=200)
         assert (np.array_equal(left_bounds, np.array([1991, 4043, 4170, 4364, 4718, 4846])) and
@@ -69,9 +67,8 @@ class TestGetPeakBoundariesScipy:
         result = return_values.get(key, "default_output")
         return result
 
-    def test_get_peak_boundaries_scipy_with_custom_signal(self, custom_signal, mocker):
-        mocker.patch('neurokin.utils.kinematics.event_detection.median_distance',
-                         side_effect=self.median_distance)
+    def test_get_peak_boundaries_scipy_with_custom_signal(self, custom_signal, monkeypatch):
+        monkeypatch.setattr(event_detection, 'median_distance', self.median_distance)
 
         y = event_detection.lowpass_array(custom_signal, STEP_FILTER_FREQ, 200)
         avg_distance = abs(int(event_detection.median_distance(np.array([2025, 4085, 4243, 4411, 4760, 4908])) / 2))

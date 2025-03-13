@@ -1,5 +1,5 @@
 from neurokin.kinematic_data import KinematicDataRun
-from neurokin.utils.features_extraction.commons import angle
+from neurokin.utils.features_extraction.commons import compute_angle
 import numpy as np
 import pandas as pd
 from neurokin.utils.kinematics import import_export
@@ -31,12 +31,12 @@ file = "../tests/test_data/neural_correlates_test_data/230428/NWE00159/15/runway
 
 
 def cumsum_angle(vectors):
-    angles = angle(vectors)
+    angles = compute_angle(vectors)
     cumsum_angle = np.cumsum(angles)
     return cumsum_angle
 
 def diff_angle(vectors):
-    angles = angle(vectors)
+    angles = compute_angle(vectors)
     diff_angle = np.diff(angles)
     return diff_angle
 

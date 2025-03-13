@@ -3,36 +3,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-
-class TestGetMarkerCoordinatesNames:
-
-    @pytest.fixture
-    def mock_df_columns_names(self):
-        yield [('lmtp', 'x'), ('lmtp', 'y'), ('lmtp', 'z'), ('lankle', 'x'),
-               ('lankle', 'y'), ('lankle', 'z'), ('rmtp', 'x'), ('rmtp', 'y')]
-
-    def test_get_marker_coordinates_names_with_mismatch(self, mock_df_columns_names):
-        markers = ['lmtp', 'rankle']
-        actual = kinematics_processing.get_marker_coordinates_names(mock_df_columns_names, markers)
-        expected = ([], [('lmtp', 'x'), ('lmtp', 'y'), ('lmtp', 'z')])
-        assert actual == expected
-
-    def test_get_marker_coordinates_names_with_match(self, mock_df_columns_names):
-        markers = ['lmtp', 'lankle']
-        actual = kinematics_processing.get_marker_coordinates_names(mock_df_columns_names, markers)
-        expected = ([('lankle', 'x'), ('lankle', 'y'), ('lankle', 'z')], [('lmtp', 'x'), ('lmtp', 'y'), ('lmtp', 'z')])
-        assert actual == expected
-
-
-def test_get_marker_coordinate_values():
-    df = pd.DataFrame({'lmtp': [1.0,2.0,3.0],
-                       'rankle': [10.0,11.0,12.0],
-                       'rmtp': [16.0,17.0,18.0]})
-    actual = kinematics_processing.get_marker_coordinate_values(df, ['lmtp', 'rankle'], 1)
-    expected = np.array([2.0, 11.0])
-    np.testing.assert_allclose(np.array(actual), expected)
-
-
 class TestTiltCorrect:
 
     @pytest.fixture

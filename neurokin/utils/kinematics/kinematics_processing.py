@@ -1,40 +1,6 @@
 import numpy as np
 import pandas as pd
 from scipy import signal
-from neurokin.utils.kinematics.gait_params_basics import get_angle, get_phase_at_max_amplitude
-
-#TESTME with mock df
-def get_marker_coordinates_names(df_columns_names, markers):
-    """
-    Returns the names of the columns that contain the name of the marker, to retrieve the 2 or 3 coordinates.
-    E.g. lknee, will could return lknee_x, lknee_y, lknee_z.
-
-    :param df_columns_names: dataframe column names with all the markers
-    :param markers: markers of interest
-    :return:
-    """
-    abc = []
-    for i in range(len(markers)):
-        point = [x for x in df_columns_names if markers[i] in x]
-        abc.append(point)
-    abc.sort()  # courtesy of me dreaming code. makes xyz order assumption more likely, still an assumption.
-    return tuple(abc)
-
-#TESTME with mock df
-def get_marker_coordinate_values(df, marker_column_names, frame):
-    """
-    Given a dataframe, a list of column names referring to x, y (and z) of the same marker, and a frame number,
-    it returns the corresponding values.
-
-    :param df: dataframe
-    :param marker_column_names: sets of markers names
-    :param frame: frame number
-    :return: sets of coordinates values
-    """
-    coordinates = []
-    for i in range(len(marker_column_names)):
-        coordinates.append(df[marker_column_names[i]][frame])
-    return coordinates
 
 
 #TESTME with mock df
@@ -75,7 +41,7 @@ def check_correct_columns_extraction(actual, expected, side):
                          "expected " + str(expected) +
                          ". Please check if there are ambiguity in the column names.")
 
-#TESTME with mock df for the the 3 correct cases
+
 def get_unilateral_df(df, side="", name_starts_with=False, name_ends_with=False,
                       column_names=None, expected_columns_number=None):
     if column_names is None:
@@ -96,37 +62,6 @@ def get_unilateral_df(df, side="", name_starts_with=False, name_ends_with=False,
 
     return df_side
 
-
-def get_angle_features(df, breakpoints, features_df):
-    # df_feature = pd.DataFrame(columns=df.columns)
-    for column in df.features_df:
-        gait_param = np.asarray(df[column])
-        steps_gait_param = np.split(gait_param, breakpoints)[:-1]
-        steps_feat = [max(i) for i in steps_gait_param]
-        features_df[column] = steps_feat
-
-    bodyparts = []
-    features = []
-    for bodypart in bodyparts:
-        steps_gait_param = np.split(gait_param, breakpoints)[:-1]
-        for feature in features:
-
-            if feature == "max_angle":
-                for step in range(len(steps_gait_param)):
-                    max_ = np.max(steps_gait_param[step])
-                    features_df[feature][bodypart].iloc[step] = max_
-
-            if feature == "min_angle":
-                for step in range(len(steps_gait_param)):
-                    min_ = np.min(steps_gait_param[step])
-                    features_df[feature][bodypart].iloc[step] = min_
-
-            if feature == "phase_max_amplitude":
-                for step in range(len(steps_gait_param)):
-                    ph_at_max_amplitude = get_phase_at_max_amplitude(steps_gait_param[step])
-                    features_df[feature][bodypart].iloc[step] = ph_at_max_amplitude
-
-    return
 
 
 def create_empty_features_df(self, bodyparts, features):

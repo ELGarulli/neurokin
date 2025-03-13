@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 
 
-#TESTME
 def import_c3d(path):
     """
     Fills df from c3d file
