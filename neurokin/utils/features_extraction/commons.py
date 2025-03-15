@@ -9,6 +9,13 @@ def compute_angle(vectors):
     Computes the angle between 3 points in a 3d or 2d space.
     :param vectors: input coordinates
     """
+    vectors = np.asarray(vectors)
+    if vectors.ndim == 1:
+        if vectors.shape[0] in (6, 9):
+            vectors = vectors.reshape(1, -1)
+        else:
+            raise IndexError(f"Expected 1D array of length 6 or 9, but got length {vectors.shape[0]}.")
+
     try:
         if vectors.shape[1] == 9:
             a, b, c = vectors[:, :3], vectors[:, 3:6], vectors[:, 6:9]

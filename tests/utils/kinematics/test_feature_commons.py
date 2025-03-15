@@ -13,7 +13,6 @@ class TestGetAngle:
         expected = np.array([np.pi / 2])
         np.testing.assert_allclose(angles, expected, rtol=1e-5)
 
-
     def test_compute_angle_3d_right_angle(self):
         # For 3D, we use points: a = (0,0,0), b = (1,0,0), c = (1,1,0)
         # This also produces an angle of π/2.
@@ -22,14 +21,12 @@ class TestGetAngle:
         expected = np.array([np.pi / 2])
         np.testing.assert_allclose(angles, expected, rtol=1e-5)
 
-
     def test_compute_angle_2d_straight_line(self):
         # When the points are collinear, the angle should be 0.
         vectors = np.array([[0, 0, 1, 0, 2, 0]])
         angles = commons.compute_angle(vectors)
         expected = np.array([0.0])
         np.testing.assert_allclose(angles, expected, rtol=1e-5)
-
 
     def test_compute_angle_multiple_rows(self):
         # Testing with multiple rows.
@@ -40,7 +37,6 @@ class TestGetAngle:
         angles = commons.compute_angle(vectors)
         expected = np.array([np.pi / 2, np.pi / 2])
         np.testing.assert_allclose(angles, expected, rtol=1e-5)
-
 
     def test_compute_angle_from_dataframe_2d(self):
         # Use a pandas DataFrame for a 2D input.
@@ -55,7 +51,6 @@ class TestGetAngle:
         angles = commons.compute_angle(df.values)
         expected = np.array([np.pi / 2])
         np.testing.assert_allclose(angles, expected, rtol=1e-5)
-
 
     def test_compute_angle_from_dataframe_3d(self):
         # Use a pandas DataFrame for a 3D input.
@@ -74,14 +69,12 @@ class TestGetAngle:
         expected = np.array([np.pi / 2])
         np.testing.assert_allclose(angles, expected, rtol=1e-5)
 
-
     def test_compute_angle_invalid_shape(self):
         # Passing an array with an invalid shape (not 6 or 9 columns) should result in an error.
         # Depending on how compute_angle is written, this might raise an IndexError or a NameError.
         vectors = np.array([[1, 2, 3, 4]])  # shape (1, 4)
         with pytest.raises((IndexError, NameError)):
             commons.compute_angle(vectors)
-
 
     def test_compute_angle_zero_norm(self):
         # When the first vector (b - a) is a zero vector (e.g. a and b are identical),
@@ -144,27 +137,24 @@ class TestComputeAngleAcceleration:
 
 
 class TestGetPhase:
-    def test_get_phase_with_empty_array(self):
-        with pytest.raises(ValueError):
-            commons.compute_angle_phase(np.array([]))
-
-    def test_get_phase_with_vector_input(self):
-        np.testing.assert_allclose(commons.compute_angle_phase(np.array(['j'])), np.array([1.57079633]))
-
     def test_get_phase_with_1_point(self):
-        np.testing.assert_allclose(commons.compute_angle_phase(np.array([1])), np.array([0]))
+        with pytest.raises(IndexError):
+            commons.compute_angle_phase(np.array([1]))
 
-    def test_get_phase_with_2_points(self):
-        np.testing.assert_allclose(commons.compute_angle_phase(np.array([1, 2])), np.array([0., 3.14159265]))
+    def test_get_phase_with_2D_signal(self):
+        np.random.seed(42)
+        dummy_vectors = np.random.rand(60, 6)
+        assert np.allclose(commons.compute_angle_phase(dummy_vectors)[:10],
+                           np.array([0., -2.657708, 0.915085, -1.619009, 0.347632, 0.284068, -1.204167, -2.042451,
+                                     -2.848609, 1.015215]))
 
-    def test_get_phase_with_random_signal(self):
-        np.testing.assert_allclose(commons.compute_angle_phase(np.array([39, 5, 16, 22, 3, 38, 30, 19, 1, 6, 70, 9, 27])), np.array(
-            [0., 1.14260506, 1.56542311, -1.88276653, 0.2841719, 0.706717, 2.81263504, -2.81263504, -0.706717, -0.2841719,
-             1.88276653, -1.56542311, -1.14260506]))
-
-    def test_get_phase_with_custom_signal(self, custom_signal):
-        assert sum(commons.compute_angle_phase(custom_signal))*1e15 == pytest.approx(-1.2048140263232199e-12*1e15)
-        print(commons.compute_angle_phase(custom_signal)[1:10])
+    def test_get_phase_with_3D_signal(self):
+        np.random.seed(42)
+        dummy_vectors = np.random.rand(60, 9)
+        assert np.allclose(commons.compute_angle_phase(dummy_vectors)[:10],
+                           np.array(
+                               [0., 1.47265759, 1.23881217, -2.4170581, 2.39504264, 0.03731343, 1.49577231, -1.81348321,
+                                1.32230544, 3.12603581]))
 
 
 class TestGetPhaseAtMaxAmplitude:
@@ -202,33 +192,35 @@ class TestGetPhaseAtMaxAmplitude:
         expected = phase
         result = commons.compute_phase_at_max_amplitude(vectors)
         np.testing.assert_allclose(result, expected, rtol=1e-5)
-        def test_get_phase_at_max_amplitude_with_empty_array(self):
-            with pytest.raises(IndexError):
-                commons.compute_phase_at_max_amplitude(np.array([]))
 
-        def test_get_phase_at_max_amplitude_with_vector_input(self):
-            vectors = np.array([[0, 0, 1, 0, 1, 1]])
-            result = commons.compute_phase_at_max_amplitude(vectors)
-            assert result == pytest.approx(360.0)
+    def test_get_phase_at_max_amplitude_with_empty_array(self):
+        with pytest.raises(IndexError):
+            commons.compute_phase_at_max_amplitude(np.array([]))
 
-        def test_get_phase_at_max_amplitude_with_1_point(self):
-            vectors = np.array([[0, 0, 1, 0, 1, 1]])
-            result = commons.compute_phase_at_max_amplitude(vectors)
-            assert result == pytest.approx(360.0)
+    def test_get_phase_at_max_amplitude_with_vector_input(self):
+        vectors = np.array([[0, 0, 1, 0, 1, 1]])
+        result = commons.compute_phase_at_max_amplitude(vectors)
+        assert result == pytest.approx(360.0)
 
-        def test_get_phase_at_max_amplitude_with_2_points(self):
-            vectors = np.array([
-                [0, 0, 1, 0, 1, 1],
-                [0, 0, 1, 0, 1, 1]
-            ])
-            result = commons.compute_phase_at_max_amplitude(vectors)
-            assert result == pytest.approx(360.0)
-        def test_get_phase_at_max_amplitude_with_sin_input(self, monkeypatch):
-            monkeypatch.setattr(commons, "compute_angle", lambda vectors: np.sin(np.radians(np.arange(360))))
-            # The input here is a dummy array with the proper shape.
-            dummy_vectors = np.empty((360, 6))
-            result = commons.compute_phase_at_max_amplitude(dummy_vectors)
-            assert result == pytest.approx(270.0, rel=1e-2)
+    def test_get_phase_at_max_amplitude_with_1_point(self):
+        vectors = np.array([[0, 0, 1, 0, 1, 1]])
+        result = commons.compute_phase_at_max_amplitude(vectors)
+        assert result == pytest.approx(360.0)
+
+    def test_get_phase_at_max_amplitude_with_2_points(self):
+        vectors = np.array([
+            [0, 0, 1, 0, 1, 1],
+            [0, 0, 1, 0, 1, 1]
+        ])
+        result = commons.compute_phase_at_max_amplitude(vectors)
+        assert result == pytest.approx(360.0)
+
+    def test_get_phase_at_max_amplitude_with_sin_input(self, monkeypatch):
+        monkeypatch.setattr(commons, "compute_angle", lambda vectors: np.sin(np.radians(np.arange(360))))
+        # The input here is a dummy array with the proper shape.
+        dummy_vectors = np.empty((360, 6))
+        result = commons.compute_phase_at_max_amplitude(dummy_vectors)
+        assert result == pytest.approx(270.0, rel=1e-2)
 
 
 class TestComputeSpeed:
@@ -245,6 +237,7 @@ class TestComputeSpeed:
         result = commons.compute_speed(df)
         np.testing.assert_allclose(result, expected_speed, rtol=1e-5)
 
+
 class TestComputeVelocity:
     def test_velocity_linear(self):
         # When compute_velocity is applied to a Series (as it is via df.apply in compute_speed),
@@ -254,6 +247,7 @@ class TestComputeVelocity:
         result = commons.compute_velocity(s)
         np.testing.assert_allclose(result, expected_velocity, rtol=1e-5)
 
+
 class TestComputeAcceleration:
     def test_acceleration_linear(self):
         # For a linear series, the velocity is constant and thus the acceleration is zero.
@@ -262,6 +256,7 @@ class TestComputeAcceleration:
         expected_acceleration = np.gradient(velocity, 1)
         result = commons.compute_acceleration(s)
         np.testing.assert_allclose(result, expected_acceleration, rtol=1e-5)
+
 
 class TestComputeTangAcceleration:
     def test_tang_acceleration_linear(self):

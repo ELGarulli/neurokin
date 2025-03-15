@@ -11,15 +11,12 @@ def get_key(input_value):
     return input_value
 
 
-@pytest.fixture
-def custom_signal():
-    with open('../../test_data/steps_test_data/steps_y.pkl', 'rb') as f:
-        custom_signal = pickle.load(f).to_numpy()
-    yield custom_signal
-
-
-class TestGetToeLiftLanding: # no mock for lowpass_array because output using steps_y.pkl too large to hardcode.
-    # lowpass_array output mostly dependent on scipy.signal
+class TestGetToeLiftLanding:
+    @pytest.fixture(autouse=True)
+    def setup_paths(self, repo_root):
+        self.steps_y_path = repo_root / "tests" / "test_data" / "steps_test_data" / "steps_y.pkl"
+        with open(self.steps_y_path, 'rb') as f:
+            self.custom_signal = pickle.load(f).to_numpy()
 
     def median_distance(self, a: np.ndarray) -> np.ndarray:
         key = get_key(a.tolist())
@@ -45,17 +42,22 @@ class TestGetToeLiftLanding: # no mock for lowpass_array because output using st
         result = return_values.get(key, "default_output")
         return result
 
-    def test_get_toe_lift_landing_with_custom_signal(self, custom_signal, monkeypatch):
+    def test_get_toe_lift_landing_with_custom_signal(self, monkeypatch):
         monkeypatch.setattr(event_detection, 'get_peak_boundaries_scipy', self.get_peak_boundaries_scipy)
         monkeypatch.setattr(event_detection, 'median_distance', self.median_distance)
 
-        left_bounds, right_bounds, max_x = event_detection.get_toe_lift_landing(custom_signal, recording_fs=200)
+        left_bounds, right_bounds, max_x = event_detection.get_toe_lift_landing(self.custom_signal, recording_fs=200)
         assert (np.array_equal(left_bounds, np.array([1991, 4043, 4170, 4364, 4718, 4846])) and
                 np.array_equal(right_bounds, np.array([2060, 4118, 4275, 4435, 4789, 4932])) and
                 np.array_equal(max_x, np.array([2025, 4085, 4243, 4411, 4760, 4908])))
 
 
 class TestGetPeakBoundariesScipy:
+    @pytest.fixture(autouse=True)
+    def setup_paths(self, repo_root):
+        self.steps_y_path = repo_root / "tests" / "test_data" / "steps_test_data" / "steps_y.pkl"
+        with open(self.steps_y_path, 'rb') as f:
+            self.custom_signal = pickle.load(f).to_numpy()
 
     def median_distance(self, a: np.ndarray) -> np.ndarray:
         key = get_key(a.tolist())
@@ -67,10 +69,10 @@ class TestGetPeakBoundariesScipy:
         result = return_values.get(key, "default_output")
         return result
 
-    def test_get_peak_boundaries_scipy_with_custom_signal(self, custom_signal, monkeypatch):
+    def test_get_peak_boundaries_scipy_with_custom_signal(self, monkeypatch):
         monkeypatch.setattr(event_detection, 'median_distance', self.median_distance)
 
-        y = event_detection.lowpass_array(custom_signal, STEP_FILTER_FREQ, 200)
+        y = event_detection.lowpass_array(self.custom_signal, STEP_FILTER_FREQ, 200)
         avg_distance = abs(int(event_detection.median_distance(np.array([2025, 4085, 4243, 4411, 4760, 4908])) / 2))
 
         return_values = {
@@ -90,6 +92,11 @@ class TestGetPeakBoundariesScipy:
 
 
 class TestLowpassArray:
+    @pytest.fixture(autouse=True)
+    def setup_paths(self, repo_root):
+        self.steps_y_path = repo_root / "tests" / "test_data" / "steps_test_data" / "steps_y.pkl"
+        with open(self.steps_y_path, 'rb') as f:
+            self.custom_signal = pickle.load(f).to_numpy()
 
     def test_lowpass_array_with_empty_array(self):
         with pytest.raises(ValueError):
@@ -103,15 +110,14 @@ class TestLowpassArray:
                                                                               60.27249539, 65.71560878, 77.55592426,
                                                                               64.99635261]))
 
-    def test_lowpass_array_with_custom_array(
-            self, custom_signal):
-        assert sum(event_detection.lowpass_array(custom_signal, critical_freq=STEP_FILTER_FREQ, fs=200))*100 == pytest.approx(
+    def test_lowpass_array_with_custom_array(self):
+        assert sum(event_detection.lowpass_array(self.custom_signal, critical_freq=STEP_FILTER_FREQ, fs=200))*100 == pytest.approx(
             24730.50916683458*100)
-        np.testing.assert_allclose(event_detection.lowpass_array(custom_signal, critical_freq=STEP_FILTER_FREQ, fs=200)[1:10],
+        np.testing.assert_allclose(event_detection.lowpass_array(self.custom_signal, critical_freq=STEP_FILTER_FREQ, fs=200)[1:10],
                                    np.array([5.09284297, 5.093026, 5.09322321, 5.09343471, 5.09366009, 5.09389833,
                                              5.09414767, 5.09440584, 5.0946703])
                                    )
-        assert event_detection.lowpass_array(custom_signal, critical_freq=STEP_FILTER_FREQ, fs=200)[400] == pytest.approx(5.09304201977675)
+        assert event_detection.lowpass_array(self.custom_signal, critical_freq=STEP_FILTER_FREQ, fs=200)[400] == pytest.approx(5.09304201977675)
 
 
 class TestMedianDistance:

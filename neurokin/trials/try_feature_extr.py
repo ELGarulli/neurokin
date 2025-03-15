@@ -25,7 +25,7 @@ step_left_marker = "lmtp"
 step_right_marker = "rmtp"
 
 CONFIGPATH = "../../config_c3d.yaml"
-file = "../tests/test_data/neural_correlates_test_data/230428/NWE00159/15/runway15.c3d"
+file = "../../tests/test_data/neural_correlates_test_data/230428/NWE00159/15/runway15.c3d"
 #CONFIGPATH = "../../config_dlc.yaml"
 #file = "../tests/test_data/neural_correlates_test_data/dlc_data/dlc_data.csv"
 

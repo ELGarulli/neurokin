@@ -5,7 +5,7 @@ from numpy.typing import ArrayLike
 from neurokin.constants.open_ephys_structure import STRUCTURE, CONTINUOUS, SOURCE_PROCESSOR_NAME, SOURCE_PROCESSOR_ID, \
     TRAILING_NUMBER, SAMPLE_RATE, CHANNEL_NUMBER
 
-#TESTME
+
 def time_to_sample(timestamp: float, fs: float, is_t1: bool = False, is_t2: bool = False) -> int:
     """
     Function adapted from time2sample in TDTbin2py.py
@@ -17,6 +17,10 @@ def time_to_sample(timestamp: float, fs: float, is_t1: bool = False, is_t2: bool
     :param is_t2: specify if the timestamp is t2
     :return:
     """
+    if timestamp < 0:
+        raise ValueError("Timestamp cannot be negative")
+    if not fs > 0:
+        raise ValueError("Sampling frequency must be positive")
     sample = timestamp * fs
     if is_t2:
         exact = np.round(sample * 1e9) / 1e9
@@ -29,16 +33,17 @@ def time_to_sample(timestamp: float, fs: float, is_t1: bool = False, is_t2: bool
         else:
             sample = np.round(sample)
     sample = int(sample)
+    if sample < 0:
+        sample = 0
     return sample
 
-#TESTME
-def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1", stim_name="Wav1",
+
+def import_tdt_channel_data(folderpath, ch=[], t1=0, t2=-1, stream_name="Wav1", stim_name="Wav1",
                             sync_present=False) -> (
         float, ArrayLike):
     """
     Wrapper for the import function of tdt, to be more user friendly.
-    Warning: tdt function allows to specify for channels, however it's 1-based and if ch==0
-    it returns all channels. Use the indexing carefully.
+
 
     :param folderpath: folderpath of the subject experiment
     :param ch:
@@ -49,6 +54,14 @@ def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1", s
     :param t2: last time to index in seconds
     :return: frequency sample and raw sample
     """
+    if isinstance(ch, (list, np.ndarray)):
+        if len(ch) > 0:
+            ch = [i + 1 for i in ch]
+        if len(ch) == 0:
+            ch = 0
+    elif type(ch) == int:
+        ch += 1
+
     data = tdt.read_block(folderpath, evtype=['streams'], channel=ch)
     stim_data = None
     fs_sync = None
@@ -92,8 +105,8 @@ def import_tdt_channel_data(folderpath, ch=0, t1=0, t2=-1, stream_name="Wav1", s
 
     return fs, raw, stim_data, fs_sync
 
-#TESTME
-def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: str, channels=None,
+
+def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: str, channels=[],
                                    sync_present: bool = False,
                                    sync_ch: int = None,
                                    source_processor: str = None) -> (
@@ -107,6 +120,7 @@ def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: 
     :param channels: indicate which channels to return
     :return: Sampling frequency is returned as a float and raw data are returned in arbitrary units
     """
+
     structure_path = folderpath + "/" + experiment + "/" + recording + "/" + STRUCTURE + ".oebin"
     sync_data = None
     with open(structure_path) as f:
@@ -130,7 +144,7 @@ def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: 
     if sync_present:
         sync_data = neural_data_au[sync_ch]
 
-    if channels:
+    if (isinstance(channels, (list, np.ndarray)) and len(channels) > 0) or isinstance(channels, int):
         mask = np.zeros(n_ch, dtype=bool)
         mask[channels] = True
         neural_data_au = neural_data_au[mask, ...]
@@ -139,7 +153,8 @@ def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: 
 
     return fs, neural_data_au, sync_data
 
-#TESTME
+
+# TESTME
 def import_binary_to_float32(filename, channel_number, sample_number):
     """
     Imports binary data stored in C major to a float32 array

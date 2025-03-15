@@ -3,8 +3,7 @@ import numpy as np
 import pandas as pd
 from neurokin.utils.kinematics import import_export
 
-C3D_PATH_1 = '../../test_data/neural_correlates_test_data/230428/NWE00159/15/runway15.c3d'
-C3D_PATH_2 = '../../test_data/neural_correlates_test_data/230619/NWE00163/13/runway_13.c3d'
+
 
 
 def get_key(input_value):
@@ -14,15 +13,19 @@ def get_key(input_value):
 
 
 class TestImportC3D:
+    @pytest.fixture(autouse=True)
+    def setup_paths(self, repo_root):
+        self.C3D_PATH_1 = repo_root / "tests" / "test_data" / "neural_correlates_test_data" / "230428/NWE00159/15/runway15.c3d"
+        self.C3D_PATH_2 = repo_root / "tests" / "test_data" / "neural_correlates_test_data" / "230619/NWE00163/13/runway_13.c3d"
 
     def get_c3d_labels(self, handle):
         key = get_key(str(handle))
 
-        with open(C3D_PATH_1, "rb") as handle_1:
+        with open(self.C3D_PATH_1, "rb") as handle_1:
             return_values = {get_key(str(handle_1)): ['rshoulder', 'rcrest', 'rhip', 'rknee', 'rankle', 'rmtp',
                                                       'lshoulder', 'lcrest', 'lhip', 'lknee', 'lankle', 'lmtp']}
 
-        with open(C3D_PATH_2, "rb") as handle_2:
+        with open(self.C3D_PATH_2, "rb") as handle_2:
             return_values[get_key(str(handle_2))] = ['rshoulder', 'rcrest', 'rhip', 'rknee', 'rankle', 'rmtp',
                                                      'lshoulder', 'lcrest', 'lhip', 'lknee', 'lankle', 'lmtp',
                                                      '*12', '*13', '*14', '*15', '*16']
@@ -40,7 +43,7 @@ class TestImportC3D:
     def test_import_c3d_with_path_1(self, monkeypatch):
         monkeypatch.setattr(import_export, 'create_empty_df', self.create_empty_df)
         monkeypatch.setattr(import_export, 'get_c3d_labels', self.get_c3d_labels)
-        result = import_export.import_c3d(C3D_PATH_1)
+        result = import_export.import_c3d(self.C3D_PATH_1)
         assert result[0] == 823 and result[1] == 1316 and result[2] == pytest.approx(200.0)
         assert result[3].to_numpy().sum() == pytest.approx(1524390.6)
         np.testing.assert_allclose(result[3].to_numpy()[0],
@@ -57,7 +60,7 @@ class TestImportC3D:
     def test_import_c3d_with_path_2(self, monkeypatch):
         monkeypatch.setattr(import_export, 'create_empty_df', self.create_empty_df)
         monkeypatch.setattr(import_export, 'get_c3d_labels', self.get_c3d_labels)
-        result = import_export.import_c3d(C3D_PATH_2)
+        result = import_export.import_c3d(self.C3D_PATH_2)
         assert result[0] == 3903 and result[1] == 5771 and result[2] == pytest.approx(200.0)
         assert result[3].to_numpy().sum() == pytest.approx(-2189393.8)
         np.testing.assert_allclose(result[3].to_numpy()[0], np.array([68.69498, -501.1288, 57.40453, 86.684166,
@@ -92,15 +95,19 @@ def test_create_empty_df():
 
 
 class TestGetC3DLabels:
+    @pytest.fixture(autouse=True)
+    def setup_paths(self, repo_root):
+        self.C3D_PATH_1 = repo_root / "tests" / "test_data" / "neural_correlates_test_data" / "230428/NWE00159/15/runway15.c3d"
+        self.C3D_PATH_2 = repo_root / "tests" / "test_data" / "neural_correlates_test_data" / "230619/NWE00163/13/runway_13.c3d"
 
     def test_get_c3d_labels_with_path_1(self):
-        with open(C3D_PATH_1, "rb") as handle_1:
+        with open(self.C3D_PATH_1, "rb") as handle_1:
             assert import_export.get_c3d_labels(handle_1) == ['rshoulder', 'rcrest', 'rhip', 'rknee', 'rankle',
                                                                   'rmtp', 'lshoulder', 'lcrest', 'lhip', 'lknee',
                                                                   'lankle', 'lmtp']
 
     def test_get_c3d_labels_with_path_2(self):
-        with open(C3D_PATH_2, "rb") as handle_2:
+        with open(self.C3D_PATH_2, "rb") as handle_2:
             assert import_export.get_c3d_labels(handle_2) == ['rshoulder', 'rcrest', 'rhip', 'rknee', 'rankle',
                                                                   'rmtp', 'lshoulder', 'lcrest', 'lhip', 'lknee',
                                                                   'lankle', 'lmtp', '*12', '*13', '*14', '*15', '*16']
