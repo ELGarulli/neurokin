@@ -1,13 +1,13 @@
 neurokin package
 ================
 
-Module contents
----------------
+Subpackages
+-----------
 
-.. automodule:: neurokin
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. toctree::
+   :maxdepth: 4
+
+   neurokin.utils
 
 Submodules
 ----------
@@ -36,10 +36,10 @@ neurokin.neural\_data module
    :undoc-members:
    :show-inheritance:
 
-Subpackages
------------
+Module contents
+---------------
 
-.. toctree::
-   :maxdepth: 4
-
-   neurokin.utils
+.. automodule:: neurokin
+   :members:
+   :undoc-members:
+   :show-inheritance:

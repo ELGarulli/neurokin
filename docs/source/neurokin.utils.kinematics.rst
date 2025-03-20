@@ -4,18 +4,10 @@ neurokin.utils.kinematics package
 Submodules
 ----------
 
-neurokin.utils.kinematics.c3d\_dlc module
------------------------------------------
+neurokin.utils.kinematics.binning module
+----------------------------------------
 
-.. automodule:: neurokin.utils.kinematics.c3d_dlc
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-neurokin.utils.kinematics.c3d\_import\_export module
-----------------------------------------------------
-
-.. automodule:: neurokin.utils.kinematics.c3d_import_export
+.. automodule:: neurokin.utils.kinematics.binning
    :members:
    :undoc-members:
    :show-inheritance:
@@ -28,10 +20,10 @@ neurokin.utils.kinematics.event\_detection module
    :undoc-members:
    :show-inheritance:
 
-neurokin.utils.kinematics.gait\_params\_basics module
------------------------------------------------------
+neurokin.utils.kinematics.import\_export module
+-----------------------------------------------
 
-.. automodule:: neurokin.utils.kinematics.gait_params_basics
+.. automodule:: neurokin.utils.kinematics.import_export
    :members:
    :undoc-members:
    :show-inheritance:

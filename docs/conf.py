@@ -27,7 +27,7 @@ release = '0.1'
 extensions = ['sphinx.ext.viewcode', 'sphinx.ext.autodoc', "nbsphinx"]
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
-autodoc_mock_imports = ["pandas", "numpy", "scipy", "tdt", "dlc2kinematics", "c3d", "yaml", "fooof", "matplotlib"]
+autodoc_mock_imports = ["pandas", "numpy", "scipy", "tdt", "c3d", "yaml", "fooof", "matplotlib"]
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -38,3 +38,6 @@ html_theme = 'sphinxawesome_theme'
 html_logo = "./neurokin_logo_200.png"
 html_static_path = ['_static']
 html_favicon = './favicon.png'
+
+
+
