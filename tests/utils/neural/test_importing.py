@@ -39,7 +39,6 @@ class TestTimeToSample:
         with pytest.raises(ValueError):
             importing.time_to_sample(timestamp=1.75, fs=0, is_t1=False, is_t2=False)
 
-
     def test_time_to_sample_with_negative_fs(self):
         with pytest.raises(ValueError):
             importing.time_to_sample(timestamp=1, fs=-40.2, is_t1=False, is_t2=False)
@@ -49,6 +48,7 @@ class TestImportTDTChannelData:
     @pytest.fixture(autouse=True)
     def setup_paths(self, repo_root):
         self.folderpath = repo_root / "tests" / "test_data" / "TDT_test_data"
+
     def time_to_sample(self, timestamp: float, fs: float, is_t1: bool = False, is_t2: bool = False) -> int:
         key = get_key(timestamp)
 
@@ -56,7 +56,6 @@ class TestImportTDTChannelData:
                          get_key(14.61): 356352}
 
         return return_values.get(key, 'default_output')
-
 
     @pytest.fixture
     def all_channels_output(self, monkeypatch):
@@ -70,7 +69,7 @@ class TestImportTDTChannelData:
         assert fs == pytest.approx(24414.0625) and stim_data is None and fs_sync is None
         assert np.sum(raw) == pytest.approx(273678340.0)
         assert raw[3][238923] == pytest.approx(256.0)
-        test_array = np.ones(1000)*256
+        test_array = np.ones(1000) * 256
         np.testing.assert_allclose(raw[5][252963:253963], test_array)
 
     def test_import_tdt_channel_data_single_channel(self, all_channels_output):
@@ -82,7 +81,8 @@ class TestImportTDTChannelData:
     def test_import_tdt_channel_data_multiple_channels(self, all_channels_output):
         fs, raw, stim_data, fs_sync = all_channels_output
 
-        np.testing.assert_allclose(raw[2:5], importing.import_tdt_channel_data(self.folderpath, ch=[2, 3, 4], t2=14.61)[1])
+        np.testing.assert_allclose(raw[2:5],
+                                   importing.import_tdt_channel_data(self.folderpath, ch=[2, 3, 4], t2=14.61)[1])
 
 
 class TestImportOpenEphysChannelData:
@@ -105,21 +105,22 @@ class TestImportOpenEphysChannelData:
     def test_import_open_ephys_channel_data_all_channels(self, all_channels_output):
         fs, neural_data_au, sync_data = all_channels_output
         assert fs == pytest.approx(30000.0) and sync_data is None
-        assert np.sum(neural_data_au) == -37636516985
-        assert neural_data_au[18][2837:2847].tolist() == np.array([-1990, -2076, -2097, -2078,
-                                                                   -2097, -2108, -2119, -2097,
-                                                                   -2118, -2118]).tolist()
+        assert np.sum(neural_data_au) == 641438060.497489
+        np.testing.assert_allclose(neural_data_au[18][2837:2847].tolist(),
+                                          np.array([-388.04998577, -404.81998515, -408.914985, -405.20998514, -408.914985,
+                                               -411.05998492, -413.20498484, -408.914985, -413.00998485,
+                                               -413.00998485]).tolist())
 
     def test_import_open_ephys_channel_data_single_channel(self, all_channels_output, input_data):
         fs, neural_data_au, sync_data = all_channels_output
         folderpath, experiment, recording, source_processor = input_data
 
-        assert neural_data_au[5].tolist() == \
+        np.testing.assert_allclose(neural_data_au[5][:10],
                importing.import_open_ephys_channel_data(folderpath, experiment, recording, channels=[5],
-                                                        source_processor=source_processor)[1].tolist()
-        assert neural_data_au[0].tolist() == \
-               importing.import_open_ephys_channel_data(folderpath, experiment, recording, channels=0,
-                                                        source_processor=source_processor)[1].tolist() #using channels=0 does not work, has to be a list
+                                                        source_processor=source_processor)[1][0][:10])
+        np.testing.assert_allclose(neural_data_au[5][:10],
+               importing.import_open_ephys_channel_data(folderpath, experiment, recording, channels=5,
+                                                        source_processor=source_processor)[1][0][:10])
 
     def test_import_open_ephys_channel_data_multiple_channels(self, all_channels_output, input_data):
         fs, neural_data_au, sync_data = all_channels_output

@@ -1,6 +1,7 @@
 import tdt
 import json
 import numpy as np
+from typing import Union
 from numpy.typing import ArrayLike
 from neurokin.constants.open_ephys_structure import STRUCTURE, CONTINUOUS, SOURCE_PROCESSOR_NAME, SOURCE_PROCESSOR_ID, \
     TRAILING_NUMBER, SAMPLE_RATE, CHANNEL_NUMBER
@@ -106,10 +107,14 @@ def import_tdt_channel_data(folderpath, ch=[], t1=0, t2=-1, stream_name="Wav1", 
     return fs, raw, stim_data, fs_sync
 
 
-def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: str, channels=[],
+def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: str,
+                                   channels: Union[list, int] = None,
                                    sync_present: bool = False,
                                    sync_ch: int = None,
-                                   source_processor: str = None) -> (
+                                   source_processor: str = None,
+                                   start_sample_index: int = 0,
+                                   end_sample_index: int = -1,
+                                   convert_to_volts: bool = True) -> (
         float, np.ndarray):
     """
     Imports open ephys data from binary files.
@@ -123,6 +128,7 @@ def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: 
 
     structure_path = folderpath + "/" + experiment + "/" + recording + "/" + STRUCTURE + ".oebin"
     sync_data = None
+
     with open(structure_path) as f:
         structure = json.load(f)
 
@@ -135,23 +141,37 @@ def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: 
 
     fs = structure[CONTINUOUS][0][SAMPLE_RATE]
     n_ch = structure[CONTINUOUS][0][CHANNEL_NUMBER]
+    bit_volts = [ch['bit_volts'] for ch in structure["continuous"][0]['channels']]
 
-    neural_data_flat = np.fromfile(binary_data_path, dtype='<i2')
-    n_samples = int(len(neural_data_flat) / n_ch)
+    # neural_data_flat = np.fromfile(binary_data_path, dtype='<i2')
+    # samples = samples[start_sample_index:end_sample_index, channels].astype('float64')
+    # samples = data.reshape((len(data) // n_ch, n_ch))
+    # neural_data_au = np.reshape(a=neural_data_flat, newshape=(n_ch, n_samples), order='F')
+    # if (isinstance(channels, (list, np.ndarray)) and len(channels) > 0) or isinstance(channels, int):
+    #    mask = np.zeros(n_ch, dtype=bool)
+    #    mask[channels] = True
+    #    neural_data_au = samples[mask, ...]
+    #    if neural_data_au.shape[0] == 1:
+    #        neural_data_au = neural_data_au[0]
 
-    neural_data_au = np.reshape(a=neural_data_flat, newshape=(n_ch, n_samples), order='F')
+    data = np.memmap(binary_data_path, mode='r', dtype='int16')
+
+    n_samples = int(len(data) / n_ch)
+    if not channels:
+        channels = range(n_ch)
+    if type(channels) == int:
+        channels = [channels]
+    samples = np.reshape(a=data, newshape=(n_ch, n_samples), order='F')
+    samples = samples[channels, start_sample_index:end_sample_index].astype('float64')
+
+    if convert_to_volts:
+        for i, ch in enumerate(channels):
+            samples[i] = samples[i] * bit_volts[ch]
 
     if sync_present:
-        sync_data = neural_data_au[sync_ch]
+        sync_data = samples[sync_ch]
 
-    if (isinstance(channels, (list, np.ndarray)) and len(channels) > 0) or isinstance(channels, int):
-        mask = np.zeros(n_ch, dtype=bool)
-        mask[channels] = True
-        neural_data_au = neural_data_au[mask, ...]
-        if neural_data_au.shape[0] == 1:
-            neural_data_au = neural_data_au[0]
-
-    return fs, neural_data_au, sync_data
+    return fs, samples, sync_data
 
 
 # TESTME

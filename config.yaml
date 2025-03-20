@@ -14,8 +14,6 @@ skeleton:
         references:
             full_body_tilt: [lshoulder, lmtp, mcorner]
             maze_corner_open_right: [mcorner_ol, mcorner_or, mcorner_cr]
-    #correlations:
-    #    left_shoulder_knee : [lknee, lshoulder]
     distances:
         lef_shoulder_to_toe: [lshoulder, lmtp]
     elevations:
