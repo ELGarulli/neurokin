@@ -133,3 +133,6 @@ dmypy.json
 .idea/*
 
 _pipeline_test.py
+
+#Ds stuff
+.DS_Store

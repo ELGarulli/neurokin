@@ -1,0 +1,57 @@
+skeleton:
+    angles:
+        joints:
+            left_crest: [lshoulder, lcrest, lhip]
+            left_hip: [lcrest, lhip, lknee]
+            left_knee: [lhip, lknee, lankle]
+            left_ankle: [lknee, lankle, lmtp]
+            right_crest: [rshoulder, rcrest, rhip]
+            right_hip: [rcrest, rhip, rknee]
+            right_knee: [rhip, rknee, rankle]
+            right_ankle: [rknee, rankle, rmtp]
+            trunk_cross_l: [lshoulder, rcrest, lhip]
+            trunk_cross_r: [rshoulder, lcrest, rhip]
+        references:
+            full_body_tilt: [lshoulder, lmtp, mcorner]
+            maze_corner_open_right: [mcorner_ol, mcorner_or, mcorner_cr]
+    #correlations:
+    #    left_shoulder_knee : [lknee, lshoulder]
+    distances:
+        lef_shoulder_to_toe: [lshoulder, lmtp]
+    elevations:
+        left_hip: lhip
+        right_hip: rhip
+    
+    
+features:
+    #extraction_strategies.SampleFeatureExtractionStrategy:
+    #    window_size: 1
+        #marker_ids: [lshoulder, lmtp]
+    #phase.PhasesAngle:
+    #    marker_ids: [left_knee]
+    joint_angles_dlc2kin.JointAnglesDLC:
+    #    window_size: 1
+    #    marker_id: [rknee]
+    joint_angles_dlc2kin.AngularVelocityDLC:
+    #    window_size: 1
+    #    sliding_window_size: True
+    momentum_dlc2kin.AccelerationDLC:
+    #    window_size: 1
+    #    marker_id: [skeleton, angles, joints]
+    #momentum_dlc2kin.VelocityDLC:
+    #    window_size: 1
+    momentum_dlc2kin.SpeedDLC:
+    #     window_size: 1
+    #
+
+
+
+
+events:
+    freezing_of_gait:
+        get_frames_where_feature_of_marker_id_is_below_threshold: 
+            marker_id: rknee
+            feature: speed
+            threshold: 5
+        get_freezing_events: [(marker_id, center_of_gravity), (min_duration, 0.5)]
+        get_predictions: [(model_path, path), (hyperparameters, dictionary_of_hyperparams)]

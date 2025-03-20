@@ -1,0 +1,41 @@
+Experiment: ees_precomp_stream
+Subject: NWE00163
+User: TDTVR
+Date: 06/19/2023
+Time: 1:17:13pm
+
+Object ID : RZ2(1) - RZn Processor
+ Rate     : 24414.1 Hz
+
+Object ID : IZV10(1) - IZV
+ Store ID : MonA
+  Format  : Integer-16
+  Scale   : Milli
+  Rate    : 24414.1 Hz
+
+Object ID : Wave1 - Stream Data Storage
+ Store ID : Wav1
+  Format  : Float-32
+  Scale   : Unity
+  Rate    : 24414.1 Hz
+
+Object ID : NPro1 - Neural Stream Processor
+ Store ID : NPr1
+  Format  : Float-32
+  Scale   : Unity
+  Rate    : 24414.1 Hz
+
+Object ID : NPro2 - Neural Stream Processor
+ Store ID : NPr2
+  Format  : Float-32
+  Scale   : Unity
+  Rate    : 3051.8 Hz
+
+
+Flat Listing:
+StoreID  Gizmo/Hal
+MonA     IZVn(1)
+NPr1     NPro1
+NPr2     NPro2
+Wav1     Wave1
+

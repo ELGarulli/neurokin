@@ -1,0 +1,7 @@
+Experiment: Vicon_Runway_Neural
+Subject: NWE00159
+User: TDTVR
+Start: 10:53:50am 04/28/2023
+
+
+Stop: 10:53:57am 04/28/2023

@@ -72,8 +72,8 @@ def get_first_last_frame_from_csv(csv_path: str) -> Tuple[int, int]:
             count += 1
 
     df = pd.read_csv(csv_path, skiprows=first_block_end, nrows=count)
-    first_frame = int(df.iloc[0][0])
-    last_frame = int(df.iloc[-1][0])
+    first_frame = int(df.iloc[0, 0])
+    last_frame = int(df.iloc[-1, 0])
     return first_frame, last_frame
 
 
@@ -603,8 +603,7 @@ def get_psd_single_event_type(raw_neural_list, fs, nfft, noverlap, zscore):
         if zscore:
             pxx = stats.zscore(pxx)
         psds.append(pxx)
-
-        return psds
+    return psds
 
 
 def check_time_cutoff(t_onset, t_end, time_cutoff):
