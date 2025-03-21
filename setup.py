@@ -17,7 +17,8 @@ setup(
                       'pandas>=2.0',
                       'scipy~=1.8.0',
                       'matplotlib~=3.5.1',
-                      'scikit-learn~=1.1.3'
+                      'scikit-learn~=1.1.3',
+                      'typeguard'
                       ],
 
     classifiers=[
