@@ -15,7 +15,7 @@ setup(
                       'tdt==0.5.3',
                       'numpy~=1.26.4',
                       'pandas>=2.0',
-                      'scipy~=1.8.0',
+                      'scipy~=1.9.2',
                       'matplotlib~=3.5.1',
                       'scikit-learn~=1.1.3',
                       'typeguard'
