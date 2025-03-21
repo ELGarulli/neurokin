@@ -5,6 +5,7 @@ on:
     branches: [ci_tests]
   pull_request:
     branches: [ci_tests]
+  workflow_dispatch:
 
 jobs:
   test:
