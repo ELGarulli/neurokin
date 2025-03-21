@@ -9,15 +9,15 @@ setup(
     author_email='e.garulli@charite.de',
     license='BSD 2-clause',
     packages=find_packages(),
-    install_requires=['c3d==0.5.1',
+    install_requires=['c3d==0.5.2',
                       'fooof==1.0.0',
                       'tdt==0.5.3',
-                      'numpy~=1.26.4',
-                      'pandas>=2.0',
-                      'scipy>=1.15.0',
-                      'matplotlib~=3.5.1',
-                      'typeguard~=4.3.0',
-                      'pyyaml~=6.0'
+                      'numpy==1.24.4',
+                      'pandas==2.1.4',
+                      'scipy==1.11.4',
+                      'matplotlib==3.7.3',
+                      'typeguard==4.4.2',
+                      'pyyaml==6.0.2'
                       ],
 extras_require={
         "dev": ["pytest"],

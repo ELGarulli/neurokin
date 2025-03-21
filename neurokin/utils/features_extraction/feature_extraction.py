@@ -13,7 +13,7 @@ def get_extractor_obj(feature_name):
     return feature_extract_class()
 
 
-def extract_features(features, bodyparts, skeleton, markers_df, fs, get_binned, bin_params, custom_feats):
+def extract_features(features, bodyparts, skeleton, markers_df, get_binned, bin_params, custom_feats):
     extracted_features = []
     binned_features = []
     for feature_name, params in features.items():
@@ -36,7 +36,7 @@ def extract_features(features, bodyparts, skeleton, markers_df, fs, get_binned, 
             raise ValueError(f"{extraction_target} is not a valid extraction target."
                              f"Please use: markers, joints or multiple_markers")
 
-        feature = extractor_obj.run_feat_extraction(df=markers_df, target_bodyparts=target_bodyparts, fs=fs, **params)
+        feature = extractor_obj.run_feat_extraction(df=markers_df, target_bodyparts=target_bodyparts, **params)
         extracted_features.append(pd.DataFrame(feature))
         if get_binned:
             try:
