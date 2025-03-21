@@ -1,9 +1,15 @@
 from setuptools import setup, find_packages
+from pathlib import Path
+
+this_directory = Path(__file__).parent
+long_description = (this_directory / "README.md").read_text()
 
 setup(
     name='neurokin',
-    version='0.0.1',
-    description='package to support neural and data analysis',
+    version='0.1.0',
+    description='package to support neural and kinematic data analysis',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     url='https://github.com/WengerLab/neurokin',
     author='Elisa L. Garulli',
     author_email='e.garulli@charite.de',
@@ -19,7 +25,7 @@ setup(
                       'typeguard==4.4.2',
                       'pyyaml==6.0.2'
                       ],
-extras_require={
+    extras_require={
         "dev": ["pytest"],
         "docs": ["sphinx", "nbsphinx", "sphinxawesome-theme", "pygments"]
     },
