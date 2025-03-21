@@ -6,7 +6,6 @@ neurokin aims to simplify the import and processing of neural and kinematic data
 neurokin supports TDT and open_ephys formats natively for neural and .c3d files and DeepLabCut datasets for kinematics data but can be expanded easily. Please get in touch if you have another type of data.
 
 To install use: 
-.. code-block:: console
 
     pip install neurokin
 
