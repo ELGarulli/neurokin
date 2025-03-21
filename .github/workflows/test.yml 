@@ -3,11 +3,10 @@ name: Run tests
 on:
   push:
     branches:
-      - ci_tests_new
+      - main
   pull_request:
     branches:
-      - ci_tests_new
-  workflow_dispatch:
+      - main
 
 
 jobs:
