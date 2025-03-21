@@ -6,7 +6,7 @@ from numpy.typing import ArrayLike
 from scipy.signal import savgol_filter
 
 from neurokin.utils.features_extraction import feature_extraction
-from utils.kinematics import binning
+from neurokin.utils.kinematics import binning
 from neurokin.utils.helper import load_config
 from neurokin.utils.kinematics import kinematics_processing, import_export, event_detection
 
