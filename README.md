@@ -1,4 +1,6 @@
 [![Documentation Status](https://readthedocs.org/projects/neurokin/badge/?version=latest)](https://neurokin.readthedocs.io/en/latest/?badge=latest)
+![Tests](https://github.com/ELGarulli/neurokin/actions/workflows/test.yml/badge.svg?branch=ci_tests)
+
 
 # neurokin
 
