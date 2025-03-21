@@ -11,15 +11,13 @@ setup(
     packages=find_packages('neurokin'),
     package_dir={'': 'neurokin'},
     install_requires=['c3d==0.5.1',
-                      'dlc2kinematics',
                       'fooof==1.0.0',
-                      'mock==4.0.3',
-                      'munkres==1.1.4',
-                      'sip==4.19.13',
                       'tdt==0.5.3',
-                      'tornado==6.1',
-                      'wincertstore==0.2'
-
+                      'numpy~=1.26.4',
+                      'pandas>=2.0',
+                      'scipy~=1.8.0',
+                      'matplotlib~=3.5.1',
+                      'scikit-learn~=1.1.3'
                       ],
 
     classifiers=[

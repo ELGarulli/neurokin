@@ -1,11 +1,14 @@
-from numpy.typing import ArrayLike
-from neurokin.utils.kinematics import kinematics_processing, c3d_import_export, event_detection
-from neurokin.utils.helper import load_config
-from neurokin.utils.features import features_extraction, binning
+from functools import partial
 import pandas as pd
+import numpy as np
 from matplotlib import pyplot as plt
-from dlc2kinematics.preprocess import smooth_trajectory
+from numpy.typing import ArrayLike
+from scipy.signal import savgol_filter
 
+from neurokin.utils.features_extraction import feature_extraction
+from utils.kinematics import binning
+from neurokin.utils.helper import load_config
+from neurokin.utils.kinematics import kinematics_processing, import_export, event_detection
 
 class KinematicDataRun:
     """
@@ -26,6 +29,7 @@ class KinematicDataRun:
         self.gait_param = pd.DataFrame()
         self.stepwise_gait_features = pd.DataFrame()
         self.features_df: pd.MultiIndex = None
+        self.binned_df: pd.DataFrame = None
 
         self.left_mtp_lift: ArrayLike = None
         self.left_mtp_land: ArrayLike = None
@@ -42,7 +46,9 @@ class KinematicDataRun:
                         to_shift: ArrayLike = None,
                         to_tilt: ArrayLike = None,
                         shift_reference_marker: str = "",
-                        tilt_reference_marker: str = ""):
+                        tilt_reference_marker: str = "",
+                        source: str = None,
+                        fs: float = None):
         """
         Loads the kinematics from a c3d file into a dataframe with timeframes as rows and markers as columns
 
@@ -52,10 +58,19 @@ class KinematicDataRun:
         :param to_tilt: which columns to perform the tilt on if correct_shift is true
         :param shift_reference_marker: which marker to use as a reference trajectory to compute the shift
         :param tilt_reference_marker: which marker to use as a reference trajectory to compute the tilt
+        :param source: defines which source of kinematics data to load from, either c3d or dlc
         :return:
         """
 
-        self.trial_roi_start, self.trial_roi_end, self.fs, self.markers_df = c3d_import_export.import_c3d(self.path)
+        if source.lower() == "c3d":
+            self.trial_roi_start, self.trial_roi_end, self.fs, self.markers_df = import_export.import_c3d(self.path)
+        elif source.lower() == "dlc":
+            self.markers_df = import_export.import_dlc_df(self.path)
+            self.convert_DLC_like_to_df()
+            self.fs = fs
+        else:
+            raise ValueError(f"The source value {source} is not yet implemented. Currently supported sources are 'c3d' "
+                             f"and 'dlc' (DeepLabCut)")
 
         if correct_shift:
 
@@ -89,7 +104,25 @@ class KinematicDataRun:
 
         return
 
-    def get_c3d_compliance(self, smooth=False, filter_window=3, order=1):
+    def filter_marker_df(self, func=None, **kwargs):
+        """
+        Filters markers dataframe in place using a given function or defaults on a savgol filter with window_length 4 and
+        polyorder 2. Pass the arguments to change the defaults.
+        :param func: user-given filter function. Must be used as an applied function on a dataset
+        :param kwargs: user-given parameters for the savgol filter, or the custom filter function.
+        :return:
+        """
+        if not func:
+            func = partial(savgol_filter, window_length=4, polyorder=2)
+        original_shape = self.markers_df.shape
+        filtered_df = self.markers_df.apply(lambda col: func(col, **kwargs))
+        if filtered_df.shape != original_shape:
+            raise ValueError(
+                f"Shape mismatch, the filter function has to return the same shape as the input. "
+                f"Expected {original_shape} returned {filtered_df.shape}")
+        self.markers_df = filtered_df
+
+    def convert_DLC_like_to_df(self, multiindex_df=None):
         """
         Converts a DeepLabCut-like dataframe (MultiIndex) to a simple pandas dataframe. Saves the scorer identity and
         the bodyparts in the corresponding class attributes.
@@ -99,22 +132,15 @@ class KinematicDataRun:
         :param order: order of the polynomial to fit the data
         :return:
         """
-        df_ = self.markers_df
-        bodyparts = df_.columns.get_level_values("bodyparts").unique().to_list()
-        scorer = df_.columns.get_level_values(0)[0]
-        if smooth:
-            df_ = smooth_trajectory(
-                df_,
-                bodyparts,
-                filter_window,
-                order,
-                deriv=0,
-                save=False,
-                output_filename=None,
-                destfolder=None,
-            )
-
-        self.markers_df = df_
+        if not multiindex_df:
+            multiindex_df = self.markers_df
+        bodyparts = multiindex_df.columns.get_level_values("bodyparts").unique().to_list()
+        scorers = np.unique(multiindex_df.columns.get_level_values(0))
+        scorer = [i for i in scorers if "Unnamed" not in i][0]
+        selected_df = multiindex_df.loc[:, multiindex_df.columns.get_level_values("scorer") == scorer]
+        selected_df.columns = ["_".join(a[1:]) for a in selected_df.columns.to_flat_index()]
+        selected_df.reset_index(inplace=True, drop=True)
+        self.markers_df = selected_df
         self.bodyparts = bodyparts
         self.scorer = scorer
         return
@@ -192,36 +218,33 @@ class KinematicDataRun:
         plt.savefig(filename, facecolor="white")
         plt.close()
 
-    def extract_features(self):
+    def extract_features(self, get_binned=True, custom_feats=None):
         """
-        Computes features on the markers dataframe based on the config file
+        Computes features on the markers dataframe based on the config file. If get_binned is True, it also computes
+        the binned features as defined in the config file.
 
         :return:
         """
         features = self.config["features"]
         skeleton = self.config["skeleton"]
-
-        new_features = features_extraction.extract_features(features=features,
-                                                            bodyparts=self.bodyparts,
-                                                            skeleton=skeleton,
-                                                            markers_df=self.markers_df)
+        binning = self.config["binning"]
+        new_features, new_binned_features = feature_extraction.extract_features(features=features,
+                                                                                bodyparts=self.bodyparts,
+                                                                                skeleton=skeleton,
+                                                                                markers_df=self.markers_df,
+                                                                                get_binned=get_binned,
+                                                                                bin_params=binning,
+                                                                                custom_feats=custom_feats)
 
         if self.features_df is not None:
             self.features_df = pd.concat((self.features_df, new_features), axis=1)
         else:
             self.features_df = new_features
 
-    def get_binned_features(self, window=50, overlap=25):
-        """
-        Bins features based on the passed windows and overlap
-
-        :param window: window to compute the binning on
-        :param overlap: how much should 2 subsequent windows overlap by
-        :return: binned dataframe
-        """
-        reformat_df = binning.parse_df_features_for_binning(self.markers_df, self.features_df)
-        test = binning.get_easy_metrics_on_bins(reformat_df, window=window, overlap=overlap)
-        return test
+        if self.binned_df is not None:
+            self.binned_df = pd.concat((self.binned_df, new_binned_features), axis=1)
+        else:
+            self.binned_df = new_binned_features
 
     def get_trace_height(self, marker, axis="z", window=50, overlap=25):
         """
@@ -251,10 +274,10 @@ class KinematicDataRun:
         :return:
         """
         test = binning.get_step_fwd_movement_on_bins(self.markers_df,
-                                               window=window,
-                                               overlap=overlap,
-                                               marker=marker,
-                                               axis=axis)
+                                                     window=window,
+                                                     overlap=overlap,
+                                                     marker=marker,
+                                                     axis=axis)
         return test
 
     def gait_param_to_csv(self, output_folder="./"):
@@ -285,38 +308,3 @@ class KinematicDataRun:
                                                                  features_df)  # TODO update features df with all angle features
 
         self.stepwise_gait_features = left_features.join(right_features)
-
-    def split_in_unilateral_df(self, left_side="", right_side="",
-                               name_starts_with=False, name_ends_with=False,
-                               expected_columns_number=None,
-                               left_columns=None, right_columns=None):
-        """
-        Returns dataframes split by the side, left or right.
-
-        :param left_side:  target side name, left
-        :param right_side: target side name, right
-        :param name_starts_with: if all columns of a side start with, specify here. E.g. 'l-' or 'r-'
-        :param name_ends_with: if all columns of a side end with, specify here. E.g. 'l-' or 'r-'
-        :param expected_columns_number: expected number of columns, used as a sanity check
-        :param left_columns: optional full list of names of left columns
-        :param right_columns: optional full list of names of right columns
-        :return:
-        """
-        # self.stepwise_gait_features = 0
-        left_df = pd.DataFrame()
-        right_df = pd.DataFrame()
-        if left_side:
-            left_df = kinematics_processing.get_unilateral_df(df=self.gait_param, side=left_side,
-                                                              name_starts_with=name_starts_with,
-                                                              name_ends_with=name_ends_with,
-                                                              column_names=left_columns,
-                                                              expected_columns_number=expected_columns_number)
-
-        if right_side:
-            right_df = kinematics_processing.get_unilateral_df(df=self.gait_param, side=right_side,
-                                                               name_starts_with=name_starts_with,
-                                                               name_ends_with=name_ends_with,
-                                                               column_names=right_columns,
-                                                               expected_columns_number=expected_columns_number)
-
-        return left_df, right_df
