@@ -8,18 +8,21 @@ setup(
     author='Elisa L. Garulli',
     author_email='e.garulli@charite.de',
     license='BSD 2-clause',
-    packages=find_packages('neurokin'),
-    package_dir={'': 'neurokin'},
+    packages=find_packages(),
     install_requires=['c3d==0.5.1',
                       'fooof==1.0.0',
                       'tdt==0.5.3',
                       'numpy~=1.26.4',
                       'pandas>=2.0',
-                      'scipy>=1.10.0',
+                      'scipy>=1.15.0',
                       'matplotlib~=3.5.1',
-                      'scikit-learn~=1.1.3',
-                      'typeguard'
+                      'typeguard~=4.3.0',
+                      'pyyaml~=6.0'
                       ],
+extras_require={
+        "dev": ["pytest"],
+        "docs": ["sphinx", "nbsphinx", "sphinxawesome-theme", "pygments"]
+    },
 
     classifiers=[
         'Development Status :: 1 - Planning',
