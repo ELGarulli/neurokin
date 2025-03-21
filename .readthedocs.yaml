@@ -31,6 +31,6 @@ sphinx:
 
 python:
   install:
-    - method: editable
+    - method: pip
       path: .
     - requirements: docs/requirements.txt
