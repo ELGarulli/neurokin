@@ -1,6 +1,9 @@
 [![Documentation Status](https://readthedocs.org/projects/neurokin/badge/?version=latest)](https://neurokin.readthedocs.io/en/latest/?badge=latest)
 ![Tests](https://github.com/ELGarulli/neurokin/actions/workflows/test.yml/badge.svg)
-
+[![GitHub Stars](https://img.shields.io/github/stars/ELGarulli/neurokin?style=social)](https://github.com/ELGarulli/neurokin/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/ELGarulli/neurokin?style=social)](https://github.com/ELGarulli/neurokin/network/members)
+[![Downloads](https://static.pepy.tech/badge/neurokin)](https://pepy.tech/project/neurokin)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 # neurokin
 
