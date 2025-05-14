@@ -23,7 +23,6 @@ features:
         binning_strategy: ["sum", "max"]
 
     features.marker_features.LinearSpeed:
-        marker_ids: [ rknee ]
         binning_strategy: ["mean"]
 
     features.marker_features.LinearAcceleration:

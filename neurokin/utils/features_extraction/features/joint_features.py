@@ -118,12 +118,17 @@ class CustomJointFeatures(FeatureExtraction):
         except KeyError:
             raise KeyError(f"No name found for the Custom Join Function. "
                            f"Please add valid feature_names in the config file.")
+
         for name in feature_names:
             try:
                 func = kwargs.get("custom_features")[name]
             except KeyError:
                 raise KeyError(f"No function found with name: {name}, please provide a valid name and function "
                                f"name when calling extract_features")
+            except TypeError:
+                raise TypeError(f"Custom Join Functions are called in the config file but not passed while calling. "
+                                f"Please either delete the custom features in the config file or pass them upon calling"
+                                f"feature extraction.")
             for joint, bodyparts in target_bodyparts.items():
                 target_markers_coords = [coord for marker in bodyparts for coord in bodyparts_coordinates if
                                          marker in coord]

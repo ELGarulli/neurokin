@@ -48,6 +48,8 @@ if __name__ == "__main__":
 
     test_df = kin_data.markers_df
     #kin_data.filter_marker_df(window_length=2, polyorder=1)
-    kin_data.extract_features(custom_feats={"cumsum_angle": cumsum_angle, "diff_angle": diff_angle})
+    #custom_feats={"cumsum_angle": cumsum_angle, "diff_angle": diff_angle}
+    kin_data.bodyparts = np.unique([part[:-2] for part in kin_data.markers_df.columns]).tolist()
+    kin_data.extract_features()
 
     print(kin_data.features_df.head(10))
