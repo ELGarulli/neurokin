@@ -37,7 +37,7 @@ def extract_features(features, bodyparts, skeleton, markers_df, get_binned, bin_
                              f"Please use: markers, joints or multiple_markers")
 
         feature = extractor_obj.run_feat_extraction(df=markers_df, target_bodyparts=target_bodyparts, **params)
-        extracted_features.append(pd.DataFrame(feature))
+        extracted_features.append(pd.DataFrame(feature).reset_index(drop=True)))
         if get_binned:
             try:
                 binning_strategy = params["binning_strategy"]
@@ -46,7 +46,7 @@ def extract_features(features, bodyparts, skeleton, markers_df, get_binned, bin_
             binned_features.append(bin_feature(feature,
                                                binning_strategies=binning_strategy,
                                                window=bin_params["window_size"],
-                                               overlap=bin_params["overlap"]))
+                                               overlap=bin_params["overlap"]).reset_index(drop=True)))
     feats_df = pd.concat(extracted_features, axis=1)
     binned_df = pd.concat(binned_features, axis=1)
     return feats_df, binned_df
