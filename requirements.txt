@@ -1,7 +1,6 @@
 numpy==1.24.4
 pandas==2.1.4
 c3d==0.5.2
-fooof==1.0.0
 tdt==0.5.3
 pyyaml==6.0.2
 scipy==1.11.4

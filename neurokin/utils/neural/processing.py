@@ -1,8 +1,6 @@
 import warnings
 import numpy as np
 from numpy.typing import ArrayLike
-from fooof import FOOOF
-from fooof.sim.gen import gen_aperiodic
 from scipy import signal
 from typing import List, Tuple, Union
 from neurokin.utils.neural.importing import time_to_sample
@@ -302,61 +300,3 @@ def calculate_power_spectral_density(data: ArrayLike, fs: float, **kwargs) -> tu
     return freq, pxx
 
 
-def get_fooofed_psd(freqs: ArrayLike, psd: ArrayLike, frange: List[int] = None) -> (ArrayLike, ArrayLike):
-    """
-    Computes the difference from the power spectrum and the aperiodic ie the periodic component
-
-    :param freqs: frequencies corresponding to the y axis
-    :param psd: power points corresponding to the x axis
-    :param frange: range of frequencies where to compute the PSD
-    :return: new set of frequencies, periodic component
-    """
-    fm = FOOOF()
-    fm.fit(freqs=freqs, power_spectrum=psd, freq_range=frange)
-    aperiodic_component = gen_aperiodic(fm.freqs, fm._robust_ap_fit(fm.freqs, fm.power_spectrum))
-    periodic_component = fm.power_spectrum - aperiodic_component
-    return fm.freqs, periodic_component
-
-
-def get_aperiodic(freqs: ArrayLike, psd: ArrayLike, frange: List[int] = None) -> (ArrayLike, ArrayLike):
-    """
-    Computes aperiodic component of the psd
-
-    :param freqs:
-    :param psd:
-    :param frange:
-    :return:
-    """
-    fm = FOOOF()
-    fm.fit(freqs=freqs, power_spectrum=psd, freq_range=frange)
-    init_ap_fit = gen_aperiodic(fm.freqs, fm._robust_ap_fit(fm.freqs, fm.power_spectrum))
-    return fm.freqs, init_ap_fit
-
-
-def get_fast_foofed_specgram(raw: ArrayLike, fs: float, nperseg: int,
-                             noverlap: int, frange: List[int] = None) -> (ArrayLike, ArrayLike, ArrayLike):
-    """
-    Returns a matrix corresponding to a periodgram where from each column the aperiodic component has been subtracted.
-    Because of computational intensity only the overall aperiodic component is computed.
-
-    :param raw: raw signal
-    :param fs: sampling frequency
-    :param nperseg: number of points per segment
-    :param noverlap: number of points to overlap
-    :param frange: frequency range for the in which to compute the aperiodic component
-    :return: timepoints array, frequencies array, normalized matrix
-    """
-    _t, _f, sxx = signal.spectrogram(raw, fs=fs, nperseg=nperseg, noverlap=noverlap)
-    freqs, psd = signal.welch(raw, fs=fs, nperseg=nperseg, noverlap=noverlap)
-
-    f, aperiodic = get_aperiodic(freqs=freqs, psd=psd, frange=frange)
-    aperiodic = np.flipud(aperiodic[:, None])
-
-    lower = find_closest_smaller_index(freqs, frange[0])
-    upper = find_closest_smaller_index(freqs, frange[1])
-    psd_matrix = np.log10(sxx[lower:upper])
-    foofed = psd_matrix - aperiodic
-
-    nt = len(foofed[-1]) * (nperseg - noverlap)
-    t = np.linspace(0, nt, num=len(foofed[-1]))
-    return t, f, foofed
