@@ -16,6 +16,7 @@ def get_extractor_obj(feature_name):
 def extract_features(features, bodyparts, skeleton, markers_df, get_binned, bin_params, custom_feats):
     extracted_features = []
     binned_features = []
+    binned_df = None
     for feature_name, params in features.items():
         params = params if params else {}
         params["custom_features"] = custom_feats
@@ -47,8 +48,8 @@ def extract_features(features, bodyparts, skeleton, markers_df, get_binned, bin_
                                                binning_strategies=binning_strategy,
                                                window=bin_params["window_size"],
                                                overlap=bin_params["overlap"]).reset_index(drop=True))
+            binned_df = pd.concat(binned_features, axis=1)
     feats_df = pd.concat(extracted_features, axis=1)
-    binned_df = pd.concat(binned_features, axis=1)
     return feats_df, binned_df
 
 
