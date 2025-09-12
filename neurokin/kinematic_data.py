@@ -145,7 +145,7 @@ class KinematicDataRun:
         self.scorer = scorer
         return
 
-    def compute_gait_cycles_bounds(self, left_marker, right_marker, axis="z"):
+    def compute_gait_cycles_bounds(self, left_marker, right_marker):
         """
         Computes the lifting and landing frames of both feet using a left and a right marker, respectively.
         To increase robustness of the cycle estimation it first low-passes the signal.
@@ -157,20 +157,20 @@ class KinematicDataRun:
         :return:
         """
 
-        if left_marker not in self.markers_df.columns.get_level_values("bodyparts").unique():
+        if left_marker not in self.markers_df.columns:
             raise ValueError("The left reference marker " + left_marker + " is not among the markers."
                              + "\n Please select one among the following: \n" +
-                             ", ".join(str(x) for x in self.markers_df.columns.get_level_values("bodyparts").unique()))
+                             ", ".join(str(x) for x in self.markers_df.columns))
 
-        if right_marker not in self.markers_df.columns.get_level_values("bodyparts").unique():
+        if right_marker not in self.markers_df.columns:
             raise ValueError("The right reference marker " + right_marker + " is not among the markers."
                              + "\n Please select one among the following: \n" +
-                             ", ".join(str(x) for x in self.markers_df.columns.get_level_values("bodyparts").unique()))
+                             ", ".join(str(x) for x in self.markers_df.columns))
 
         self.left_mtp_lift, self.left_mtp_land, self.left_mtp_max = event_detection.get_toe_lift_landing(
-            self.markers_df[self.scorer][left_marker][axis], self.fs)
+            self.markers_df[left_marker], self.fs)
         self.right_mtp_lift, self.right_mtp_land, self.right_mtp_max = event_detection.get_toe_lift_landing(
-            self.markers_df[self.scorer][right_marker][axis], self.fs)
+            self.markers_df[right_marker], self.fs)
 
         return
 
