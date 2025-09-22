@@ -1,3 +1,7 @@
+
+## v0.3.3
+* Fix: fixed plotting of the step partition which still looked like DLC
+
 ## v0.3.2
 
 ### Updates
