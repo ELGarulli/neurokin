@@ -185,13 +185,13 @@ class KinematicDataRun:
         :param ax_r: ax to plot the right trace on
         :return: axes
         """
-        step_trace_l = self.markers_df[self.scorer][step_left]["z"]
+        step_trace_l = self.markers_df[step_left]
         ax_l.plot(step_trace_l)
         ax_l.vlines(self.left_mtp_lift, min(step_trace_l), max(step_trace_l), colors="green")
         ax_l.vlines(self.left_mtp_land, min(step_trace_l), max(step_trace_l), colors="red")
         ax_l.set_title("Left side")
 
-        step_trace_r = self.markers_df[self.scorer][step_right]["z"]
+        step_trace_r = self.markers_df[step_right]
         ax_r.plot(step_trace_r)
         ax_r.vlines(self.right_mtp_lift, min(step_trace_r), max(step_trace_r), colors="green")
         ax_r.vlines(self.right_mtp_land, min(step_trace_r), max(step_trace_r), colors="red")
