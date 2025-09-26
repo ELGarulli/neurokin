@@ -4,13 +4,6 @@ neurokin.utils.kinematics package
 Submodules
 ----------
 
-neurokin.utils.kinematics.binning module
-----------------------------------------
-
-.. automodule:: neurokin.utils.kinematics.binning
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 neurokin.utils.kinematics.event\_detection module
 -------------------------------------------------
