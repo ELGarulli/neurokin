@@ -3,7 +3,7 @@ import pandas as pd
 from scipy import signal
 
 
-#TESTME with mock df
+
 def tilt_correct(df, reference_marker, columns_to_correct):
     """
     If the runway is not perfectly aligned there can be a linear trend in one of the axis.
@@ -17,7 +17,6 @@ def tilt_correct(df, reference_marker, columns_to_correct):
     df_tilt_corrected = df.apply(lambda x: x.add(trend, axis=0) if x.name in columns_to_correct else x)
     return df_tilt_corrected
 
-#TESTME with mock df
 def shift_correct(df, reference_marker, columns_to_correct):
     #TODO compliance with DLC?
     """

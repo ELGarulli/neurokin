@@ -8,7 +8,6 @@ from scipy.signal import savgol_filter
 
 from neurokin.utils.features_extraction import feature_extraction
 from neurokin.utils.helper import load_config
-from neurokin.utils.kinematics import binning
 from neurokin.utils.kinematics import kinematics_processing, import_export, event_detection
 
 
@@ -22,16 +21,16 @@ class KinematicDataRun:
 
         self.config = load_config.read_config(configpath)
 
-        self.trial_roi_start: int
-        self.trial_roi_end: int
-        self.fs: float
-        self.condition: str
+        self.trial_roi_start: int = 0
+        self.trial_roi_end: int = -1
+        self.fs: float = 1
+        self.condition: str = ""
 
         self.markers_df = pd.DataFrame()
         self.gait_param = pd.DataFrame()
         self.stepwise_gait_features = pd.DataFrame()
-        self.features_df: pd.MultiIndex = None
-        self.binned_df: pd.DataFrame = None
+        self.features_df: pd.MultiIndex = pd.MultiIndex()
+        self.binned_df: pd.DataFrame = pd.DataFrame()
 
         self.left_mtp_lift: ArrayLike = None
         self.left_mtp_land: ArrayLike = None
@@ -49,7 +48,7 @@ class KinematicDataRun:
                         to_tilt: ArrayLike = None,
                         shift_reference_marker: str = "",
                         tilt_reference_marker: str = "",
-                        source: str = None,
+                        source: str = "c3d",
                         fs: float = None):
         """
         Loads the kinematics from a c3d file into a dataframe with timeframes as rows and markers as columns
@@ -124,14 +123,12 @@ class KinematicDataRun:
                 f"Expected {original_shape} returned {filtered_df.shape}")
         self.markers_df = filtered_df
 
-    def convert_DLC_like_to_df(self, multiindex_df=None):
+    def convert_DLC_like_to_df(self, multiindex_df: pd.MultiIndex = None):
         """
         Converts a DeepLabCut-like dataframe (MultiIndex) to a simple pandas dataframe. Saves the scorer identity and
         the bodyparts in the corresponding class attributes.
 
-        :param smooth: whether to smooth the coordinates or not
-        :param filter_window: how big should the filter be
-        :param order: order of the polynomial to fit the data
+        :param multiindex_df: the df to convert
         :return:
         """
         if not multiindex_df:
@@ -254,40 +251,6 @@ class KinematicDataRun:
         else:
             self.binned_df = new_binned_features
 
-    def get_trace_height(self, marker, axis="z", window=50, overlap=25):
-        """
-        Computes height traces of a given marker
-
-        :param marker: which marker to consider
-        :param axis: x, y, or z, default z
-        :param window: window to compute the binning on
-        :param overlap: how much should 2 subsequent windows overlab by
-        :return:
-        """
-        test = binning.get_step_height_on_bins(self.markers_df,
-                                               window=window,
-                                               overlap=overlap,
-                                               marker=marker,
-                                               axis=axis)
-        return test
-
-    def get_step_fwd_movement_on_bins(self, marker, axis="y", window=50, overlap=25):
-        """
-        Computes forward movement traces of a given marker
-
-        :param marker: which marker to consider
-        :param axis: x, y, or z, default z
-        :param window: window to compute the binning on
-        :param overlap: how much should 2 subsequent windows overlab by
-        :return:
-        """
-        test = binning.get_step_fwd_movement_on_bins(self.markers_df,
-                                                     window=window,
-                                                     overlap=overlap,
-                                                     marker=marker,
-                                                     axis=axis)
-        return test
-
     def gait_param_to_csv(self, output_folder="./"):
         """
         Writes the gait_param dataframe to a csv file with the name [INPUT_FILENAME]+_gait_param.csv
@@ -306,4 +269,3 @@ class KinematicDataRun:
         self.stepwise_gait_features.to_csv(
             output_folder + self.path.split("/")[-1].replace(".c3d", "stepwise_feature.csv"))
         return
-
