@@ -1,14 +1,16 @@
 from functools import partial
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 from numpy.typing import ArrayLike
 from scipy.signal import savgol_filter
 
 from neurokin.utils.features_extraction import feature_extraction
-from neurokin.utils.kinematics import binning
 from neurokin.utils.helper import load_config
+from neurokin.utils.kinematics import binning
 from neurokin.utils.kinematics import kinematics_processing, import_export, event_detection
+
 
 class KinematicDataRun:
     """
@@ -145,7 +147,8 @@ class KinematicDataRun:
         self.scorer = scorer
         return
 
-    def compute_gait_cycles_bounds(self, left_marker, right_marker):
+    def compute_gait_cycles_bounds(self, left_marker, right_marker, step_filter_freq: int = 3, prominence: float = 0.8,
+                                   relative_height: float = 0.95):
         """
         Computes the lifting and landing frames of both feet using a left and a right marker, respectively.
         To increase robustness of the cycle estimation it first low-passes the signal.
@@ -168,9 +171,11 @@ class KinematicDataRun:
                              ", ".join(str(x) for x in self.markers_df.columns))
 
         self.left_mtp_lift, self.left_mtp_land, self.left_mtp_max = event_detection.get_toe_lift_landing(
-            self.markers_df[left_marker], self.fs)
+            self.markers_df[left_marker], self.fs, step_filter_freq=step_filter_freq, prominence=prominence,
+            relative_height=relative_height)
         self.right_mtp_lift, self.right_mtp_land, self.right_mtp_max = event_detection.get_toe_lift_landing(
-            self.markers_df[right_marker], self.fs)
+            self.markers_df[right_marker], self.fs, step_filter_freq=step_filter_freq, prominence=prominence,
+            relative_height=relative_height)
 
         return
 

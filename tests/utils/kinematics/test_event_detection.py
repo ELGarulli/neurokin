@@ -1,9 +1,11 @@
 from typing import Tuple
-from neurokin.constants.gait_cycle_detection import STEP_FILTER_FREQ
 import numpy as np
 from neurokin.utils.kinematics import event_detection
 import pytest, pickle
 
+STEP_FILTER_FREQ = 3
+PROMINENCE = 0.8
+REL_HEIGHT = 0.95
 
 def get_key(input_value):
     if isinstance(input_value, list):
@@ -27,7 +29,7 @@ class TestGetToeLiftLanding:
         result = return_values.get(key, "default_output")
         return result
 
-    def get_peak_boundaries_scipy(self, y: np.ndarray, px: float, left_crop: int) -> Tuple[int, int]:
+    def get_peak_boundaries_scipy(self, y: np.ndarray, px: float, left_crop: int, relative_height: float) -> Tuple[int, int]:
         key = get_key(px)
 
         return_values = {
@@ -46,7 +48,11 @@ class TestGetToeLiftLanding:
         monkeypatch.setattr(event_detection, 'get_peak_boundaries_scipy', self.get_peak_boundaries_scipy)
         monkeypatch.setattr(event_detection, 'median_distance', self.median_distance)
 
-        left_bounds, right_bounds, max_x = event_detection.get_toe_lift_landing(self.custom_signal, recording_fs=200)
+        left_bounds, right_bounds, max_x = event_detection.get_toe_lift_landing(self.custom_signal,
+                                                                                recording_fs=200,
+                                                                                step_filter_freq=STEP_FILTER_FREQ,
+                                                                                prominence=PROMINENCE,
+                                                                                relative_height=REL_HEIGHT)
         assert (np.array_equal(left_bounds, np.array([1991, 4043, 4170, 4364, 4718, 4846])) and
                 np.array_equal(right_bounds, np.array([2060, 4118, 4275, 4435, 4789, 4932])) and
                 np.array_equal(max_x, np.array([2025, 4085, 4243, 4411, 4760, 4908])))

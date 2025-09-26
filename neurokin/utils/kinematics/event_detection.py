@@ -1,25 +1,28 @@
 from typing import Tuple
-
+from numpy.typing import ArrayLike
 import numpy as np
 from numpy import ndarray
 from scipy import signal
 
-from neurokin.constants.gait_cycle_detection import RELATIVE_HEIGHT, STEP_FILTER_FREQ, PROMINENCE
 
-
-# TESTME with pickled steps data
-def get_toe_lift_landing(y, recording_fs):
+def get_toe_lift_landing(y: ArrayLike, recording_fs: float, step_filter_freq: int, prominence: float,
+                         relative_height: float):
     """
     Returns the left and right bounds of the gait cycle, corresponding to the toe lift off and the heel strike.
     As a first step it smooths the signal to increase robust peak detection.
 
     :param y: trace of the toe in the z coordinate
     :param recording_fs: sampling rate of the kinematics recording
+    :param step_filter_freq: used to filter out very jittery movement which should not represent steps
+    :param prominence: required minimal prominence of peaks
+    :param relative_height: Chooses the relative height at which the peak width is measured as a percentage of
+    its prominence. 1.0 calculates the width of the peak at its lowest contour line while 0.5 evaluates at half
+    the prominence height. Must be at least 0.
     :return: left, right bounds and max value of each peak.
     """
-    y = lowpass_array(y, STEP_FILTER_FREQ, recording_fs)
+    y = lowpass_array(y, step_filter_freq, recording_fs)
 
-    max_x, _ = signal.find_peaks(y, prominence=PROMINENCE)
+    max_x, _ = signal.find_peaks(y, prominence=prominence)
     avg_distance = abs(int(median_distance(max_x) / 2))
 
     lb = []
@@ -28,7 +31,7 @@ def get_toe_lift_landing(y, recording_fs):
     for p in max_x:
         left = p - avg_distance if p - avg_distance > 0 else 0
         right = p + avg_distance if p + avg_distance < len(y) else len(y)
-        bounds = get_peak_boundaries_scipy(y=y[left:right], px=p, left_crop=left)
+        bounds = get_peak_boundaries_scipy(y=y[left:right], px=p, left_crop=left, relative_height=relative_height)
         lb.append(bounds[0])
         rb.append(bounds[1])
 
@@ -37,8 +40,7 @@ def get_toe_lift_landing(y, recording_fs):
     return lb, rb, max_x
 
 
-# TESTME with pickled steps data
-def get_peak_boundaries_scipy(y: ndarray, px: float, left_crop: int) -> Tuple[int, int]:
+def get_peak_boundaries_scipy(y: ndarray, px: float, left_crop: int, relative_height: float) -> Tuple[int, int]:
     """
     Computes the boundaries of a step by getting the peaks boundaries
 
@@ -49,7 +51,7 @@ def get_peak_boundaries_scipy(y: ndarray, px: float, left_crop: int) -> Tuple[in
     """
     peaks = np.asarray([px - left_crop])
     peak_pro = signal.peak_prominences(y, peaks)
-    peaks_width = signal.peak_widths(y, peaks, rel_height=RELATIVE_HEIGHT, prominence_data=peak_pro)
+    peaks_width = signal.peak_widths(y, peaks, rel_height=relative_height, prominence_data=peak_pro)
     intersections = peaks_width[-2:]
     try:
         left = int(intersections[0] + left_crop)
