@@ -1,3 +1,6 @@
+## v0.3.6
+* Update: KinematicData configpath is now a parameter of extract_features
+
 ## v0.3.5
 * Fix: deleted unnecessary casting to lowercase when importing c3d markers
 * Fix: fixed import so markers id can be left as an empty list meaning all markers
