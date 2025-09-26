@@ -94,7 +94,7 @@ class TestGetPeakBoundariesScipy:
             left = p - avg_distance if p - avg_distance > 0 else 0
             right = p + avg_distance if p + avg_distance < len(y) else len(y)
             key = get_key(p)
-            assert event_detection.get_peak_boundaries_scipy(y=y[left:right], px=p, left_crop=left) == return_values.get(key, "default_output")
+            assert event_detection.get_peak_boundaries_scipy(y=y[left:right], px=p, left_crop=left, relative_height=REL_HEIGHT) == return_values.get(key, "default_output")
 
 
 class TestLowpassArray:
