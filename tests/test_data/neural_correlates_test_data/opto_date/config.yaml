@@ -1,0 +1,41 @@
+skeleton:
+    joints:
+        left_ankle: [LKnee, LAnkle, LMTP]
+        right_ankle: [RKnee, RAnkle, RMTP]
+
+
+
+features:
+    features.marker_features.LinearVelocity:
+        marker_ids: []
+        binning_strategy: ["sum", "max"]
+
+    features.marker_features.LinearSpeed:
+        marker_ids: []
+        binning_strategy: ["mean"]
+
+    features.marker_features.LinearAcceleration:
+        marker_ids: []
+        binning_strategy: ["mean"]
+
+    features.marker_features.TangentialAcceleration:
+        marker_ids: []
+
+    features.joint_features.Angle:
+        joint_ids: []
+
+    features.joint_features.AngleVelocity:
+        joint_ids: []
+
+    features.joint_features.AngleAcceleration:
+        joint_ids: []
+
+    features.misc_features.Height:
+        misc_ids: [lmtp, rmtp]
+        coord: "z"
+
+    features.misc_features.FwdMovement:
+        misc_ids: [lmtp, rmtp]
+        coord: "y"
+        binning_strategy: ["sum"]
+

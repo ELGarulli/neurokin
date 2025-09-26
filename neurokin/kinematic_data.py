@@ -155,8 +155,11 @@ class KinematicDataRun:
 
         :param left_marker: reference marker for the left foot, typically the left mtp
         :param right_marker: reference marker for the right foot, typically the right mtp
-        :param recording_fs: sample frequency of the recording, used for low-passing.
-        :param axis: axis to use to trace the movement and set the cycle bounds
+        :param step_filter_freq: used to filter out very jittery movement which should not represent steps
+        :param prominence: required minimal prominence of peaks
+        :param relative_height: Chooses the relative height at which the peak width is measured as a percentage of
+        its prominence. 1.0 calculates the width of the peak at its lowest contour line while 0.5 evaluates at half
+        the prominence height. Must be at least 0.
         :return:
         """
 
@@ -232,7 +235,7 @@ class KinematicDataRun:
         """
         features = self.config["features"]
         skeleton = self.config["skeleton"]
-        binning = self.config["binning"]
+        binning = self.config.get("binning", {})
         new_features, new_binned_features = feature_extraction.extract_features(features=features,
                                                                                 bodyparts=self.bodyparts,
                                                                                 skeleton=skeleton,
@@ -304,12 +307,3 @@ class KinematicDataRun:
             output_folder + self.path.split("/")[-1].replace(".c3d", "stepwise_feature.csv"))
         return
 
-    def get_angles_features(self, features_df, **kwargs):
-        left_df, right_df = self.split_in_unilateral_df(**kwargs)
-        left_features = pd.DataFrame()
-        right_features = pd.DataFrame()
-
-        left_features = kinematics_processing.get_angle_features(left_df, self.left_mtp_land,
-                                                                 features_df)  # TODO update features df with all angle features
-
-        self.stepwise_gait_features = left_features.join(right_features)

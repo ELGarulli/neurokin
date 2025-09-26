@@ -6,7 +6,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name='neurokin',
-    version='0.3.4',
+    version='0.3.5',
     description='package to support neural and kinematic data analysis',
     long_description=long_description,
     long_description_content_type="text/markdown",

@@ -24,9 +24,11 @@ to_shift = ["rshoulder_y", "rcrest_y", "rhip_y",
 step_left_marker = "lmtp"
 step_right_marker = "rmtp"
 
-CONFIGPATH = "./config_c3d.yaml"
+configpath = "./config_c3d.yaml"
 file = "../tests/test_data/neural_correlates_test_data/230428/NWE00159/15/runway15.c3d"
-#CONFIGPATH = "../config_dlc.yaml"
+file = "../tests/test_data/neural_correlates_test_data/opto_date/runway04.c3d"
+configpath  = "../tests/test_data/neural_correlates_test_data/opto_date/config.yaml"
+#configpath = "../config_dlc.yaml"
 #file = "../tests/test_data/neural_correlates_test_data/dlc_data/dlc_data.csv"
 
 
@@ -42,7 +44,7 @@ def diff_angle(vectors):
 
 
 if __name__ == "__main__":
-    kin_data = KinematicDataRun(file, CONFIGPATH)
+    kin_data = KinematicDataRun(file, configpath)
     #kin_data.load_kinematics(source="dlc", fs=10)
     kin_data.load_kinematics(source="c3d")
 
@@ -50,6 +52,6 @@ if __name__ == "__main__":
     #kin_data.filter_marker_df(window_length=2, polyorder=1)
     #custom_feats={"cumsum_angle": cumsum_angle, "diff_angle": diff_angle}
     kin_data.bodyparts = np.unique([part[:-2] for part in kin_data.markers_df.columns]).tolist()
-    kin_data.extract_features()
+    kin_data.extract_features(get_binned=False)
 
     print(kin_data.features_df.head(10))

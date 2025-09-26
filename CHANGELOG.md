@@ -1,3 +1,7 @@
+## v0.3.5
+* Fix: deleted unnecessary casting to lowercase when importing c3d markers
+* Fix: fixed import so markers id can be left as an empty list meaning all markers
+
 ## v0.3.4
 * Update: exposed parameters to set step detection
 

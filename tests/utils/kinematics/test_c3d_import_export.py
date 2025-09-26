@@ -102,12 +102,12 @@ class TestGetC3DLabels:
 
     def test_get_c3d_labels_with_path_1(self):
         with open(self.C3D_PATH_1, "rb") as handle_1:
-            assert import_export.get_c3d_labels(handle_1) == ['rshoulder', 'rcrest', 'rhip', 'rknee', 'rankle',
+            assert [s.lower() for s in import_export.get_c3d_labels(handle_1)] == ['rshoulder', 'rcrest', 'rhip', 'rknee', 'rankle',
                                                                   'rmtp', 'lshoulder', 'lcrest', 'lhip', 'lknee',
                                                                   'lankle', 'lmtp']
 
     def test_get_c3d_labels_with_path_2(self):
         with open(self.C3D_PATH_2, "rb") as handle_2:
-            assert import_export.get_c3d_labels(handle_2) == ['rshoulder', 'rcrest', 'rhip', 'rknee', 'rankle',
+            assert [s.lower() for s in import_export.get_c3d_labels(handle_2)] == ['rshoulder', 'rcrest', 'rhip', 'rknee', 'rankle',
                                                                   'rmtp', 'lshoulder', 'lcrest', 'lhip', 'lknee',
                                                                   'lankle', 'lmtp', '*12', '*13', '*14', '*15', '*16']

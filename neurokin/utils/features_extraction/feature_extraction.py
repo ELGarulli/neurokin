@@ -24,10 +24,10 @@ def extract_features(features, bodyparts, skeleton, markers_df, get_binned, bin_
         extraction_target = extractor_obj.extraction_target
 
         if extraction_target == "markers":
-            target_bodyparts = params.get("marker_ids", bodyparts)
+            target_bodyparts = bodyparts if len(params["marker_ids"])==0 else params["marker_ids"]
 
         elif extraction_target == "joints":
-            target_joints = params.get("joint_ids", skeleton[extraction_target].keys())
+            target_joints = skeleton[extraction_target].keys() if len(params["joint_ids"])==0 else params["joint_ids"]
             target_bodyparts = {joint: skeleton[extraction_target][joint] for joint in target_joints}
 
         elif extraction_target == "misc":

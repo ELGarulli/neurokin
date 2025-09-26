@@ -5,8 +5,7 @@ from numpy import ndarray
 from scipy import signal
 
 
-def get_toe_lift_landing(y: ArrayLike, recording_fs: float, step_filter_freq: int, prominence: float,
-                         relative_height: float):
+def get_toe_lift_landing(y: ArrayLike, recording_fs: float, step_filter_freq: int, prominence: float, relative_height: float):
     """
     Returns the left and right bounds of the gait cycle, corresponding to the toe lift off and the heel strike.
     As a first step it smooths the signal to increase robust peak detection.
@@ -47,6 +46,9 @@ def get_peak_boundaries_scipy(y: ndarray, px: float, left_crop: int, relative_he
     :param y: y values
     :param px: peaks indexes
     :param left_crop: how many samples to use to crop on the left side
+    :param relative_height: Chooses the relative height at which the peak width is measured as a percentage of
+    its prominence. 1.0 calculates the width of the peak at its lowest contour line while 0.5 evaluates at half
+    the prominence height. Must be at least 0.
     :return: returns boundaries of steps
     """
     peaks = np.asarray([px - left_crop])
