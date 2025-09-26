@@ -16,10 +16,10 @@ class KinematicDataRun:
     This class represents the kinematics data recorded in a single run.
     """
 
-    def __init__(self, path, configpath):
+    def __init__(self, path):
         self.path = path
 
-        self.config = load_config.read_config(configpath)
+        self.config = {}
 
         self.trial_roi_start: int = 0
         self.trial_roi_end: int = -1
@@ -39,7 +39,6 @@ class KinematicDataRun:
         self.right_mtp_land: ArrayLike = None
         self.right_mtp_max: ArrayLike = None
         self.bodyparts: ArrayLike = None
-        self.scorer: str = "scorer"
 
     def load_kinematics(self,
                         correct_shift: bool = False,
@@ -223,13 +222,16 @@ class KinematicDataRun:
         plt.savefig(filename, facecolor="white")
         plt.close()
 
-    def extract_features(self, get_binned=True, custom_feats=None):
+    def extract_features(self, configpath, get_binned=True, custom_feats=None):
         """
         Computes features on the markers dataframe based on the config file. If get_binned is True, it also computes
         the binned features as defined in the config file.
-
+        :param configpath: path to the configuration for schelteon and features
+        :param get_binned: should the binned dataframe be computed?
+        :param custom_feats: pass here the custom features
         :return:
         """
+        self.config = load_config.read_config(configpath)
         features = self.config["features"]
         skeleton = self.config["skeleton"]
         binning = self.config.get("binning", {})

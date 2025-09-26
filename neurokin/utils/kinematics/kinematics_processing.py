@@ -61,17 +61,3 @@ def get_unilateral_df(df, side="", name_starts_with=False, name_ends_with=False,
 
     return df_side
 
-
-
-def create_empty_features_df(self, bodyparts, features):
-    # TODO check shape passed: not matching
-    dataFrame = None
-    steps_number = max([len(self.right_mtp_land), len(self.left_mtp_land)])
-    a = np.full((steps_number), np.nan)
-    for bodypart in bodyparts:
-        pdindex = pd.MultiIndex.from_product(
-            [features, [bodypart]],
-            names=["feature", "bodypart"])
-        frame = pd.DataFrame(a, columns=pdindex, index=range(0, steps_number))
-        dataFrame = pd.concat([frame, dataFrame], axis=1)
-    return dataFrame
