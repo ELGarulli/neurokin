@@ -158,8 +158,8 @@ class KinematicDataRun:
         :param step_filter_freq: used to filter out very jittery movement which should not represent steps
         :param prominence: required minimal prominence of peaks
         :param relative_height: Chooses the relative height at which the peak width is measured as a percentage of
-        its prominence. 1.0 calculates the width of the peak at its lowest contour line while 0.5 evaluates at half
-        the prominence height. Must be at least 0.
+            its prominence. 1.0 calculates the width of the peak at its lowest contour line while 0.5 evaluates at half
+            the prominence height. Must be at least 0.
         :return:
         """
 

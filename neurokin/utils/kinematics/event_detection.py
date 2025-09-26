@@ -1,11 +1,13 @@
 from typing import Tuple
-from numpy.typing import ArrayLike
+
 import numpy as np
 from numpy import ndarray
+from numpy.typing import ArrayLike
 from scipy import signal
 
 
-def get_toe_lift_landing(y: ArrayLike, recording_fs: float, step_filter_freq: int, prominence: float, relative_height: float):
+def get_toe_lift_landing(y: ArrayLike, recording_fs: float, step_filter_freq: int, prominence: float,
+                         relative_height: float):
     """
     Returns the left and right bounds of the gait cycle, corresponding to the toe lift off and the heel strike.
     As a first step it smooths the signal to increase robust peak detection.
@@ -15,8 +17,8 @@ def get_toe_lift_landing(y: ArrayLike, recording_fs: float, step_filter_freq: in
     :param step_filter_freq: used to filter out very jittery movement which should not represent steps
     :param prominence: required minimal prominence of peaks
     :param relative_height: Chooses the relative height at which the peak width is measured as a percentage of
-    its prominence. 1.0 calculates the width of the peak at its lowest contour line while 0.5 evaluates at half
-    the prominence height. Must be at least 0.
+        its prominence. 1.0 calculates the width of the peak at its lowest contour line while 0.5 evaluates at half
+        the prominence height. Must be at least 0.
     :return: left, right bounds and max value of each peak.
     """
     y = lowpass_array(y, step_filter_freq, recording_fs)
@@ -47,8 +49,8 @@ def get_peak_boundaries_scipy(y: ndarray, px: float, left_crop: int, relative_he
     :param px: peaks indexes
     :param left_crop: how many samples to use to crop on the left side
     :param relative_height: Chooses the relative height at which the peak width is measured as a percentage of
-    its prominence. 1.0 calculates the width of the peak at its lowest contour line while 0.5 evaluates at half
-    the prominence height. Must be at least 0.
+        its prominence. 1.0 calculates the width of the peak at its lowest contour line while 0.5 evaluates at half
+        the prominence height. Must be at least 0.
     :return: returns boundaries of steps
     """
     peaks = np.asarray([px - left_crop])
@@ -68,7 +70,6 @@ def get_peak_boundaries_scipy(y: ndarray, px: float, left_crop: int, relative_he
     return left, right
 
 
-# TESTME
 def lowpass_array(array, critical_freq, fs):
     """
     Low passes the array for a given frequency using a 2nd order butterworth filter and filtfilt to avoid phase shift.
@@ -83,7 +84,6 @@ def lowpass_array(array, critical_freq, fs):
     return filtered
 
 
-# TESTME
 def median_distance(a: ndarray) -> ndarray:
     """
     Gets median distance between peaks
