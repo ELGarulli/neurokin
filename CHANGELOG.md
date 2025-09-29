@@ -1,3 +1,6 @@
+## v0.3.7
+* just bumping the version to force publishing
+  
 ## v0.3.6
 * Update: KinematicData configpath is now a parameter of extract_features
 
