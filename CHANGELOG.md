@@ -1,3 +1,6 @@
+## v0.3.8
+* corrected feature datatype
+
 ## v0.3.7
 * just bumping the version to force publishing
   
