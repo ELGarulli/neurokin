@@ -29,7 +29,7 @@ class KinematicDataRun:
         self.markers_df = pd.DataFrame()
         self.gait_param = pd.DataFrame()
         self.stepwise_gait_features = pd.DataFrame()
-        self.features_df: pd.MultiIndex = pd.MultiIndex()
+        self.features_df: pd.DataFrame = pd.DataFrame()
         self.binned_df: pd.DataFrame = pd.DataFrame()
 
         self.left_mtp_lift: ArrayLike = None
@@ -226,7 +226,7 @@ class KinematicDataRun:
         """
         Computes features on the markers dataframe based on the config file. If get_binned is True, it also computes
         the binned features as defined in the config file.
-        :param configpath: path to the configuration for schelteon and features
+        :param configpath: path to the configuration for skeleton and features
         :param get_binned: should the binned dataframe be computed?
         :param custom_feats: pass here the custom features
         :return:
