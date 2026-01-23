@@ -1,3 +1,9 @@
+## v0.3.12
+* Fix: Fixed test failing due to old syntax of np.reshape
+
+## v0.3.11
+* Fix: updated the setup to reflect relaxed requirements
+
 ## v0.3.10
 * Fix: Forgot to bump version so release didnt push
 
