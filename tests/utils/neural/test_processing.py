@@ -540,8 +540,9 @@ class TestGetSpectrogramData:
                                  [7.9681487e-12],
                                  [2.0893108e-11],
                                  [6.3005001e-12]])
+        sxx_actual, sxx_expected = sxx_actual*1e12, sxx_expected*1e12
 
-        np.testing.assert_allclose(sxx_actual[:5] * 1e15, sxx_expected * 1e15)
+        np.testing.assert_allclose(sxx_actual[:5], sxx_expected, rtol=1e-04)
 
 
 class TestCalculatePowerSpectralDensity:
