@@ -1,3 +1,6 @@
+## v0.3.10
+* Fix: Forgot to bump version so release didnt push
+
 ## v0.3.9
 * Update: Relaxed requirements after c3d package update
 
