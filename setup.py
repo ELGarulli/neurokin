@@ -6,7 +6,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name='neurokin',
-    version='0.3.10',
+    version='0.3.11',
     description='package to support neural and kinematic data analysis',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -15,14 +15,14 @@ setup(
     author_email='e.garulli@charite.de',
     license='BSD 2-clause',
     packages=find_packages(),
-    install_requires=['c3d==0.5.2',
-                      'fooof==1.0.0',
-                      'tdt==0.5.3',
-                      'numpy==1.24.4',
-                      'pandas==2.1.4',
-                      'scipy==1.11.4',
-                      'matplotlib==3.7.3',
-                      'typeguard==4.4.2',
+    install_requires=['numpy>=1.24.4',
+                      'pandas>=2.1.4',
+                        'c3d>=0.6.0',
+                        'tdt>0.5.3',
+                        'pyyaml>=6.0.2',
+                        'scipy>=1.11.4',
+                        'matplotlib>=3.7.3',
+                        'typeguard>=4.4.2',
                       'pyyaml==6.0.2'
                       ],
     extras_require={
