@@ -1,6 +1,12 @@
 ## v0.3.9
 * Update: Relaxed requirements after c3d package update
 
+## v0.3.8
+* corrected feature datatype
+
+## v0.3.7
+* just bumping the version to force publishing
+  
 ## v0.3.6
 * Update: KinematicData configpath is now a parameter of extract_features
 
