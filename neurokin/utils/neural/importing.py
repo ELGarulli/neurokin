@@ -161,7 +161,7 @@ def import_open_ephys_channel_data(folderpath: str, experiment: str, recording: 
         channels = range(n_ch)
     if type(channels) == int:
         channels = [channels]
-    samples = np.reshape(a=data, newshape=(n_ch, n_samples), order='F')
+    samples = np.reshape(a=data, shape=(n_ch, n_samples), order='F')
     samples = samples[channels, start_sample_index:end_sample_index].astype('float64')
 
     if convert_to_volts:
@@ -186,5 +186,5 @@ def import_binary_to_float32(filename, channel_number, sample_number):
     """
     dt = np.dtype('f4')
     test = np.fromfile(filename, dtype=dt)
-    float_array = np.reshape(a=test, newshape=(channel_number, sample_number), order='C')
+    float_array = np.reshape(a=test, shape=(channel_number, sample_number), order='C')
     return float_array
