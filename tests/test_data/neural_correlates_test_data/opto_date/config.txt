@@ -1,0 +1,52 @@
+skeleton:
+    joints:
+#        left_crest: [lshoulder, lcrest, lhip]
+#       left_hip: [lcrest, lhip, lknee]
+#       left_knee: [lhip, lknee, lankle]
+        left_ankle: [lknee, lankle, lmtp]
+#       right_crest: [rshoulder, rcrest, rhip]
+#        right_hip: [rcrest, rhip, rknee]
+#       right_knee: [rhip, rknee, rankle]
+        right_ankle: [rknee, rankle, rmtp]
+#        trunk_cross_l: [lshoulder, rcrest, lhip]
+#        trunk_cross_r: [rshoulder, lcrest, rhip]
+
+
+features:
+    features.marker_features.LinearVelocity:
+        marker_ids: [LMTP, RMTP, lknee, rknee, rankle, lankle]
+        binning_strategy: ["sum", "max"]
+
+    features.marker_features.LinearSpeed:
+        marker_ids: [lmtp, rmtp, lknee, rknee, rankle, lankle]
+        binning_strategy: ["mean"]
+
+    features.marker_features.LinearAcceleration:
+        marker_ids: [lmtp, rmtp, lknee, rknee, rankle, lankle]
+        binning_strategy: ["mean"]
+
+    features.marker_features.TangentialAcceleration:
+        marker_ids: [lmtp, rmtp, LKnee, rknee, rankle, lankle]
+
+    features.joint_features.Angle:
+        joint_ids: []
+
+    features.joint_features.AngleVelocity:
+        joint_ids: []
+
+    features.joint_features.AngleAcceleration:
+        joint_ids: []
+
+    features.misc_features.Height:
+        misc_ids: [lmtp, rmtp]
+        coord: "z"
+
+    features.misc_features.FwdMovement:
+        misc_ids: [lmtp, rmtp]
+        coord: "y"
+        binning_strategy: ["sum"]
+
+
+binning:
+    window_size: 15
+    overlap: 5

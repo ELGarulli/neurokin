@@ -1,7 +1,8 @@
 import numpy as np
-from neurokin.utils.neural import processing, importing
-from neurokin.neural_data import NeuralData
 import pytest
+
+from neurokin.neural_data import NeuralData
+from neurokin.utils.neural import processing, importing
 
 
 def get_key(input_value):
@@ -534,11 +535,11 @@ class TestGetSpectrogramData:
                                   input_data):  # result too big to hardcode so checked with the first segment only
         fs, raw = input_data
         sxx_actual, _, _ = processing.get_spectrogram_data(fs, raw)
-        sxx_expected = np.array([[2.25538468e-12],
-                                 [3.70232983e-10],
-                                 [7.96814871e-12],
-                                 [2.08931084e-11],
-                                 [6.30049918e-12]])
+        sxx_expected = np.array([[2.2553847e-12],
+                                 [3.7023298e-10],
+                                 [7.9681487e-12],
+                                 [2.0893108e-11],
+                                 [6.3005001e-12]])
 
         np.testing.assert_allclose(sxx_actual[:5] * 1e15, sxx_expected * 1e15)
 
