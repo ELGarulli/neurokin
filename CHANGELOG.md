@@ -1,3 +1,6 @@
+## v0.3.13
+* Improve: added error raise of wrong vector shape during angle calculation
+
 ## v0.3.12
 * Fix: Fixed test failing due to old syntax of np.reshape
 
