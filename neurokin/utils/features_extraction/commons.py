@@ -21,6 +21,9 @@ def compute_angle(vectors):
             a, b, c = vectors[:, :3], vectors[:, 3:6], vectors[:, 6:9]
         elif vectors.shape[1] == 6:
             a, b, c = vectors[:, :2], vectors[:, 2:4], vectors[:, 4:6]
+        else:
+            raise IndexError("The angles can only be computed on 3 points in a 3d or 2d space. The vectors shape should"
+                         f"be (n, 6) or (n, 9) but got shape {vectors.shape}")
     except IndexError:
         raise IndexError("The angles can only be computed on 3 points in a 3d or 2d space. The vectors shape should"
                          f"be (n, 6) or (n, 9) but got shape {vectors.shape}")
