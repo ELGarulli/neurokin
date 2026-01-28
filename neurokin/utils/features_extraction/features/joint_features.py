@@ -20,7 +20,7 @@ class Angle(FeatureExtraction):
         df_feat = pd.DataFrame()
         for joint, bodyparts in target_bodyparts.items():
             target_markers_coords = [coord for marker in bodyparts for coord in bodyparts_coordinates if
-                                     marker in coord]
+                                     marker in coord.lower()]
             feat = compute_angle(df[target_markers_coords].values)
             df_feat_list.append(pd.DataFrame(feat, columns=[f"{joint}_angle"]))
 
@@ -39,7 +39,7 @@ class AngleVelocity(FeatureExtraction):
         df_feat = pd.DataFrame()
         for joint, bodyparts in target_bodyparts.items():
             target_markers_coords = [coord for marker in bodyparts for coord in bodyparts_coordinates if
-                                     marker in coord]
+                                     marker in coord.lower()]
             feat = compute_angle_velocity(df[target_markers_coords].values)
             df_feat_list.append(pd.DataFrame(feat, columns=[f"{joint}_angle_velocity"]))
 
@@ -58,7 +58,7 @@ class AngleAcceleration(FeatureExtraction):
         df_feat = pd.DataFrame()
         for joint, bodyparts in target_bodyparts.items():
             target_markers_coords = [coord for marker in bodyparts for coord in bodyparts_coordinates if
-                                     marker in coord]
+                                     marker in coord.lower()]
             feat = compute_angle_acceleration(df[target_markers_coords].values)
             df_feat_list.append(pd.DataFrame(feat, columns=[f"{joint}_angle_acceleration"]))
 
@@ -77,7 +77,7 @@ class AngleCorrelation(FeatureExtraction):
         df_feat = pd.DataFrame()
         for joint, bodyparts in target_bodyparts.items():
             target_markers_coords = [coord for marker in bodyparts for coord in bodyparts_coordinates if
-                                     marker in coord]
+                                     marker in coord.lower()]
             feat = compute_angle_correlation(df[target_markers_coords].values)
             df_feat_list.append(pd.DataFrame(feat, columns=[f"{joint}_angle_correlation"]))
 
@@ -96,7 +96,7 @@ class AnglePhase(FeatureExtraction):
         df_feat = pd.DataFrame()
         for joint, bodyparts in target_bodyparts.items():
             target_markers_coords = [coord for marker in bodyparts for coord in bodyparts_coordinates if
-                                     marker in coord]
+                                     marker in coord.lower()]
             feat = compute_angle_phase(df[target_markers_coords].values)
             df_feat_list.append(pd.DataFrame(feat, columns=[f"{joint}_angle_phase"]))
 
@@ -131,7 +131,7 @@ class CustomJointFeatures(FeatureExtraction):
                                 f"feature extraction.")
             for joint, bodyparts in target_bodyparts.items():
                 target_markers_coords = [coord for marker in bodyparts for coord in bodyparts_coordinates if
-                                         marker in coord]
+                                         marker in coord.lower()]
                 feat = func(df[target_markers_coords].values)
                 df_feat_list.append(pd.DataFrame(feat, columns=[f"{joint}_{name}"]))
 

@@ -15,7 +15,7 @@ class LinearVelocity(FeatureExtraction):
     def compute_feature(self, df: pd.DataFrame, target_bodyparts: List, **kwargs):
         bodyparts_coordinates = df.columns.tolist()
         target_markers_coords = [coord for marker in target_bodyparts for coord in bodyparts_coordinates if
-                                 marker in coord]
+                                 marker in coord.lower()]
         column_names = {bodypart: f"{bodypart}_linear_velocity" for bodypart in target_markers_coords}
 
         df_feat = df[target_markers_coords].apply(commons.compute_velocity)
@@ -31,7 +31,7 @@ class LinearAcceleration(FeatureExtraction):
     def compute_feature(self, df: pd.DataFrame, target_bodyparts: List, **kwargs):
         bodyparts_coordinates = df.columns.tolist()
         target_markers_coords = [coord for marker in target_bodyparts for coord in bodyparts_coordinates if
-                                 marker in coord]
+                                 marker in coord.lower()]
         column_names = {bodypart: f"{bodypart}_linear_acceleration" for bodypart in target_markers_coords}
 
         df_feat = df[target_markers_coords].apply(commons.compute_acceleration)
@@ -49,7 +49,7 @@ class LinearSpeed(FeatureExtraction):
         feature_df_list = []
         df_feat = pd.DataFrame()
         for marker in target_bodyparts:
-            coords = [coord for coord in bodyparts_coordinates if marker in coord]
+            coords = [coord for coord in bodyparts_coordinates if marker in coord.lower()]
             feat = commons.compute_speed(df[coords])
             df_feat = pd.DataFrame(feat, columns=[f"{marker}_linear_speed"])
             feature_df_list.append(df_feat)
@@ -68,7 +68,7 @@ class TangentialAcceleration(FeatureExtraction):
         feature_df_list = []
         df_feat = pd.DataFrame()
         for marker in target_bodyparts:
-            coords = [coord for coord in bodyparts_coordinates if marker in coord]
+            coords = [coord for coord in bodyparts_coordinates if marker in coord.lower()]
             feat = commons.compute_tang_acceleration(df[coords])
             df_feat = pd.DataFrame(feat, columns=[f"{marker}_tang_acceleration"])
             feature_df_list.append(df_feat)

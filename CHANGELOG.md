@@ -1,3 +1,6 @@
+## v0.3.14
+* Fix: added lower casting to string for coordinates detection from config for features calculation
+
 ## v0.3.13
 * Improve: added error raise of wrong vector shape during angle calculation
 
