@@ -19,7 +19,7 @@ class Height(FeatureExtraction):
         df_feat_list = []
         df_feat = pd.DataFrame()
         target_markers = [coord for marker in target_bodyparts for coord in bodyparts_coordinates if
-                                 marker in coord]
+                                 marker in coord.lower()]
         target_markers_coords = [marker for marker in target_markers if coord in marker]
 
         for bodypart in target_markers_coords:
@@ -46,7 +46,7 @@ class FwdMovement(FeatureExtraction):
         df_feat_list = []
         df_feat = pd.DataFrame()
         target_markers = [coord for marker in target_bodyparts for coord in bodyparts_coordinates if
-                                 marker in coord]
+                                 marker in coord.lower()]
         target_markers_coords = [marker for marker in target_markers if coord in marker]
 
         for bodypart in target_markers_coords:

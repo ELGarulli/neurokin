@@ -1,3 +1,6 @@
+## v0.3.15
+* Fix: same as v0.3.14, forgot misc features
+
 ## v0.3.14
 * Fix: added lower casting to string for coordinates detection from config for features calculation
 

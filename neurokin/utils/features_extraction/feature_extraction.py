@@ -72,7 +72,7 @@ def bin_feature(feature, binning_strategies: List[str], window, overlap):
         elif strategy.lower().strip(" ") == "std":
             binned = feature.rolling(window=window, step=step).std().add_suffix("_std")
         else:
-            raise ValueError(f"The chose binning strategy: {strategy} is not available. Please choose between:"
+            raise ValueError(f"The chosen binning strategy: {strategy} is not available. Please choose between:"
                              f"mean, median, min, max, sum or std")
         binned_features.append(binned)
     binned_features_df = pd.concat(binned_features, axis=1)
