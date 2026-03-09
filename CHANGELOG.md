@@ -1,3 +1,6 @@
+## v0.3.16
+* Fix: same as v0.3.14, but added the lower casting to the marker too, otherwise camel case markers don't get detected.
+
 ## v0.3.15
 * Fix: same as v0.3.14, forgot misc features
 
